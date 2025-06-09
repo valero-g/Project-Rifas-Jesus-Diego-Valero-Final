@@ -1,6 +1,6 @@
 export const initialStore=()=>{
   return{
-    message: null,
+    isLogged: false,
     todos: [
       {
         id: 1,
@@ -18,10 +18,14 @@ export const initialStore=()=>{
 
 export default function storeReducer(store, action = {}) {
   switch(action.type){
-    case 'set_hello':
+    case 'logIn':
       return {
         ...store,
-        message: action.payload
+        isLogged:True
+      };
+    case 'logOut':
+      return {
+        ...store, isLogged:False
       };
       
     case 'add_task':
