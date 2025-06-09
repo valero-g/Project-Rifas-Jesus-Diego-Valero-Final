@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey, Date, Time, DECIMAL, DateTime, Table, Integer, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship, Column
+from sqlalchemy import String, Boolean, ForeignKey, Date, Time, DECIMAL, DateTime, Table, Integer, UniqueConstraint, Column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from typing import List
 
@@ -33,7 +33,7 @@ class Usuario(db.Model):
     status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)  # True = activo
 
     boletos: Mapped[List["Boleto"]] = relationship(back_populates='usuario')
-    detalle_compras: Mapped[list["DetalleCompra"]] = relationship(back_populates='usuario')
+    detalle_compras: Mapped[List["DetalleCompra"]] = relationship(back_populates='usuario')
     compras: Mapped[List["Compra"]] = relationship(back_populates='usuario')
 
 
@@ -128,7 +128,7 @@ class Rifas(db.Model):
     url_premio: Mapped[str | None] = mapped_column(String(255))
     numero_max_boletos: Mapped[int] = mapped_column(nullable=False)
     status_sorteo: Mapped[str] = mapped_column(String(50), nullable=False)
-    boleto_ganador: Mapped[int | None] = mapped_column(ForeignKey('boleto.id'), nullable=True)
+    boleto_ganador: Mapped[int | None] = mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
 
     vendedor: Mapped["Vendedor"] = relationship(back_populates='rifas')
     boletos: Mapped[List["Boleto"]] = relationship(back_populates='rifa')
