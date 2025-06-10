@@ -59,7 +59,7 @@ export const Navbar = () => {
                             background: "none",
                             border: "none",
                             color: "rgb(59,255,231)",
-                            fontSize: "1.8rem",
+                            fontSize: "2.5rem",
                             cursor: "pointer",
                             margin: "0 10px 0 0",
                             zIndex: 1001,
@@ -207,7 +207,7 @@ export const Navbar = () => {
                         marginTop: "5px",
                         display: menuOpen ? "flex" : "none",
                         flexDirection: "column",
-                        gap: "10px",
+                        gap: "px",
                         zIndex: 1000,
                         minWidth: "220px",
                     }}

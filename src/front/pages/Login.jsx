@@ -1,16 +1,24 @@
 import { Link } from "react-router-dom";
-import { useState } from "react"; // Importamos useState
+import { useState } from "react";
 
 export const Login = () => {
-    const [showPopup, setShowPopup] = useState(false); // Estado para controlar la visibilidad del pop-up
+    const [showPopup, setShowPopup] = useState(false);
+    const [email, setEmail] = useState("");
 
     const handleForgotPasswordClick = (e) => {
-        e.preventDefault(); // Evita la navegación por defecto del Link
-        setShowPopup(true); // Muestra el pop-up
+        e.preventDefault();
+        setShowPopup(true);
     };
 
     const handleClosePopup = () => {
-        setShowPopup(false); // Cierra el pop-up
+        setShowPopup(false);
+        setEmail(""); // Limpia el email al cerrar
+    };
+
+    const handleResetPassword = () => {
+        // Aquí podrías llamar a tu API para enviar el email
+        alert(`Se ha enviado un correo a: ${email}`);
+        handleClosePopup();
     };
 
     return (
@@ -135,7 +143,7 @@ export const Login = () => {
                         ¿Has olvidado tu contraseña?{" "}
                         <Link
                             to="/recuperar-password"
-                            onClick={handleForgotPasswordClick} // Agregamos el manejador de clic
+                            onClick={handleForgotPasswordClick}
                             style={{
                                 color: "rgb(59,255,231)",
                                 textDecoration: "underline",
@@ -162,7 +170,6 @@ export const Login = () => {
                 </div>
             </form>
 
-            
             {showPopup && (
                 <div
                     style={{
@@ -171,11 +178,11 @@ export const Login = () => {
                         left: 0,
                         width: "100%",
                         height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.7)", 
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        zIndex: 1000, 
+                        zIndex: 1000,
                     }}
                 >
                     <div
@@ -189,40 +196,87 @@ export const Login = () => {
                             textAlign: "center",
                             boxShadow: "0 0 15px rgba(59,255,231,0.6)",
                             color: "rgb(59,255,231)",
-                            position: "relative", 
+                            position: "relative",
                             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                         }}
                     >
                         <h3 style={{ marginBottom: "20px", color: "rgb(59,255,231)" }}>
                             Restablecer Contraseña
                         </h3>
-                        <p style={{ fontSize: "1rem", lineHeight: "1.5" }}>
-                            Se te ha enviado un correo electrónico a tu e-mail para
-                            restablecer tu contraseña.
+                        <p style={{ fontSize: "1rem", lineHeight: "1.5", marginBottom: "15px" }}>
+                            Confirma tu correo electrónico para poder restablecer tu contraseña. Te enviaremos un mensaje a este correo.
                         </p>
-                        <button
-                            onClick={handleClosePopup}
+
+                        <input
+                            type="email"
+                            placeholder="Tu correo electrónico"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             style={{
-                                marginTop: "25px",
-                                padding: "10px 20px",
-                                backgroundColor: "rgb(59,255,231)",
-                                border: "none",
+                                width: "100%",
+                                padding: "10px",
+                                marginBottom: "20px",
                                 borderRadius: "5px",
-                                color: "black",
-                                fontWeight: "700",
+                                border: "1px solid rgb(59,255,231)",
+                                backgroundColor: "rgb(10,19,31)",
+                                color: "rgb(59,255,231)",
                                 fontSize: "1rem",
-                                cursor: "pointer",
-                                transition: "background-color 0.3s ease",
                             }}
-                            onMouseEnter={(e) =>
-                                (e.currentTarget.style.backgroundColor = "rgb(20,210,190)")
-                            }
-                            onMouseLeave={(e) =>
-                                (e.currentTarget.style.backgroundColor = "rgb(59,255,231)")
-                            }
+                        />
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: "10px",
+                            }}
                         >
-                            Cerrar
-                        </button>
+                            <button
+                                onClick={handleResetPassword}
+                                style={{
+                                    padding: "10px 20px",
+                                    backgroundColor: "rgb(59,255,231)",
+                                    border: "none",
+                                    borderRadius: "5px",
+                                    color: "black",
+                                    fontWeight: "700",
+                                    fontSize: "1rem",
+                                    cursor: "pointer",
+                                    transition: "background-color 0.3s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor = "rgb(20,210,190)")
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor = "rgb(59,255,231)")
+                                }
+                            >
+                                Enviar
+                            </button>
+
+                            <button
+                                onClick={handleClosePopup}
+                                style={{
+                                    padding: "10px 20px",
+                                    backgroundColor: "transparent",
+                                    border: "1px solid rgb(59,255,231)",
+                                    borderRadius: "5px",
+                                    color: "rgb(59,255,231)",
+                                    fontWeight: "700",
+                                    fontSize: "1rem",
+                                    cursor: "pointer",
+                                    transition: "background-color 0.3s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor = "rgba(59,255,231,0.1)")
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor = "transparent")
+                                }
+                            >
+                                Cerrar
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

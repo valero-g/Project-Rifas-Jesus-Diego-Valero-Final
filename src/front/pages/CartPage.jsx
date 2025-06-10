@@ -4,25 +4,23 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export const CartPage = () => {
-    // Función de ayuda para contar números en la cadena
-    // Suponemos que los números están separados por guiones (-)
+    
     const countNumbersPlayed = (numbersString) => {
         if (!numbersString) return 0;
-        const numbers = numbersString.split('-').filter(num => num.trim() !== '');
+        const numbers = numbersString.split(',').filter(num => num.trim() !== '');
         return numbers.length;
     };
 
-    // Usamos useState para simular el estado del carrito.
-    // La 'quantity' inicial ahora se calcula a partir de 'numbersPlayed'.
+
     const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Rifa 1", numbersPlayed: "1-10", price: 1.00 }, // quantity se calculará
-        { id: 2, name: "Rifa 2", numbersPlayed: "11-20", price: 2.00 },
-        { id: 3, name: "Rifa 3", numbersPlayed: "21-30-3-4", price: 5.00 },
-        { id: 4, name: "Rifa 4", numbersPlayed: "5", price: 10.00 }, // Ejemplo con un solo número
-        { id: 5, name: "Rifa 5", numbersPlayed: "", price: 0.50 }, // Ejemplo sin números jugados
+        { id: 1, name: "Rifa 1", numbersPlayed: "1,10", price: 1.00 },
+        { id: 2, name: "Rifa 2", numbersPlayed: "11,20", price: 2.00 },
+        { id: 3, name: "Rifa 3", numbersPlayed: "21,30,3,4", price: 5.00 },
+        { id: 4, name: "Rifa 4", numbersPlayed: "5", price: 10.00 },
+        
     ]);
 
-    // Modificamos cartItems para que la 'quantity' se calcule automáticamente
+
     const updatedCartItems = cartItems.map(item => ({
         ...item,
         quantity: countNumbersPlayed(item.numbersPlayed)
@@ -40,7 +38,7 @@ export const CartPage = () => {
 
     return (
         <div style={{
-            backgroundColor: "rgb(10,19,31)",
+            backgroundColor: 'white',
             color: "white",
             minHeight: "calc(100vh - 100px)",
             padding: "40px 20px",
@@ -71,7 +69,7 @@ export const CartPage = () => {
                     </div>
                 ) : (
                     <>
-                        {/* Encabezados de la tabla/columnas */}
+
                         <div style={{
                             display: "flex",
                             justifyContent: "space-between",
@@ -86,10 +84,10 @@ export const CartPage = () => {
                             <div style={{ flex: 1.5, textAlign: "center" }}>Cantidad de boletos</div>
                             <div style={{ flex: 1.5, textAlign: "right" }}>Precio boletos</div>
                             <div style={{ flex: 1, textAlign: "right" }}>Subtotal</div>
-                            <div style={{ width: "30px" }}></div> {/* Columna para el botón de eliminar */}
+                            <div style={{ width: "30px" }}></div>
                         </div>
 
-                        {/* Contenido del carrito */}
+                        
                         <div style={{ marginBottom: "20px" }}>
                             {updatedCartItems.map(item => (
                                 <div key={item.id} style={{
