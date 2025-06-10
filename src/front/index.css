@@ -1,0 +1,37 @@
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: rgb(10, 19, 31); /* fondo oscuro */
+  border: 1px solid rgb(59, 255, 231); /* borde cian */
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  min-width: 220px;
+
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.menu-dropdown.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.menu-dropdown a {
+  color: rgb(59, 255, 231); /* texto cian */
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.menu-dropdown a:hover {
+  color: white; /* al hacer hover */
+}
