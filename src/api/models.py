@@ -84,8 +84,8 @@ class Boleto(db.Model):
     rifa_id: Mapped[int] = mapped_column(ForeignKey('rifas.id'), nullable=False)
     confirmado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) # False = en proceso // True = comprado
 
-    usuario: Mapped["Usuario"] = relationship(back_populates='boletos')
-    rifa: Mapped["Rifas"] = relationship(back_populates='boletos')
+    usuario: Mapped["Usuario"] = relationship(back_populates='boletos', foreign_keys=[usuario_id])
+    rifa: Mapped["Rifas"] = relationship(back_populates='boletos', foreign_keys=[rifa_id])
 
 
     def serialize(self):
@@ -120,6 +120,7 @@ class Compra(db.Model):
 class Rifas(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    nombre_rifa: Mapped[str] =mapped_column(String(150), nullable = False)
     vendedor_id: Mapped[int] = mapped_column(ForeignKey('vendedor.id'), nullable=False)
     fecha_de_sorteo: Mapped[Date] = mapped_column(Date, nullable=False)
     hora_de_sorteo: Mapped[Time] = mapped_column(Time, nullable=False)
@@ -131,7 +132,7 @@ class Rifas(db.Model):
     boleto_ganador: Mapped[int | None] = mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
 
     vendedor: Mapped["Vendedor"] = relationship(back_populates='rifas')
-    boletos: Mapped[List["Boleto"]] = relationship(back_populates='rifa')
+    boletos: Mapped[List["Boleto"]] = relationship(back_populates='rifa', foreign_keys="Boleto.rifa_id")
     detalle_compras: Mapped[List["DetalleCompra"]] = relationship(
         secondary=detallecompra_rifa,
         back_populates='rifas'
@@ -141,10 +142,11 @@ class Rifas(db.Model):
     def serialize(self):
         return {
             'id': self.id,
+            'nombre_rifa': self.nombre_rifa,
             'vendedor_id': self.vendedor_id,
             'fecha_de_sorteo': self.fecha_de_sorteo.isoformat() if self.fecha_de_sorteo else None,
             'hora_de_sorteo': self.hora_de_sorteo.strftime("%H:%M:%S") if self.hora_de_sorteo else None,
-            'precio_boleto': float(self.precio_boleto) if self.precio_boleto is not None else None,
+            'precio_boleto': str(self.precio_boleto) if self.precio_boleto is not None else None,
             'premio_rifa': self.premio_rifa,
             'url_premio': self.url_premio,
             'numero_max_boletos': self.numero_max_boletos,
