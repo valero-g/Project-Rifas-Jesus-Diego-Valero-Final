@@ -2,6 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
+from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import null, select
 from api.models import db, Usuario, Vendedor, Rifas
 from api.utils import generate_sitemap, APIException
@@ -12,6 +13,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from flask_mail import Message
 from api.extensions import mail
 import os
+from datetime import timedelta
 
 
 api = Blueprint('api', __name__)
@@ -100,9 +102,9 @@ def add_usuario():
         print(request_body)
         # Validación del request_body
         if request_body is None:
-            return {"message": "Request request_body is empty"}, 400
-        if "email" not in request_body or "usuario" not in request_body or "contraseña" not in request_body:
-            return {"message": "Wrong request"}, 400
+            return {"message": "El request_body está vacio"}, 400
+        if "email" not in request_body or "usuario" not in request_body or "contraseña" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
+            return {"message": "Request body erroneo"}, 400
         # Validación de que el email o usuario no esté ya registrado
         user_email = db.session.execute(select(Usuario).where(
             Usuario.email == request_body["email"])).scalar_one_or_none()
@@ -125,6 +127,7 @@ def add_usuario():
         db.session.add(new_user)
         db.session.commit()
 
+<<<<<<< HEAD
         # Creación de token para registro de email
         email_token = create_access_token(identity=new_user.id)
         print(email_token)
@@ -132,8 +135,17 @@ def add_usuario():
         # Envio de correo para confirmación de email
         msg = Message(subject='Confirma tu email para registrate en 4Boleeks',
                       sender='info4boeeks@gmail.com', recipients=[new_user.email])
+=======
+        #Creación de token para registro de email
+        expires = timedelta(hours=1)
+        email_token = create_access_token(identity=new_user.email, expires_delta=expires)
+        print(email_token)
+
+        # Envio de correo para confirmación de email
+        msg = Message(subject='Confirma tu email para registrate en 4Boleeks', sender='info4boleeks@gmail.com', recipients=[new_user.email])
+>>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
         msg.request_body = "Haz click en el link para confirmar el mail"
-        msg.html = f'<p>Haz click en el link siguiente para confirmar el mail</p><a href="{os.getenv("VITE_BACKEND_URL")}/emailconfirm/{email_token}">Link de confirmacion</a>'
+        msg.html = f'<p>Haz click en el link siguiente para confirmar el mail</p><a href="{os.getenv("VITE_BACKEND_URL")}/verify-email/{email_token}">Link de confirmacion</a>'
         mail.send(msg)
         return {"message": "User created successfully, pending email confirmation"}, 200
     except Exception as e:
@@ -142,16 +154,79 @@ def add_usuario():
         return {"message": "No se pudo añadir usuario"}, 404
 
 # Email confirmation
+<<<<<<< HEAD
 
 
 @api.route("/emailconfirm/<token>")
 def confirm_email(token):
+=======
+@api.route('/verify-email', methods=['GET'])
+def verify_email():
+    token = request.args.get('token')
+
+    if not token:
+        return jsonify({"error": "Token no proporcionado"}), 400
+
+>>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
     try:
-        user_email = decode_token(token)
-        print(user_email)
+        # Decodifica el token y verifica firma y expiración
+        decoded = decode_token(token)
+        email = decoded["sub"]  # identity se guarda en 'sub'
+
+        # Comprobar que el email está en la base de datos y actualización de usuario
+        user = db.session.execute(select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+        if user != None:
+            user = db.session.get(Usuario, email)
+            user.status = True
+            db.session.commit()
+            
+
+        # Aquí podrías verificar si el usuario existe y marcarlo como verificado
+        return jsonify({"message": f"Token válido. Email: {email}"}), 200
+
+    except ExpiredSignatureError:
+        return jsonify({"error": "El token ha expirado"}), 401
+
+    except InvalidTokenError:
+        return jsonify({"error": "Token inválido"}), 401
+
+
+# PUT de usuario
+@api.route('/user/<int:usuario_id>', methods = ['PUT'])
+def update_user_by_id(usuario_id):
+    try:
+        request_body= request.get_json(silent = True)
+        print(request_body)
+        user = db.session.execute(select(Usuario).where(Usuario.id == usuario_id)).scalar_one_or_none()
+        # Validación de people_id
+        if user == None:
+            return {"message" : f" El usuario ID {usuario_id} no pudo ser encontrado. "}, 404  
+        # Validación del body
+        if "email" not in request_body or "usuario" not in request_body or "contraseña" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
+            return {"message" : f"Wrong request"}, 400 
+        # Update de la tabla
+        updated_user = db.session.get(Usuario, usuario_id)
+        updated_user.usuario = request_body["usuario"] 
+        updated_user.nombre = request_body["nombre"]
+        updated_user.apellidos = request_body["apellidos"]
+        updated_user.direccion_envio = request_body["direccion_envio"]
+        updated_user.dni = request_body["dni"]
+        updated_user.telefono = request_body["telefono"]
+        #update de contraseña
+        bytes = request_body["contraseña"].encode('utf-8')
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(bytes, salt)
+        updated_user.contraseña = hash.decode('utf-8')
+        db.session.commit()
+
+        # Retornamos el usuario actualizado
+        user = db.session.execute(select(Usuario).where(Usuario.id == usuario_id)).scalar_one_or_none()
+        return user.serialize(),200
+
     except Exception as e:
         print("Error:", e)
-        return {"message": "Error al confirmar el email"}, 500
+        return {"message": "Error actualizando usuario"}, 500
+
 
 # Login Endpoint
 
@@ -161,7 +236,7 @@ def login():
     try:
         email = request.json.get("email", None)
         usuario = request.json.get("usuario", None)
-        password = request.json.get("password", None)
+        password = request.json.get("contraseña", None)
 
         # Comprobamos que el usuario exista
         user_mail = db.session.execute(select(Usuario).where(
@@ -179,7 +254,7 @@ def login():
         # Chequeo de contraseña
         # encoding user password
         userBytes = password.encode('utf-8')
-        user_pass = user.password.encode('utf-8')
+        user_pass = user.contraseña.encode('utf-8')
         # checking password
         result = bcrypt.checkpw(userBytes, user_pass)
         if (result):
@@ -188,7 +263,32 @@ def login():
         else:
             return {"message": "Wrong email or password"}, 400
     except:
+<<<<<<< HEAD
         return {"message": "Unable to complete operation"}, 404
+=======
+        return {"message":"Unable to complete operation"}, 404
+    
+
+# GET de usuario 
+@api.route("/user/", methods=["GET"])
+@jwt_required()
+def get_user_by_id():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user != None):
+            return user.serialize(), 200
+        else:
+            return {"message":"No access to secret message"}, 404
+    
+    except Exception as e:
+        print("Error:", e)
+        return {"message":"No se puede obtener el usuario"}, 500
+
+
+>>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
 
 
 @api.route('/hello', methods=['POST', 'GET'])
