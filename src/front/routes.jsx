@@ -23,6 +23,7 @@ export const router = createBrowserRouter(
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
             {/* Rutas del menú desplegable */}
             <Route path="/ultimos-resultados" element={<LastResults />} />
@@ -32,7 +33,7 @@ export const router = createBrowserRouter(
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
 
             {/* ¡La nueva ruta para la página del carrito! */}
-            <Route path="/checkout" element={<CartPage />} />>
+            <Route path="/checkout" element={<CartPage />} />
 
             {/* Puedes agregar más rutas aquí si es necesario */}
             {/* <Route path="/single/:theId" element={ <Single />} /> */}

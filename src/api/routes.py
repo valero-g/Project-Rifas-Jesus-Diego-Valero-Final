@@ -234,6 +234,8 @@ def login():
                 user = user_mail
             else:
                 user = user_usuario
+        if user.status == False:
+            return {"message": "Cuenta inactiva. Verifique mail para activarla"}, 401
         # Chequeo de contraseña
         # encoding user password
         userBytes = password.encode('utf-8')
@@ -244,9 +246,9 @@ def login():
             access_token = create_access_token(identity=str(user.id))
             return jsonify({"token": access_token, "user_id": user.id})
         else:
-            return {"message": "Wrong email or password"}, 400
+            return {"message": "Usuario, Email o contraseña erroneos"}, 400
     except:
-        return {"message":"Unable to complete operation"}, 404
+        return {"message":"No se puede completar la operacion"}, 404
     
 
 # GET de usuario 
