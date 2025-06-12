@@ -35,11 +35,11 @@ db.init_app(app)
 
 
 # Email configuration
-app.config['MAIL_SENDER'] = "info4boleeks@yahoo.com"
-app.config['MAIL_SERVER'] = "smtp.mail.yahoo.com"
+app.config['MAIL_SENDER'] = "hola4boleeks@outlook.com"
+app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = "info4boleeks@yahoo.com"
-app.config['MAIL_PASSWORD'] = "FullStackfs102"
+app.config['MAIL_USERNAME'] = "info4boleeks@gmail.com"
+app.config['MAIL_PASSWORD'] = "lbxs pqrj wipe nftg"
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail.init_app(app)
@@ -77,6 +77,8 @@ def sitemap():
 # any other endpoint will try to serve it like a static file
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
+    print("Requested path:", path)
+    print(static_file_dir)
     if not os.path.isfile(os.path.join(static_file_dir, path)):
         path = 'index.html'
     response = send_from_directory(static_file_dir, path)

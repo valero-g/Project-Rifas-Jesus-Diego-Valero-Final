@@ -7,6 +7,7 @@ import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Register } from "./pages/Register";
 import { Login } from "./pages/Login";
+import {VerifyEmail} from "./pages/VerifyEmail";
 import { LastResults } from "./pages/LastResults";
 import { ActiveDraws } from "./pages/ActiveDraws";
 import { AboutUs } from "./pages/AboutUs";
@@ -28,10 +29,11 @@ export const router = createBrowserRouter(
             <Route path="/sobre-nosotros" element={<AboutUs />} />
             <Route path="/bases-legales" element={<LegalBases />} />
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
-
+            <Route path= "/verify-email/:token" element = {<VerifyEmail/>} /
             {/* Puedes agregar más rutas aquí si es necesario */}
             {/* <Route path="/single/:theId" element={ <Single />} /> */}
 
         </Route>
+
     )
 );
