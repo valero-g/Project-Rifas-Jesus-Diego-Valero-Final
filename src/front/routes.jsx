@@ -13,6 +13,7 @@ import { ActiveDraws } from "./pages/ActiveDraws";
 import { AboutUs } from "./pages/AboutUs";
 import { LegalBases } from "./pages/LegalBases";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { CartPage } from "./pages/CartPage"; // ¡Importa tu nueva página del carrito!
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -29,7 +30,10 @@ export const router = createBrowserRouter(
             <Route path="/sobre-nosotros" element={<AboutUs />} />
             <Route path="/bases-legales" element={<LegalBases />} />
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
-            <Route path= "/verify-email/:token" element = {<VerifyEmail/>} />
+
+            {/* ¡La nueva ruta para la página del carrito! */}
+            <Route path="/checkout" element={<CartPage />} />>
+
             {/* Puedes agregar más rutas aquí si es necesario */}
             {/* <Route path="/single/:theId" element={ <Single />} /> */}
 
