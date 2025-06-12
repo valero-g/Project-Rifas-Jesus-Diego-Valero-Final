@@ -4,6 +4,11 @@ import { useState } from "react";
 export const Login = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [email, setEmail] = useState("");
+    const [userOrEmail, setUserOrEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState(null);
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleForgotPasswordClick = (e) => {
         e.preventDefault();
@@ -16,9 +21,67 @@ export const Login = () => {
     };
 
     const handleResetPassword = () => {
-        // Aquí podrías llamar a tu API para enviar el email
         alert(`Se ha enviado un correo a: ${email}`);
         handleClosePopup();
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setUserData(null);
+        setLoading(true);
+
+        try {
+            // Construimos el body enviando usuario o email y contraseña
+            const body = {
+                usuario: userOrEmail,
+                email: userOrEmail,
+                contraseña: password,
+            };
+
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.message || "Error en login");
+                setLoading(false);
+                return;
+            }
+
+            // Guardamos token en sessionStorage
+            sessionStorage.setItem("token", data.token);
+
+            // Petición para obtener datos del usuario con token
+            const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${data.token}`,
+                },
+            });
+
+            const user = await userResponse.json();
+
+            if (!userResponse.ok) {
+                setError(user.message || "Error al obtener datos del usuario");
+                setLoading(false);
+                return;
+            }
+
+            setUserData(user);
+            setError(null);
+        } catch (err) {
+            setError("Error en la petición");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -44,10 +107,7 @@ export const Login = () => {
                     color: "rgb(59,255,231)",
                     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                 }}
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    alert("Formulario enviado");
-                }}
+                onSubmit={handleLogin}
             >
                 <h2
                     style={{
@@ -78,6 +138,8 @@ export const Login = () => {
                         color: "rgb(59,255,231)",
                         fontSize: "1rem",
                     }}
+                    value={userOrEmail}
+                    onChange={(e) => setUserOrEmail(e.target.value)}
                 />
 
                 <label
@@ -102,31 +164,74 @@ export const Login = () => {
                         color: "rgb(59,255,231)",
                         fontSize: "1rem",
                     }}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
                     type="submit"
+                    disabled={loading}
                     style={{
                         width: "100%",
                         padding: "12px",
-                        backgroundColor: "rgb(59,255,231)",
+                        backgroundColor: loading ? "gray" : "rgb(59,255,231)",
                         border: "none",
                         borderRadius: "5px",
                         color: "black",
                         fontWeight: "700",
                         fontSize: "1.1rem",
-                        cursor: "pointer",
+                        cursor: loading ? "not-allowed" : "pointer",
                         transition: "background-color 0.3s ease",
                     }}
-                    onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "rgb(20,210,190)")
-                    }
-                    onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "rgb(59,255,231)")
-                    }
+                    onMouseEnter={(e) => {
+                        if (!loading)
+                            e.currentTarget.style.backgroundColor = "rgb(20,210,190)";
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!loading)
+                            e.currentTarget.style.backgroundColor = "rgb(59,255,231)";
+                    }}
                 >
-                    Acceder
+                    {loading ? "Accediendo..." : "Acceder"}
                 </button>
+
+                {error && (
+                    <p
+                        style={{
+                            marginTop: "15px",
+                            color: "red",
+                            fontWeight: "700",
+                            textAlign: "center",
+                        }}
+                    >
+                        {error}
+                    </p>
+                )}
+
+                {userData && (
+                    <div
+                        style={{
+                            marginTop: "20px",
+                            backgroundColor: "rgba(59,255,231,0.1)",
+                            padding: "15px",
+                            borderRadius: "8px",
+                            color: "rgb(59,255,231)",
+                            fontSize: "0.9rem",
+                            fontFamily:
+                                "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                        }}
+                    >
+                        <h3>Datos del usuario:</h3>
+                        <pre
+                            style={{
+                                whiteSpace: "pre-wrap",
+                                wordWrap: "break-word",
+                            }}
+                        >
+                            {JSON.stringify(userData, null, 2)}
+                        </pre>
+                    </div>
+                )}
 
                 <div
                     style={{
@@ -203,8 +308,11 @@ export const Login = () => {
                         <h3 style={{ marginBottom: "20px", color: "rgb(59,255,231)" }}>
                             Restablecer Contraseña
                         </h3>
-                        <p style={{ fontSize: "1rem", lineHeight: "1.5", marginBottom: "15px" }}>
-                            Confirma tu correo electrónico para poder restablecer tu contraseña. Te enviaremos un mensaje a este correo.
+                        <p
+                            style={{ fontSize: "1rem", lineHeight: "1.5", marginBottom: "15px" }}
+                        >
+                            Confirma tu correo electrónico para poder restablecer tu contraseña. Te
+                            enviaremos un mensaje a este correo.
                         </p>
 
                         <input

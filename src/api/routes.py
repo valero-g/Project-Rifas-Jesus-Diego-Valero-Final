@@ -127,15 +127,6 @@ def add_usuario():
         db.session.add(new_user)
         db.session.commit()
 
-<<<<<<< HEAD
-        # Creación de token para registro de email
-        email_token = create_access_token(identity=new_user.id)
-        print(email_token)
-
-        # Envio de correo para confirmación de email
-        msg = Message(subject='Confirma tu email para registrate en 4Boleeks',
-                      sender='info4boeeks@gmail.com', recipients=[new_user.email])
-=======
         #Creación de token para registro de email
         expires = timedelta(hours=1)
         email_token = create_access_token(identity=new_user.email, expires_delta=expires)
@@ -143,7 +134,6 @@ def add_usuario():
 
         # Envio de correo para confirmación de email
         msg = Message(subject='Confirma tu email para registrate en 4Boleeks', sender='info4boleeks@gmail.com', recipients=[new_user.email])
->>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
         msg.request_body = "Haz click en el link para confirmar el mail"
         msg.html = f'<p>Haz click en el link siguiente para confirmar el mail</p><a href="{os.getenv("VITE_BACKEND_URL")}/verify-email/{email_token}">Link de confirmacion</a>'
         mail.send(msg)
@@ -154,12 +144,6 @@ def add_usuario():
         return {"message": "No se pudo añadir usuario"}, 404
 
 # Email confirmation
-<<<<<<< HEAD
-
-
-@api.route("/emailconfirm/<token>")
-def confirm_email(token):
-=======
 @api.route('/verify-email', methods=['GET'])
 def verify_email():
     token = request.args.get('token')
@@ -167,7 +151,6 @@ def verify_email():
     if not token:
         return jsonify({"error": "Token no proporcionado"}), 400
 
->>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
     try:
         # Decodifica el token y verifica firma y expiración
         decoded = decode_token(token)
@@ -263,9 +246,6 @@ def login():
         else:
             return {"message": "Wrong email or password"}, 400
     except:
-<<<<<<< HEAD
-        return {"message": "Unable to complete operation"}, 404
-=======
         return {"message":"Unable to complete operation"}, 404
     
 
@@ -288,7 +268,6 @@ def get_user_by_id():
         return {"message":"No se puede obtener el usuario"}, 500
 
 
->>>>>>> a88104fcca1a16023cb62ebbd9785d9e21113c0f
 
 
 @api.route('/hello', methods=['POST', 'GET'])
