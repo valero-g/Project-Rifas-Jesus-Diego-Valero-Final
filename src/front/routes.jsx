@@ -29,7 +29,7 @@ export const router = createBrowserRouter(
             <Route path="/sobre-nosotros" element={<AboutUs />} />
             <Route path="/bases-legales" element={<LegalBases />} />
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
-            <Route path= "/verify-email/:token" element = {<VerifyEmail/>} /
+            <Route path= "/verify-email/:token" element = {<VerifyEmail/>} />
             {/* Puedes agregar más rutas aquí si es necesario */}
             {/* <Route path="/single/:theId" element={ <Single />} /> */}
 
