@@ -14,7 +14,7 @@ import { AboutUs } from "./pages/AboutUs";
 import { LegalBases } from "./pages/LegalBases";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { CartPage } from "./pages/CartPage";
-import { Profile } from "./pages/Profile"; // 👈 Importa Profile
+import { Profile } from "./pages/Profile"; 
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -22,8 +22,7 @@ export const router = createBrowserRouter(
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/mi-perfil" element={<Profile />} /> {/* 👈 Agrega la ruta */}
-
+            <Route path="/mi-perfil" element={<Profile />} />
             <Route path="/ultimos-resultados" element={<LastResults />} />
             <Route path="/sorteos-activos" element={<ActiveDraws />} />
             <Route path="/sobre-nosotros" element={<AboutUs />} />

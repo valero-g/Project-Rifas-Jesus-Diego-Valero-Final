@@ -20,6 +20,8 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 
+# static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
@@ -78,6 +80,7 @@ def sitemap():
 def serve_any_other_file(path):
     print("Requested path:", path)
     print(static_file_dir)
+    print(os.path.join(static_file_dir, path))
     if not os.path.isfile(os.path.join(static_file_dir, path)):
         path = 'index.html'
     response = send_from_directory(static_file_dir, path)

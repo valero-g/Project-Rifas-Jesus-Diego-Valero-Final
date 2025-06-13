@@ -14,6 +14,7 @@ from flask_mail import Message
 from api.extensions import mail
 import os
 from datetime import timedelta
+from api.emails import send_email_verification, send_email_password_recovery,send_email_random_password, generar_clave
 
 
 api = Blueprint('api', __name__)
@@ -122,8 +123,7 @@ def add_usuario():
         hash = bcrypt.hashpw(bytes, salt)
         print(hash)
         # Agregamos user: PENDING: generación de STRIPE ID
-        new_user = Usuario(usuario=request_body["usuario"], email=request_body["email"], contraseña=hash.decode('utf-8'), nombre=request_body["nombre"], apellidos=request_body["apellidos"],
-                           direccion_envio=request_body["direccion_envio"], dni=request_body["dni"], telefono=request_body["telefono"], stripe_customer_id="0", status=False)
+        new_user = Usuario(usuario=request_body["usuario"], email=request_body["email"], contraseña=hash.decode('utf-8'), nombre=request_body["nombre"], apellidos=request_body["apellidos"], direccion_envio=request_body["direccion_envio"], dni=request_body["dni"], telefono=request_body["telefono"], stripe_customer_id="0", status=True)
         db.session.add(new_user)
         db.session.commit()
 
@@ -132,11 +132,8 @@ def add_usuario():
         email_token = create_access_token(identity=new_user.email, expires_delta=expires)
         print(email_token)
 
-        # Envio de correo para confirmación de email
-        msg = Message(subject='Confirma tu email para registrate en 4Boleeks', sender='info4boleeks@gmail.com', recipients=[new_user.email])
-        msg.request_body = "Haz click en el link para confirmar el mail"
-        msg.html = f'<p>Haz click en el link siguiente para confirmar el mail</p><a href="{os.getenv("VITE_BACKEND_URL")}/verify-email/{email_token}">Link de confirmacion</a>'
-        mail.send(msg)
+        # Envio de correo para confirmación de email (PENDIENTE REVISAR SI VERIFICAMOS EMAIL)
+        # send_email_verification(sender_email = 'info4boleeks@gmail.com', recipient_email = new_user.email, token = email_token)
         return {"message": "User created successfully, pending email confirmation"}, 200
     except Exception as e:
         print("Error :", e)
@@ -174,18 +171,22 @@ def verify_email():
         return jsonify({"error": "Token inválido"}), 401
 
 
+
+
 # PUT de usuario
 @api.route('/user/<int:usuario_id>', methods = ['PUT'])
+@jwt_required()
 def update_user_by_id(usuario_id):
     try:
+        current_id = get_jwt_identity()
         request_body= request.get_json(silent = True)
         print(request_body)
-        user = db.session.execute(select(Usuario).where(Usuario.id == usuario_id)).scalar_one_or_none()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
         # Validación de people_id
         if user == None:
             return {"message" : f" El usuario ID {usuario_id} no pudo ser encontrado. "}, 404  
         # Validación del body
-        if "email" not in request_body or "usuario" not in request_body or "contraseña" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
+        if "email" not in request_body or "usuario" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
             return {"message" : f"Wrong request"}, 400 
         # Update de la tabla
         updated_user = db.session.get(Usuario, usuario_id)
@@ -196,10 +197,10 @@ def update_user_by_id(usuario_id):
         updated_user.dni = request_body["dni"]
         updated_user.telefono = request_body["telefono"]
         #update de contraseña
-        bytes = request_body["contraseña"].encode('utf-8')
-        salt = bcrypt.gensalt()
-        hash = bcrypt.hashpw(bytes, salt)
-        updated_user.contraseña = hash.decode('utf-8')
+        # bytes = request_body["contraseña"].encode('utf-8')
+        # salt = bcrypt.gensalt()
+        # hash = bcrypt.hashpw(bytes, salt)
+        # updated_user.contraseña = hash.decode('utf-8')
         db.session.commit()
 
         # Retornamos el usuario actualizado
@@ -210,10 +211,38 @@ def update_user_by_id(usuario_id):
         print("Error:", e)
         return {"message": "Error actualizando usuario"}, 500
 
+# PUT de contraseña
+@api.route('/new-password', methods = ['PUT'])
+@jwt_required()
+def update_password_by_id():
+    try:
+        current_id = get_jwt_identity()
+        request_body= request.get_json(silent = True)
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validación de people_id
+        if user == None:
+            return {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404  
+        # Validación del body
+        if "contraseña" not in request_body:
+            return {"message" : f"Petición erronea"}, 400 
+        # update de contraseña
+        updated_user = db.session.get(Usuario, current_id)
+        
+        bytes = request_body["contraseña"].encode('utf-8')
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(bytes, salt)
+        updated_user.contraseña = hash.decode('utf-8')
+        db.session.commit()
+
+        # Retornamos el usuario actualizado
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        return {"message": "contraseña actualizada"},200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message": "Error actualizando usuario"}, 500
 
 # Login Endpoint
-
-
 @api.route("/login", methods=['POST'])
 def login():
     try:
@@ -234,6 +263,8 @@ def login():
                 user = user_mail
             else:
                 user = user_usuario
+        if user.status == False:
+            return {"message": "Cuenta inactiva. Verifique mail para activarla"}, 401
         # Chequeo de contraseña
         # encoding user password
         userBytes = password.encode('utf-8')
@@ -244,9 +275,9 @@ def login():
             access_token = create_access_token(identity=str(user.id))
             return jsonify({"token": access_token, "user_id": user.id})
         else:
-            return {"message": "Wrong email or password"}, 400
+            return {"message": "Usuario, Email o contraseña erroneos"}, 400
     except:
-        return {"message":"Unable to complete operation"}, 404
+        return {"message":"No se puede completar la operacion"}, 404
     
 
 # GET de usuario 
@@ -267,8 +298,53 @@ def get_user_by_id():
         print("Error:", e)
         return {"message":"No se puede obtener el usuario"}, 500
 
+# POST de recuperar contraseña
+@api.route ('/reset-password', methods = ['POST'])
+def reset_password():
+    try:
+        email = request.json.get("email", None)
+        user = db.session.execute(select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+        # validacion de mail 
+        if user == None:
+            return {"message": "User cannot be found"}, 401
+        expire_password = timedelta(hours=1)
+        print(user.serialize())
+        password_token = create_access_token(identity=str(user.id), expires_delta=expire_password)
+        print(password_token)
+        send_email_password_recovery(sender_email = 'info4boleeks@gmail.com', recipient_email = user.email, token = password_token)
+        return {"message":"Email enviado para resetear contraseña"}, 200
 
+    except Exception as e:
+        print("Error:", e)
+        return {"message":"No se puede enviar mail para resetear password"}, 500
 
+# POST de generar contraseña random
+@api.route ('/generate-password', methods = ['POST'])
+def generate_new_password():
+    try:
+        email = request.json.get("email", None)
+        user = db.session.execute(select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+        # validacion de mail 
+        if user == None:
+            return {"message": "User cannot be found"}, 401
+        # Envio de email con password random
+        new_password = generar_clave(10)
+        print("El nuevo password es: " + new_password)
+        send_email_random_password(sender_email = 'info4boleeks@gmail.com', recipient_email = user.email, password = new_password)
+
+        # actualización de database
+        updated_user = db.session.get(Usuario, user.id)
+        bytes = new_password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(bytes, salt)
+        updated_user.contraseña = hash.decode('utf-8')
+        db.session.commit()
+
+        return {"message":"Email enviado para resetear contraseña"}, 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message":"No se puede enviar mail para resetear password"}, 500
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
