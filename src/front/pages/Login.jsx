@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export const Login = () => {
+    const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [email, setEmail] = useState("");
     const [userOrEmail, setUserOrEmail] = useState("");
@@ -17,7 +18,7 @@ export const Login = () => {
 
     const handleClosePopup = () => {
         setShowPopup(false);
-        setEmail(""); // Limpia el email al cerrar
+        setEmail("");
     };
 
     const handleResetPassword = () => {
@@ -32,7 +33,6 @@ export const Login = () => {
         setLoading(true);
 
         try {
-            // Construimos el body enviando usuario o email y contraseña
             const body = {
                 usuario: userOrEmail,
                 email: userOrEmail,
@@ -55,10 +55,8 @@ export const Login = () => {
                 return;
             }
 
-            // Guardamos token en sessionStorage
             sessionStorage.setItem("token", data.token);
 
-            // Petición para obtener datos del usuario con token
             const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
@@ -76,6 +74,10 @@ export const Login = () => {
 
             setUserData(user);
             setError(null);
+
+            // Redirigir a la página de perfil tras login exitoso
+            navigate('/mi-perfil');
+
         } catch (err) {
             setError("Error en la petición");
             console.error(err);
@@ -142,10 +144,7 @@ export const Login = () => {
                     onChange={(e) => setUserOrEmail(e.target.value)}
                 />
 
-                <label
-                    htmlFor="password"
-                    style={{ display: "block", marginBottom: "8px" }}
-                >
+                <label htmlFor="password" style={{ display: "block", marginBottom: "8px" }}>
                     Contraseña
                 </label>
                 <input
@@ -184,12 +183,10 @@ export const Login = () => {
                         transition: "background-color 0.3s ease",
                     }}
                     onMouseEnter={(e) => {
-                        if (!loading)
-                            e.currentTarget.style.backgroundColor = "rgb(20,210,190)";
+                        if (!loading) e.currentTarget.style.backgroundColor = "rgb(20,210,190)";
                     }}
                     onMouseLeave={(e) => {
-                        if (!loading)
-                            e.currentTarget.style.backgroundColor = "rgb(59,255,231)";
+                        if (!loading) e.currentTarget.style.backgroundColor = "rgb(59,255,231)";
                     }}
                 >
                     {loading ? "Accediendo..." : "Acceder"}
@@ -217,8 +214,7 @@ export const Login = () => {
                             borderRadius: "8px",
                             color: "rgb(59,255,231)",
                             fontSize: "0.9rem",
-                            fontFamily:
-                                "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                         }}
                     >
                         <h3>Datos del usuario:</h3>
@@ -262,7 +258,7 @@ export const Login = () => {
                     <p style={{ margin: 0 }}>
                         ¿No estás registrado?{" "}
                         <Link
-                            to="/Register"
+                            to="/register"
                             style={{
                                 color: "rgb(59,255,231)",
                                 textDecoration: "underline",
@@ -361,7 +357,6 @@ export const Login = () => {
                             >
                                 Enviar
                             </button>
-
                             <button
                                 onClick={handleClosePopup}
                                 style={{
@@ -376,13 +371,13 @@ export const Login = () => {
                                     transition: "background-color 0.3s ease",
                                 }}
                                 onMouseEnter={(e) =>
-                                    (e.currentTarget.style.backgroundColor = "rgba(59,255,231,0.1)")
+                                    (e.currentTarget.style.backgroundColor = "rgba(59,255,231,0.3)")
                                 }
                                 onMouseLeave={(e) =>
                                     (e.currentTarget.style.backgroundColor = "transparent")
                                 }
                             >
-                                Cerrar
+                                Cancelar
                             </button>
                         </div>
                     </div>
