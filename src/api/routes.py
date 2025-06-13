@@ -14,7 +14,7 @@ from flask_mail import Message
 from api.extensions import mail
 import os
 from datetime import timedelta
-from api.emails import send_email_verification, send_email_password_recovery
+from api.emails import send_email_verification, send_email_password_recovery,send_email_random_password, generar_clave
 
 
 api = Blueprint('api', __name__)
@@ -123,8 +123,7 @@ def add_usuario():
         hash = bcrypt.hashpw(bytes, salt)
         print(hash)
         # Agregamos user: PENDING: generación de STRIPE ID
-        new_user = Usuario(usuario=request_body["usuario"], email=request_body["email"], contraseña=hash.decode('utf-8'), nombre=request_body["nombre"], apellidos=request_body["apellidos"],
-                           direccion_envio=request_body["direccion_envio"], dni=request_body["dni"], telefono=request_body["telefono"], stripe_customer_id="0", status=False)
+        new_user = Usuario(usuario=request_body["usuario"], email=request_body["email"], contraseña=hash.decode('utf-8'), nombre=request_body["nombre"], apellidos=request_body["apellidos"], direccion_envio=request_body["direccion_envio"], dni=request_body["dni"], telefono=request_body["telefono"], stripe_customer_id="0", status=True)
         db.session.add(new_user)
         db.session.commit()
 
@@ -133,8 +132,8 @@ def add_usuario():
         email_token = create_access_token(identity=new_user.email, expires_delta=expires)
         print(email_token)
 
-        # Envio de correo para confirmación de email
-        send_email_verification(sender_email = 'info4boleeks@gmail.com', recipient_email = new_user.email, token = email_token)
+        # Envio de correo para confirmación de email (PENDIENTE REVISAR SI VERIFICAMOS EMAIL)
+        # send_email_verification(sender_email = 'info4boleeks@gmail.com', recipient_email = new_user.email, token = email_token)
         return {"message": "User created successfully, pending email confirmation"}, 200
     except Exception as e:
         print("Error :", e)
@@ -319,6 +318,33 @@ def reset_password():
         print("Error:", e)
         return {"message":"No se puede enviar mail para resetear password"}, 500
 
+# POST de generar contraseña random
+@api.route ('/generate-password', methods = ['POST'])
+def generate_new_password():
+    try:
+        email = request.json.get("email", None)
+        user = db.session.execute(select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+        # validacion de mail 
+        if user == None:
+            return {"message": "User cannot be found"}, 401
+        # Envio de email con password random
+        new_password = generar_clave(10)
+        print("El nuevo password es: " + new_password)
+        send_email_random_password(sender_email = 'info4boleeks@gmail.com', recipient_email = user.email, password = new_password)
+
+        # actualización de database
+        updated_user = db.session.get(Usuario, user.id)
+        bytes = new_password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(bytes, salt)
+        updated_user.contraseña = hash.decode('utf-8')
+        db.session.commit()
+
+        return {"message":"Email enviado para resetear contraseña"}, 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message":"No se puede enviar mail para resetear password"}, 500
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
