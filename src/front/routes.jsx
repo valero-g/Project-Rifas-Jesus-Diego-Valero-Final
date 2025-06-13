@@ -23,6 +23,7 @@ export const router = createBrowserRouter(
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             {/* Rutas del menú desplegable */}
             <Route path="/ultimos-resultados" element={<LastResults />} />
