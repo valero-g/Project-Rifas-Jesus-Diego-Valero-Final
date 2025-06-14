@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Login = () => {
     const navigate = useNavigate();
+
     const [showPopup, setShowPopup] = useState(false);
     const [email, setEmail] = useState("");
     const [userOrEmail, setUserOrEmail] = useState("");
@@ -12,19 +12,60 @@ export const Login = () => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Para restablecer contraseña:
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetError, setResetError] = useState(null);
+    const [resetSuccess, setResetSuccess] = useState(null);
+
     const handleForgotPasswordClick = (e) => {
         e.preventDefault();
         setShowPopup(true);
+        setResetError(null);
+        setResetSuccess(null);
+        setEmail("");
     };
 
     const handleClosePopup = () => {
         setShowPopup(false);
         setEmail("");
+        setResetError(null);
+        setResetSuccess(null);
     };
 
-    const handleResetPassword = () => {
-        alert(`Se ha enviado un correo a: ${email}`);
-        handleClosePopup();
+    const handleResetPassword = async () => {
+        setResetError(null);
+        setResetSuccess(null);
+
+        if (!email) {
+            setResetError("Por favor, introduce un correo válido.");
+            return;
+        }
+
+        setResetLoading(true);
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/generate-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setResetError(data.message || "Error al enviar el correo de restablecimiento");
+            } else {
+                setResetSuccess(`Se ha enviado un correo a: ${email}. Revisa tu bandeja de entrada.`);
+                setEmail("");
+            }
+        } catch (err) {
+            setResetError("Error en la petición. Intenta más tarde.");
+            console.error(err);
+        } finally {
+            setResetLoading(false);
+        }
     };
 
     const handleLogin = async (e) => {
@@ -78,7 +119,6 @@ export const Login = () => {
 
             // Redirigir a la página de perfil tras login exitoso
             navigate('/mi-perfil');
-
         } catch (err) {
             setError("Error en la petición");
             console.error(err);
@@ -320,7 +360,7 @@ export const Login = () => {
                             style={{
                                 width: "100%",
                                 padding: "10px",
-                                marginBottom: "20px",
+                                marginBottom: "10px",
                                 borderRadius: "5px",
                                 border: "1px solid rgb(59,255,231)",
                                 backgroundColor: "rgb(10,19,31)",
@@ -328,6 +368,18 @@ export const Login = () => {
                                 fontSize: "1rem",
                             }}
                         />
+
+                        {resetError && (
+                            <p style={{ color: "red", marginBottom: "10px", fontWeight: "700" }}>
+                                {resetError}
+                            </p>
+                        )}
+
+                        {resetSuccess && (
+                            <p style={{ color: "limegreen", marginBottom: "10px", fontWeight: "700" }}>
+                                {resetSuccess}
+                            </p>
+                        )}
 
                         <div
                             style={{
@@ -338,25 +390,26 @@ export const Login = () => {
                         >
                             <button
                                 onClick={handleResetPassword}
+                                disabled={resetLoading}
                                 style={{
                                     padding: "10px 20px",
-                                    backgroundColor: "rgb(59,255,231)",
+                                    backgroundColor: resetLoading ? "gray" : "rgb(59,255,231)",
                                     border: "none",
                                     borderRadius: "5px",
                                     color: "black",
                                     fontWeight: "700",
                                     fontSize: "1rem",
-                                    cursor: "pointer",
+                                    cursor: resetLoading ? "not-allowed" : "pointer",
                                     transition: "background-color 0.3s ease",
                                 }}
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.backgroundColor = "rgb(20,210,190)")
-                                }
-                                onMouseLeave={(e) =>
-                                    (e.currentTarget.style.backgroundColor = "rgb(59,255,231)")
-                                }
+                                onMouseEnter={(e) => {
+                                    if (!resetLoading) e.currentTarget.style.backgroundColor = "rgb(20,210,190)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!resetLoading) e.currentTarget.style.backgroundColor = "rgb(59,255,231)";
+                                }}
                             >
-                                Enviar
+                                {resetLoading ? "Enviando..." : "Enviar"}
                             </button>
                             <button
                                 onClick={handleClosePopup}

@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from "react";
 
+
 export const Profile = () => {
   const [userData, setUserData] = useState(null);
-
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState(null);
-  const [passwordSuccess, setPasswordSuccess] = useState(null);
-
+  const [formData, setFormData] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [updateSuccess, setUpdateSuccess] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
       setFetchError(null);
-
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
@@ -24,16 +21,13 @@ export const Profile = () => {
           return;
         }
 
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/user`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           setFetchError(`Error en la petición: ${response.status} ${response.statusText}`);
@@ -43,6 +37,13 @@ export const Profile = () => {
 
         const data = await response.json();
         setUserData(data);
+        setFormData({
+          nombre: data.nombre || "",
+          apellidos: data.apellidos || "",
+          direccion_envio: data.direccion_envio || "",
+          dni: data.dni || "",
+          telefono: data.telefono || "",
+        });
         setLoading(false);
       } catch (error) {
         setFetchError(`Error en la conexión: ${error.message}`);
@@ -53,218 +54,242 @@ export const Profile = () => {
     fetchUser();
   }, []);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert("Error al actualizar: " + (error.msg || "desconocido"));
+        return;
+      }
+
+      const updated = await response.json();
+      setUserData((prev) => ({ ...prev, ...formData }));
+      setIsEditing(false);
+      setUpdateSuccess("Datos actualizados correctamente.");
+      setTimeout(() => setUpdateSuccess(null), 3000);
+    } catch (error) {
+      alert("Error en la conexión: " + error.message);
+    }
+  };
+
   if (loading)
     return (
-      <div
-        style={{
-          backgroundColor: "white",
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          color: "rgb(59,255,231)",
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-          fontSize: "1.2rem",
-        }}
-      >
+      <div style={styles.loading}>
         Cargando perfil...
       </div>
     );
 
   if (fetchError)
     return (
-      <div
-        style={{
-          backgroundColor: "white",
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          color: "red",
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-          fontSize: "1.2rem",
-          padding: 20,
-          textAlign: "center",
-        }}
-      >
+      <div style={styles.error}>
         {fetchError}
       </div>
     );
 
-  const handlePasswordChange = (e) => {
-    e.preventDefault();
-    setPasswordError(null);
-    setPasswordSuccess(null);
-
-    if (!newPassword || !confirmPassword) {
-      setPasswordError("Por favor, rellena ambos campos.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    // Aquí iría la lógica real para cambiar la contraseña, ej fetch al backend
-
-    // Simulación exitosa
-    setPasswordSuccess("Contraseña cambiada correctamente.");
-    setNewPassword("");
-    setConfirmPassword("");
-  };
-
   return (
-    <div
-      style={{
-        backgroundColor: "white",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "40px 20px",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "rgb(10,19,31)",
-          border: "1px solid rgb(59,255,231)",
-          borderRadius: "12px",
-          padding: "40px",
-          maxWidth: "700px",
-          width: "100%",
-          color: "rgb(59,255,231)",
-          boxShadow: "0 0 15px rgba(59,255,231,0.3)",
-        }}
-      >
-        <h2
-          style={{
-            textAlign: "center",
-            marginBottom: "30px",
-            fontSize: "2rem",
-          }}
-        >
-          Perfil de usuario
-        </h2>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Perfil de usuario</h2>
 
-        <section style={{ marginBottom: "30px" }}>
-          <h3
-            style={{
-              borderBottom: "1px solid rgb(59,255,231)",
-              paddingBottom: "6px",
-              marginBottom: "20px",
-              fontSize: "1.3rem",
-            }}
-          >
-            Datos personales
-          </h3>
+        <section style={styles.section}>
+          <h3 style={styles.sectionTitle}>Datos personales</h3>
           <ProfileRow label="Usuario" value={userData.usuario} />
-          <ProfileRow label="Nombre" value={userData.nombre} />
-          <ProfileRow label="Apellidos" value={userData.apellidos} />
+          {isEditing ? (
+            <>
+              <EditableRow name="nombre" value={formData.nombre} onChange={handleInputChange} />
+              <EditableRow name="apellidos" value={formData.apellidos} onChange={handleInputChange} />
+            </>
+          ) : (
+            <>
+              <ProfileRow label="Nombre" value={userData.nombre} />
+              <ProfileRow label="Apellidos" value={userData.apellidos} />
+            </>
+          )}
         </section>
 
-        <section style={{ marginBottom: "30px" }}>
-          <h3
-            style={{
-              borderBottom: "1px solid rgb(59,255,231)",
-              paddingBottom: "6px",
-              marginBottom: "20px",
-              fontSize: "1.3rem",
-            }}
-          >
-            Dirección y contacto
-          </h3>
-          <ProfileRow label="Dirección de envío" value={userData.direccion_envio} />
-          <ProfileRow label="DNI" value={userData.dni} />
-          <ProfileRow label="Teléfono" value={userData.telefono} />
+        <section style={styles.section}>
+          <h3 style={styles.sectionTitle}>Dirección y contacto</h3>
+          {isEditing ? (
+            <>
+              <EditableRow name="direccion_envio" value={formData.direccion_envio} onChange={handleInputChange} />
+              <EditableRow name="dni" value={formData.dni} onChange={handleInputChange} />
+              <EditableRow name="telefono" value={formData.telefono} onChange={handleInputChange} />
+            </>
+          ) : (
+            <>
+              <ProfileRow label="Dirección de envío" value={userData.direccion_envio} />
+              <ProfileRow label="DNI" value={userData.dni} />
+              <ProfileRow label="Teléfono" value={userData.telefono} />
+            </>
+          )}
           <ProfileRow label="Email" value={userData.email} />
         </section>
 
-        <section style={{ marginBottom: "20px" }}>
-          <h3
-            style={{
-              borderBottom: "1px solid rgb(59,255,231)",
-              paddingBottom: "6px",
-              marginBottom: "20px",
-              fontSize: "1.3rem",
-            }}
-          >
-            Credenciales de acceso
-          </h3>
-          <form
-            onSubmit={handlePasswordChange}
-            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
-          >
-            <input
-              type="password"
-              placeholder="Cambiar contraseña"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Confirmar nueva contraseña"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              style={inputStyle}
-              required
-            />
+        {updateSuccess && (
+          <div style={{ color: "lightgreen", textAlign: "center", marginBottom: 10 }}>
+            {updateSuccess}
+          </div>
+        )}
 
-            {passwordError && (
-              <p style={{ color: "red", fontWeight: "600", margin: 0 }}>{passwordError}</p>
-            )}
-            {passwordSuccess && (
-              <p style={{ color: "lightgreen", fontWeight: "600", margin: 0 }}>
-                {passwordSuccess}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              style={{
-                backgroundColor: "rgb(59,255,231)",
-                color: "rgb(10,19,31)",
-                border: "none",
-                padding: "12px",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-                cursor: "pointer",
-                marginTop: "10px",
-              }}
-            >
-              Cambiar contraseña
-            </button>
-          </form>
-        </section>
+        <div style={styles.buttonsContainer}>
+          {isEditing ? (
+            <>
+              <button style={styles.button} onClick={handleSaveChanges}>
+                Guardar cambios
+              </button>
+              <button
+                style={styles.button}
+                onClick={() => {
+                  setIsEditing(false);
+                  setFormData({
+                    nombre: userData.nombre || "",
+                    apellidos: userData.apellidos || "",
+                    direccion_envio: userData.direccion_envio || "",
+                    dni: userData.dni || "",
+                    telefono: userData.telefono || "",
+                  });
+                }}
+              >
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <>
+              <button style={styles.button} onClick={() => setIsEditing(true)}>
+                Editar perfil
+              </button>
+              <button style={styles.button} onClick={() => alert("Cambiar contraseña pulsado")}>
+                Cambiar contraseña
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 const ProfileRow = ({ label, value }) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      padding: "10px 0",
-      borderBottom: "1px solid rgba(59,255,231,0.3)",
-      fontSize: "1.1rem",
-    }}
-  >
+  <div style={styles.row}>
     <span style={{ fontWeight: "600" }}>{label}:</span>
     <span>{value}</span>
   </div>
 );
 
-const inputStyle = {
-  padding: "10px",
-  borderRadius: "6px",
-  border: "1px solid rgb(59,255,231)",
-  backgroundColor: "rgb(10,19,31)",
-  color: "white",
-  fontSize: "1rem",
-  outlineColor: "rgb(59,255,231)",
+const EditableRow = ({ name, value, onChange }) => (
+  <div style={styles.row}>
+    <span style={{ fontWeight: "600", marginRight: 10 }}>{name[0].toUpperCase() + name.slice(1)}:</span>
+    <input
+      name={name}
+      value={value}
+      onChange={onChange}
+      style={{
+        flex: 1,
+        padding: "6px 10px",
+        border: "1px solid rgba(59,255,231,0.6)",
+        borderRadius: "6px",
+        backgroundColor: "#0a1320",
+        color: "rgb(59,255,231)",
+        fontSize: "1rem",
+      }}
+    />
+  </div>
+);
+
+const styles = {
+  page: {
+    backgroundColor: "white",
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    padding: "40px 20px",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  },
+  card: {
+    backgroundColor: "rgb(10,19,31)",
+    border: "1px solid rgb(59,255,231)",
+    borderRadius: "12px",
+    padding: "40px",
+    maxWidth: "700px",
+    width: "100%",
+    color: "rgb(59,255,231)",
+    boxShadow: "0 0 15px rgba(59,255,231,0.3)",
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: "30px",
+    fontSize: "2rem",
+  },
+  section: {
+    marginBottom: "30px",
+  },
+  sectionTitle: {
+    borderBottom: "1px solid rgb(59,255,231)",
+    paddingBottom: "6px",
+    marginBottom: "20px",
+    fontSize: "1.3rem",
+  },
+  row: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px 0",
+    borderBottom: "1px solid rgba(59,255,231,0.3)",
+    fontSize: "1.1rem",
+  },
+  buttonsContainer: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "20px",
+    marginTop: "30px",
+  },
+  button: {
+    backgroundColor: "rgb(59,255,231)",
+    color: "rgb(10,19,31)",
+    border: "none",
+    padding: "12px 24px",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    fontSize: "1.1rem",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
+  },
+  loading: {
+    backgroundColor: "white",
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    color: "rgb(59,255,231)",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    fontSize: "1.2rem",
+  },
+  error: {
+    backgroundColor: "white",
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    color: "red",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    fontSize: "1.2rem",
+    padding: 20,
+    textAlign: "center",
+  },
 };

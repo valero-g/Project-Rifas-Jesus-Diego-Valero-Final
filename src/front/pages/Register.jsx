@@ -49,9 +49,7 @@ export const Register = () => {
 
             if (response.ok) {
                 setShowModal(true);
-                setTimeout(() => {
-                    navigate("/mi-perfil");
-                }, 3000);
+                // No hacemos navegación automática ni cierre automático del modal
             } else {
                 const data = await response.json();
                 setError(data.msg || "Error al registrarse.");
@@ -190,8 +188,25 @@ export const Register = () => {
                         transition: "transform 0.4s ease",
                         animation: "fadeIn 0.5s ease-out"
                     }}>
-                        <h2 style={{ marginBottom: "10px" }}>🎉 ¡Registro exitoso!</h2>
-                        <p>Serás redirigido en unos segundos...</p>
+                        <h2 style={{ marginBottom: "10px" }}>🎉 Usuario creado correctamente</h2>
+                        <p style={{ marginBottom: "20px" }}>Dirígete a <strong>Acceder</strong> para iniciar sesión.</p>
+                        <button
+                            onClick={() => {
+                                setShowModal(false);
+                                navigate("/login");
+                            }}
+                            style={{
+                                backgroundColor: "rgb(59,255,231)",
+                                color: "rgb(10,19,31)",
+                                border: "none",
+                                padding: "10px 20px",
+                                borderRadius: "6px",
+                                fontWeight: "bold",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Ir a Acceder
+                        </button>
                     </div>
                 </div>
             )}
