@@ -86,7 +86,6 @@ export const Home = () => {
 	async function getRifas() {
 		try {
 			const response = await fetch(
-				"https://zany-fishstick-7v57qjv4g7q9cpqgj-3001.app.github.dev/api/rifas/"
 				`${import.meta.env.VITE_BACKEND_URL}/api/rifas/`
 			);
 			if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
