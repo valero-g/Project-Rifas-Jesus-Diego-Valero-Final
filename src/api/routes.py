@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import null, select
-from api.models import db, Usuario, Vendedor, Rifas
+from api.models import Boleto, db, Usuario, Vendedor, Rifas
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 import traceback
@@ -214,25 +214,35 @@ def update_user_by_id(usuario_id):
 # PUT de contraseña
 @api.route('/new-password', methods = ['PUT'])
 @jwt_required()
-def update_password_by_id():
+def update_password():
     try:
         current_id = get_jwt_identity()
         request_body= request.get_json(silent = True)
+        contraseña_actual = request_body["contraseña_actual"]
+        # selección de usuario con el token
         user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
         # Validación de people_id
         if user == None:
             return {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404  
         # Validación del body
-        if "contraseña" not in request_body:
+        if "contraseña_actual" not in request_body.keys() or "contraseña_nueva" not in request_body.keys():
             return {"message" : f"Petición erronea"}, 400 
-        # update de contraseña
-        updated_user = db.session.get(Usuario, current_id)
         
-        bytes = request_body["contraseña"].encode('utf-8')
-        salt = bcrypt.gensalt()
-        hash = bcrypt.hashpw(bytes, salt)
-        updated_user.contraseña = hash.decode('utf-8')
-        db.session.commit()
+        # Chequeo de contraseña
+        # encoding user password
+        userBytes = contraseña_actual.encode('utf-8')
+        user_pass = user.contraseña.encode('utf-8')
+        # checking password
+        result = bcrypt.checkpw(userBytes, user_pass)
+
+        if (result):
+            # update de contraseña
+            updated_user = db.session.get(Usuario, current_id)
+            bytes = request_body["contraseña_nueva"].encode('utf-8')
+            salt = bcrypt.gensalt()
+            hash = bcrypt.hashpw(bytes, salt)
+            updated_user.contraseña = hash.decode('utf-8')
+            db.session.commit()
 
         # Retornamos el usuario actualizado
         user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
@@ -281,7 +291,7 @@ def login():
     
 
 # GET de usuario 
-@api.route("/user/", methods=["GET"])
+@api.route("/user", methods=["GET"])
 @jwt_required()
 def get_user_by_id():
     try:
@@ -292,7 +302,7 @@ def get_user_by_id():
         if (user != None):
             return user.serialize(), 200
         else:
-            return {"message":"No access to secret message"}, 404
+            return {"message":"El usuario no existe"}, 404
     
     except Exception as e:
         print("Error:", e)
@@ -345,6 +355,48 @@ def generate_new_password():
     except Exception as e:
         print("Error:", e)
         return {"message":"No se puede enviar mail para resetear password"}, 500
+
+# SPRINT 2: ENDPOINTS DE BOLETOS
+
+# GET de Boletos reservados o comprados de una rifa
+@api.route('/boletos-ocupados/<int:rifa_id>', methods = ['GET'])
+def get_boletos_ocupados(rifa_id):
+    try:
+        boletos_ocupados = db.session.execute(select(Boleto).where(Boleto.rifa_id == rifa_id)).scalars().all()
+        boletos_ocupados = list(map(lambda x: x.serialize()), boletos_ocupados)
+        print(boletos_ocupados)
+        lista_numeros_ocupados = []
+        for boleto in boletos_ocupados:
+            lista_numeros_ocupados.append(boleto.numero)
+        
+        return {"Rifa_id": rifa_id, "Numeros_ocupados": lista_numeros_ocupados}, 200
+
+    except Exception as e:
+        print("Error", e)
+        return {"message": "Error recuperando los boletos ocupados"}, 500
+
+# POST de reservar un boleto
+@api.route('/boleto', methods = ['GET'])
+def add_boleto():
+    try:
+        request_body =  request.get_json(silent = True)
+        # Validación de body
+        if request_body == None:
+            return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
+             return {"message" : "Petición errónea. Body incorrecto"}, 400
+        # Validación de no existencia del boleto
+        boleto = db.session.query(select(Boleto).where(Boleto.numero == request_body["numero"])).scalar_one_or_none()
+        if boleto != None:
+            return {"message":"El boleto ya existe"}, 404
+        # Añadimos boleto
+        boleto = Boleto(numero = request_body["numero"], usuario_id = request_body["usuario_id"],rifa_id = request_body["rifa_id"],confirmado = request_body["confirmado"] )
+        db.session.add(boleto)
+        db.session.commit()
+        return jsonify(boleto), 200
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error reservando boleto"}, 500
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
