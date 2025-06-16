@@ -92,7 +92,7 @@ RESPUESTAS NEGATIVAS: {"message": "No se encuentra el usuario"}, 401 /  {"messag
 
 ## 3) Endpoints de Boletos  
 ### /boletos-ocupados/<int:rifa_id>
-DESCRIPCION: Devuelve un vector con los números reservados o comprados de una rifa    
+DESCRIPCION: Devuelve un vector con los números reservados o comprados de una rifa  
 TIPO: GET  
 REQUIERE TOKEN: SI   
 BODY:  N/A  
@@ -101,7 +101,7 @@ RESPUESTA POSITIVA: {"Rifa_id": rifa_id, "Numeros_ocupados": lista_numeros_ocupa
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 /   {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos ocupados"}, 500  
 
 ### /boletos-usuario/<int:usuario_id>
-DESCRIPCION: Devuelve un vector con los números reservados o comprados de un usuario
+DESCRIPCION: Devuelve un vector con los números reservados o comprados de un usuario  
 TIPO: GET  
 REQUIERE TOKEN: SI   
 BODY:  N/A  
@@ -110,7 +110,7 @@ RESPUESTA POSITIVA: jsonify(boletos_usuario), 200
 RESPUESTAS NEGATIVAS:  {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "El usuario no existe"}, 400 /   {"message": "Error recuperando los boletos del usuario"}, 500  
 
 ### /boleto
-DESCRIPCION: Añade un boleto
+DESCRIPCION: Añade un boleto  
 TIPO: POST  
 REQUIERE TOKEN: SI   
 BODY:  
@@ -125,7 +125,7 @@ RESPUESTA POSITIVA: jsonify(boleto.serialize()), 200
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message" : "Petición errónea. Body incorrecto"}, 400 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "La rifa no exsite"}, 400 / {"message": "El número es mayor que el número máximo de boletos de la rifa"}, 400 / {"message":"El boleto ya existe"}, 404 / {"message":"Error reservando boleto"}, 500  
 
 ### /boleto
-DESCRIPCION: Modifica el CAMPO "confirmado" del boleto. SOLO SE PUEDE MODIFICAR ESE CAMPO. Este endpoint servirá para confirmar la compra de un boleto reservado
+DESCRIPCION: Modifica el CAMPO "confirmado" del boleto. SOLO SE PUEDE MODIFICAR ESE CAMPO. Este endpoint servirá para confirmar la compra de un boleto reservado  
 TIPO: PUT  
 REQUIERE TOKEN: SI   
 BODY:  
@@ -140,7 +140,7 @@ RESPUESTA POSITIVA: jsonify(boleto.serialize()), 200
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message" : "Petición errónea. Body incorrecto"}, 400 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "La rifa no exsite"}, 400 / {"message":"El boleto no existe"}, 400 / {"message":"Error modificando boleto"}, 500  
 
 ### /boleto
-DESCRIPCION: Elimina un Boleto. SOLO SE PUEDEN ELIMINAR BOLETOS NO COMPRADOS ("confirmado" = False)
+DESCRIPCION: Elimina un Boleto. SOLO SE PUEDEN ELIMINAR BOLETOS NO COMPRADOS ("confirmado" = False)  
 TIPO: DELETE  
 REQUIERE TOKEN: SI   
 BODY:  
