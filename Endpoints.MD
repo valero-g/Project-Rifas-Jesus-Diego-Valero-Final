@@ -26,7 +26,7 @@ RESPUESTAS NEGATIVAS: {"message": "El request_body está vacio"}, 400  / {"messa
 
 ### /api/user/<int:usuario_id>
 DESCRIPCION: Edita los datos de un usuario excepto email y contraseña  
-TIPO: PUT
+TIPO: PUT  
 REQUIERE TOKEN: SI  
 BODY:  
 {  
@@ -44,7 +44,7 @@ RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {usuario_id} no pudo ser enc
 
 ### /api/new-password
 DESCRIPCION: Edita la contraseña de un usuario  
-TIPO: PUT
+TIPO: PUT  
 REQUIERE TOKEN: SI  
 BODY:  
 {  
@@ -65,7 +65,7 @@ RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {current_id} no pudo ser enc
 
 ## 2) Endpoints de Login  
 ### /api/login  
-DESCRIPCION: HAce login del usuario o contraseña   
+DESCRIPCION: Hace login del usuario o contraseña   
 TIPO: POST  
 REQUIERE TOKEN: NO  
 BODY:  
@@ -79,7 +79,7 @@ RESPUESTA POSITIVA: {jsonify({"token": access_token, "user_id": user.id}), 200
 RESPUESTAS NEGATIVAS: {"message": "User cannot be found"}, 401  / {"message": "Cuenta inactiva. Verifique mail para activarla"}, 401  /  {"message": "Usuario, Email o contraseña erroneos"}, 400 / {"message":"No se puede completar la operacion"}, 500  
 
 ### api/generate-password
-DESCRIPCION: Envia un email a la cuenta de usuario con un password random 
+DESCRIPCION: Envia un email a la cuenta de usuario con un password random  
 TIPO: POST  
 REQUIERE TOKEN: NO  
 BODY:  
