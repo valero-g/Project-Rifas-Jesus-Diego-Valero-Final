@@ -43,7 +43,7 @@ RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {usuario_id} no pudo ser enc
 
 
 ### /api/new-password
-DESCRIPCION: Edita la contraseña de un usuario 
+DESCRIPCION: Edita la contraseña de un usuario  
 TIPO: PUT
 REQUIERE TOKEN: SI  
 BODY:  
@@ -53,5 +53,13 @@ BODY:
 }  
 
 RESPUESTA POSITIVA: {"message": "contraseña actualizada"},200  
+RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404 / {"message" : f"Petición erronea"}, 400  /  {"message" : f"Contraseña actual erronea"}, 401 / {"message": "Error actualizando usuario"}, 500
+
+## /api/user  
+DESCRIPCION: Retorna el usuario del token  
+TIPO: GET
+REQUIERE TOKEN: SI  
+BODY:  N/A  
+RESPUESTA POSITIVA: user.serialize(), 200 
 RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404 / {"message" : f"Petición erronea"}, 400  /  {"message" : f"Contraseña actual erronea"}, 401 / {"message": "Error actualizando usuario"}, 500
 
