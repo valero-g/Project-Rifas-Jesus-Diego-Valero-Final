@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx"
 import React from 'react';
 
-const CardHome = ({ premio, fecha, url }) => {
+const CardHome = ({ nombre, fecha, url, onInfoClick }) => {
 
     const navigate = useNavigate();
     const { store } = useGlobalReducer();
@@ -57,29 +57,52 @@ const CardHome = ({ premio, fecha, url }) => {
                     ¡Participa y gana!
                 </h5>
                 <p style={{ margin: 0 }}>
-                    <strong>Premio:</strong> {premio}
+                    <strong>Premio:</strong> {nombre}
                 </p>
                 <p style={{ margin: "5px 0 15px 0" }}>
                     <strong>Fecha:</strong> {fecha}
                 </p>
-                <button
-                    onClick={handleClick}
-                    style={{
-                        backgroundColor: "#3BFFE7",
-                        color: "#000000",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "10px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        width: "100%",
-                        transition: "background 0.3s ease"
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2fd8c3"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3BFFE7"}
-                >
-                    Comprar
-                </button>
+                <div className="d-flex justify-content-between align-items-center">
+                    <button onClick={onInfoClick}
+                        style={{
+                            backgroundColor: "#3BFFE7",
+                            color: "#000000",
+                            border: "none",
+                            width: "25px",
+                            height: "25px",
+                            borderRadius: "50%",
+                            fontWeight: "bold",
+                            fontSize: "20px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "background 0.3s ease",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2fd8c3"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3BFFE7"}
+                    >
+                        i
+                    </button>
+                    <button
+                        onClick={handleClick}
+                        style={{
+                            backgroundColor: "#3BFFE7",
+                            color: "#000000",
+                            border: "none",
+                            padding: "10px 20px",
+                            borderRadius: "10px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            width: "70%",
+                            transition: "background 0.3s ease"
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2fd8c3"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3BFFE7"}
+                    >
+                        Comprar
+                    </button>
+                </div>
             </div>
         </div>
     );
