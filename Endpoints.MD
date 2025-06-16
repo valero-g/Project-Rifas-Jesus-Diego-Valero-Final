@@ -55,11 +55,37 @@ BODY:
 RESPUESTA POSITIVA: {"message": "contraseña actualizada"},200  
 RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404 / {"message" : f"Petición erronea"}, 400  /  {"message" : f"Contraseña actual erronea"}, 401 / {"message": "Error actualizando usuario"}, 500
 
-## /api/user  
-DESCRIPCION: Retorna el usuario del token  
-TIPO: GET
+### /api/user  
+DESCRIPCION: Retorna el usuario contenido en el token  
+TIPO: GET  
 REQUIERE TOKEN: SI  
 BODY:  N/A  
-RESPUESTA POSITIVA: user.serialize(), 200 
+RESPUESTA POSITIVA: user.serialize(), 200  
 RESPUESTAS NEGATIVAS: {"message" : f" El usuario ID {current_id} no pudo ser encontrado. "}, 404 / {"message" : f"Petición erronea"}, 400  /  {"message" : f"Contraseña actual erronea"}, 401 / {"message": "Error actualizando usuario"}, 500
 
+## 2) Endpoints de Login  
+### /api/login  
+DESCRIPCION: HAce login del usuario o contraseña   
+TIPO: POST  
+REQUIERE TOKEN: NO  
+BODY:  
+{  
+                "usuario": "xxxx",    
+                "email": "xxxx",  
+                "contraseña": "xxxx"    
+}  
+
+RESPUESTA POSITIVA: {jsonify({"token": access_token, "user_id": user.id}), 200  
+RESPUESTAS NEGATIVAS: {"message": "User cannot be found"}, 401  / {"message": "Cuenta inactiva. Verifique mail para activarla"}, 401  /  {"message": "Usuario, Email o contraseña erroneos"}, 400 / {"message":"No se puede completar la operacion"}, 500  
+
+### api/generate-password
+DESCRIPCION: Envia un email a la cuenta de usuario con un password random 
+TIPO: POST  
+REQUIERE TOKEN: NO  
+BODY:  
+{  
+                "email": "xxxx",  
+}  
+
+RESPUESTA POSITIVA: {"message":"Email enviado para resetear contraseña"}, 200  
+RESPUESTAS NEGATIVAS: {"message": "No se encuentra el usuario"}, 401 /  {"message":"No se puede enviar mail para resetear password"}, 500  
