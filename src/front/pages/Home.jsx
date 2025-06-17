@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CardHome from "../components/CardHome.jsx";
 
-// 🔁 BannerCarousel se define FUERA del componente Home
+
 function BannerCarousel() {
 	const banners = [
 		{
@@ -74,10 +74,61 @@ function BannerCarousel() {
 	);
 }
 
-// 🏠 Componente principal Home
+
 export const Home = () => {
 	const { store, dispatch } = useGlobalReducer();
 	const [rifas, setRifas] = useState([]);
+
+	const [showPopup, setShowPopup] = useState(false);
+	const [popupContent, setPopupContent] = useState("");
+
+	const renderPopup = () => {
+
+		if (!showPopup) return null;
+
+		return (
+
+		<div
+			style={{
+				position: "fixed",
+				top: 0, left: 0,
+				width: "100%", height: "100%",
+				backgroundColor: "rgba(0, 0, 0, 0.6)",
+				display: "flex", justifyContent: "center", alignItems: "center",
+				zIndex: 9999,
+			}}
+		>
+			<div
+				style={{
+					backgroundColor: "#fff",
+					padding: "20px",
+					borderRadius: "12px",
+					width: "300px",
+					textAlign: "center",
+					boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
+				}}
+			>
+				<h4>Descripción del sorteo</h4>
+				<p>{popupContent}</p>
+				<button
+					onClick={() => setShowPopup(false)}
+					style={{
+						marginTop: "10px",
+						padding: "8px 16px",
+						backgroundColor: "#3BFFE7",
+						border: "none",
+						borderRadius: "8px",
+						cursor: "pointer",
+						fontWeight: "bold",
+					}}
+				>
+					Cerrar
+				</button>
+			</div>
+		</div>
+	);
+}
+
 
 	useEffect(() => {
 		getRifas();
@@ -161,16 +212,20 @@ export const Home = () => {
 					{rifas.map((rifa) => (
 						<div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
 							<CardHome
-								premio={rifa.premio_rifa}
+								nombre={rifa.nombre_rifa}
 								fecha={rifa.fecha_de_sorteo}
 								url={rifa.url_premio}
 								dispatch={dispatch}
+								onInfoClick={() => {
+									setPopupContent(`${rifa.premio_rifa}`);
+									setShowPopup(true);
+								}}
 							/>
 						</div>
 					))}
 				</div>
 			</div>
-
+			{renderPopup()}
 			<style>
 				{`
 			@keyframes fadeInDown {
