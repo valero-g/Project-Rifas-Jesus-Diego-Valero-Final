@@ -150,5 +150,15 @@ BODY:
     "usuario_id":22  
 }  
 
-RESPUESTA POSITIVA: {"message": "Boleto eliminado"}, 200
-RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message" : "Petición errónea. Body incorrecto"}, 400 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "La rifa no existe"}, 400 / {"message":"El boleto no existe"}, 400 / {"message": "El boleto está confirmado como comprado"}, 401 / {"message":"Error borrando boleto"}, 500
+RESPUESTA POSITIVA: {"message": "Boleto eliminado"}, 200  
+RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message" : "Petición errónea. Body incorrecto"}, 400 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "La rifa no existe"}, 400 / {"message":"El boleto no existe"}, 400 / {"message": "El boleto está confirmado como comprado"}, 401 / {"message":"Error borrando boleto"}, 500  
+
+
+### /boletos/<int:usuario_id>
+DESCRIPCION: Elimina TODOS los boletos de un usuario cuyo "confirmado" sea False (limpieza de tabla
+TIPO: DELETE  
+REQUIERE TOKEN: SI   
+BODY:  N/A  
+
+RESPUESTA POSITIVA: jsonify(boletos_usuario), 200 (se retornan los boletos con "confirmado" =True que aún tiene el usuario
+RESPUESTAS NEGATIVAS: {"message": "Error en la autentificación de usuario"}, 401 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "El usuario no tiene boletos"}, 401 / {"message":"Error borrando boletos"}, 500  
