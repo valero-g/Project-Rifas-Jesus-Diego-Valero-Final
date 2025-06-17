@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
 from jwt import ExpiredSignatureError, InvalidTokenError
-from sqlalchemy import null, select
+from sqlalchemy import and_, null, select
 from api.models import Boleto, db, Usuario, Vendedor, Rifas
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
@@ -94,7 +94,7 @@ def get_rifas():
         return {"message": f"Error: No se pueden leer rifas. Fallo interno"}, 500
 
 # Endpoint de Usuario
-
+######################
 
 @api.route('/registro', methods=['POST'])
 def add_usuario():
@@ -138,7 +138,7 @@ def add_usuario():
     except Exception as e:
         print("Error :", e)
         traceback.print_exc()
-        return {"message": "No se pudo añadir usuario"}, 404
+        return {"message": "No se pudo añadir usuario"}, 500
 
 # Email confirmation
 @api.route('/verify-email', methods=['GET'])
@@ -187,7 +187,10 @@ def update_user_by_id(usuario_id):
             return {"message" : f" El usuario ID {usuario_id} no pudo ser encontrado. "}, 404  
         # Validación del body
         if "email" not in request_body or "usuario" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
-            return {"message" : f"Wrong request"}, 400 
+            return {"message" : f"Request erroneo"}, 400
+        # Validación de usuario_id
+        if int(current_id) != usuario_id:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400 
         # Update de la tabla
         updated_user = db.session.get(Usuario, usuario_id)
         updated_user.usuario = request_body["usuario"] 
@@ -243,6 +246,8 @@ def update_password():
             hash = bcrypt.hashpw(bytes, salt)
             updated_user.contraseña = hash.decode('utf-8')
             db.session.commit()
+        else:
+            return {"message" : f"Contraseña actual erronea"}, 401
 
         # Retornamos el usuario actualizado
         user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
@@ -283,11 +288,11 @@ def login():
         result = bcrypt.checkpw(userBytes, user_pass)
         if (result):
             access_token = create_access_token(identity=str(user.id))
-            return jsonify({"token": access_token, "user_id": user.id})
+            return jsonify({"token": access_token, "user_id": user.id}), 200
         else:
             return {"message": "Usuario, Email o contraseña erroneos"}, 400
     except:
-        return {"message":"No se puede completar la operacion"}, 404
+        return {"message":"No se puede completar la operacion"}, 500
     
 
 # GET de usuario 
@@ -336,7 +341,7 @@ def generate_new_password():
         user = db.session.execute(select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
         # validacion de mail 
         if user == None:
-            return {"message": "User cannot be found"}, 401
+            return {"message": "No se encuentra el usuario"}, 401
         # Envio de email con password random
         new_password = generar_clave(10)
         print("El nuevo password es: " + new_password)
@@ -360,14 +365,27 @@ def generate_new_password():
 
 # GET de Boletos reservados o comprados de una rifa
 @api.route('/boletos-ocupados/<int:rifa_id>', methods = ['GET'])
+@jwt_required()
 def get_boletos_ocupados(rifa_id):
     try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        print(current_id)
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        print(user.serialize())
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        if rifa == None:
+            return{"message": "La rifa no existe"}, 400
         boletos_ocupados = db.session.execute(select(Boleto).where(Boleto.rifa_id == rifa_id)).scalars().all()
-        boletos_ocupados = list(map(lambda x: x.serialize()), boletos_ocupados)
+        boletos_ocupados = list(map(lambda x: x.serialize(), boletos_ocupados))
         print(boletos_ocupados)
         lista_numeros_ocupados = []
         for boleto in boletos_ocupados:
-            lista_numeros_ocupados.append(boleto.numero)
+            lista_numeros_ocupados.append(boleto["numero"])
         
         return {"Rifa_id": rifa_id, "Numeros_ocupados": lista_numeros_ocupados}, 200
 
@@ -375,28 +393,184 @@ def get_boletos_ocupados(rifa_id):
         print("Error", e)
         return {"message": "Error recuperando los boletos ocupados"}, 500
 
+# GET de Boletos de usuario
+@api.route('/boletos-usuario/<int:usuario_id>', methods = ['GET'])
+@jwt_required()
+def get_boletos_de_usuario(usuario_id):
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        # Validacion de id de usuario
+        if int(current_id) != usuario_id:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        
+        # Validacion de user
+        if (user == None):
+            return {"message": "El usuario no existe"}, 400
+        boletos_usuario = db.session.execute(select(Boleto).where(Boleto.usuario_id == current_id)).scalars().all()
+        boletos_usuario = list(map(lambda x: x.serialize(), boletos_usuario))
+        
+        return jsonify(boletos_usuario), 200
+
+    except Exception as e:
+        print("Error", e)
+        return {"message": "Error recuperando los boletos del usuario"}, 500
+
+
 # POST de reservar un boleto
-@api.route('/boleto', methods = ['GET'])
+@api.route('/boleto', methods = ['POST'])
+@jwt_required()
 def add_boleto():
     try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
         request_body =  request.get_json(silent = True)
+
         # Validación de body
         if request_body == None:
             return {"message" : "Petición errónea. Body incorrecto"}, 400
         if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
              return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if int(current_id) != request_body["usuario_id"]:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        if rifa == None:
+            return{"message": "La rifa no exsite"}, 400
+        # Validación de número
+        if request_body["numero"]> rifa.numero_max_boletos:
+            return {"message": "El número es mayor que el número máximo de boletos de la rifa"}, 400
         # Validación de no existencia del boleto
-        boleto = db.session.query(select(Boleto).where(Boleto.numero == request_body["numero"])).scalar_one_or_none()
+        boleto = db.session.execute(select(Boleto).where(Boleto.numero == request_body["numero"])).scalar_one_or_none()
         if boleto != None:
             return {"message":"El boleto ya existe"}, 404
         # Añadimos boleto
         boleto = Boleto(numero = request_body["numero"], usuario_id = request_body["usuario_id"],rifa_id = request_body["rifa_id"],confirmado = request_body["confirmado"] )
         db.session.add(boleto)
         db.session.commit()
-        return jsonify(boleto), 200
+        return jsonify(boleto.serialize()), 200
     except Exception as e:
         print("Error: ",e)
         return {"message":"Error reservando boleto"}, 500
+
+# PUT de boleto
+@api.route('/boleto', methods = ['PUT'])
+@jwt_required()
+def edit_boleto():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        request_body =  request.get_json(silent = True)
+
+        # Validación de body
+        if request_body == None:
+            return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
+             return {"message" : "Petición errónea. Body incorrecto"}, 400
+        # Validación de usuario
+        if int(current_id) != request_body["usuario_id"]:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        if rifa == None:
+            return{"message": "La rifa no exsite"}, 400
+        # Validación de no existencia del boleto
+        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
+        if boleto == None:
+            return {"message":"El boleto no existe"}, 400
+        # Editamos boleto
+        boleto.confirmado = request_body["confirmado"]
+        db.session.commit()
+        return jsonify(boleto.serialize()), 200
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error modificando boleto"}, 500
+
+
+# DELETE de boleto
+@api.route('/boleto', methods = ['DELETE'])
+@jwt_required()
+def delete_boleto():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        print(id)
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        request_body =  request.get_json(silent = True)
+        # Validación de body
+        if request_body == None:
+            return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys():
+             return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if int(current_id) != request_body["usuario_id"]:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        if rifa == None:
+            return {"message": "La rifa no existe"}, 400
+        # Validación de no existencia del boleto
+        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.numero == request_body["numero"]))).scalar_one_or_none()
+        if boleto == None:
+            return {"message":"El boleto no existe"}, 400
+        # Borramos boleto
+        if boleto.confirmado == False:
+            db.session.delete(boleto)
+            db.session.commit()
+            return {"message": "Boleto eliminado"}, 200
+        else:
+            return {"message": "El boleto está confirmado como comprado"}, 401
+
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error borrando boleto"}, 500
+    
+
+# DELETE de boleto por usuario
+@api.route('/boletos/<int:usuario_id>', methods = ['DELETE'])
+@jwt_required()
+def delete_boleto_by_userid(usuario_id):
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+
+
+        if int(current_id) != usuario_id:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+
+        # Validación de no existencia del boleto
+        boletos_usuario = db.session.execute(select(Boleto).where(Boleto.usuario_id == usuario_id)).scalars().all()
+        if boletos_usuario == None:
+            return {"message": "El usuario no tiene boletos"}, 401
+        
+        # Borramos boletos
+        for boleto in boletos_usuario:
+            if boleto.confirmado == False:
+                db.session.delete(boleto)
+                db.session.commit()
+        # Retornamos nueva lista de boletos
+        boletos_usuario = db.session.execute(select(Boleto).where(Boleto.usuario_id == usuario_id)).scalars().all()
+        boletos_usuario = list(map(lambda x: x.serialize(), boletos_usuario))
+        return jsonify(boletos_usuario), 200
+
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error borrando boletos"}, 500
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
