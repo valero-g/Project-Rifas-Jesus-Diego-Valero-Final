@@ -142,6 +142,8 @@ export const Home = () => {
 			if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 			const data = await response.json();
 			setRifas(data);
+			dispatch({type: 'dump_rifas', payload: data});
+			console.log(store);
 		} catch (error) {
 			console.error("Error al obtener las rifas:", error);
 		}

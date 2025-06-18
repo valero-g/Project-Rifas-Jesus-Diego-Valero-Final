@@ -92,6 +92,20 @@ def get_rifas():
     except Exception as e:
         print("Error:", e)
         return {"message": f"Error: No se pueden leer rifas. Fallo interno"}, 500
+    
+@api.route('/rifa/<int:rifa_id>', methods=['GET'])
+def get_rifa(rifa_id):
+    try:
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validacion
+        if rifa == None:
+            return {"message": "No se encuentra rifa"}, 404
+        # Respuesta
+        return jsonify(rifa.serialize()), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
 
 # Endpoint de Usuario
 ######################
