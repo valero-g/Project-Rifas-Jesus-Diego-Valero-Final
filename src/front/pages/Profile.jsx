@@ -7,11 +7,16 @@ export const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(null);
+
+  // Estados para el modal de cambio de contraseña
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
     actual: "",
     nueva: "",
+    confirmarNueva: "", // Campo para confirmar la nueva contraseña
   });
+  const [passwordModalError, setPasswordModalError] = useState(null);
+  const [passwordModalSuccess, setPasswordModalSuccess] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,13 +39,15 @@ export const Profile = () => {
         });
 
         if (!response.ok) {
-          setFetchError(`Error en la petición: ${response.status} ${response.statusText}`);
+          const errorData = await response.json(); // Leer el mensaje de error del backend
+          setFetchError(`Error al cargar datos: ${errorData.message || response.statusText}`);
           setLoading(false);
           return;
         }
 
         const data = await response.json();
         setUserData(data);
+        // Inicializar formData con los datos actuales del usuario
         setFormData({
           nombre: data.nombre || "",
           apellidos: data.apellidos || "",
@@ -71,57 +78,96 @@ export const Profile = () => {
   const handleSaveChanges = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+      if (!token) {
+        alert("No se encontró token de autenticación para guardar los cambios.");
+        return;
+      }
+
+      // Preparamos los datos a enviar: solo los campos editables
+      // Incluimos 'usuario' y 'email' con sus valores originales para cumplir con la validación del backend
+      const dataToUpdate = {
+        nombre: formData.nombre,
+        apellidos: formData.apellidos,
+        direccion_envio: formData.direccion_envio,
+        dni: formData.dni,
+        telefono: formData.telefono,
+        usuario: userData.usuario, // Se envía para la validación del backend, aunque no sea editable
+        email: userData.email,     // Se envía para la validación del backend, aunque no sea editable
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/${userData.id}`, { // Usamos el ID del usuario para el endpoint PUT
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToUpdate),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        alert("Error al actualizar: " + (error.msg || "desconocido"));
+        alert("Error al actualizar: " + (error.message || "Error desconocido."));
         return;
       }
 
-      const updated = await response.json();
+      // Si la actualización fue exitosa, actualizamos userData con los nuevos datos del formulario
       setUserData((prev) => ({ ...prev, ...formData }));
       setIsEditing(false);
       setUpdateSuccess("Datos actualizados correctamente.");
-      setTimeout(() => setUpdateSuccess(null), 3000);
+      setTimeout(() => setUpdateSuccess(null), 3000); // El mensaje desaparece después de 3 segundos
     } catch (error) {
       alert("Error en la conexión: " + error.message);
     }
   };
 
   const handleUpdatePassword = async () => {
+    setPasswordModalError(null); // Limpiar errores anteriores
+    setPasswordModalSuccess(null); // Limpiar éxitos anteriores
+
+    // Validaciones en frontend
+    if (!passwordData.actual || !passwordData.nueva || !passwordData.confirmarNueva) {
+      setPasswordModalError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    if (passwordData.nueva !== passwordData.confirmarNueva) {
+      setPasswordModalError("La nueva contraseña y su confirmación no coinciden.");
+      return;
+    }
+
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/update_password`, {
+      if (!token) {
+        setPasswordModalError("No se encontró token de autenticación.");
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          actual: passwordData.actual,
-          nueva: passwordData.nueva,
+          contraseña_actual: passwordData.actual, // Coincide con el backend
+          contraseña_nueva: passwordData.nueva,   // Coincide con el backend
         }),
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        alert("Error al cambiar la contraseña: " + (data.msg || "desconocido"));
+        const errorData = await response.json();
+        setPasswordModalError(errorData.message || "Error desconocido al cambiar la contraseña.");
         return;
       }
 
-      alert("Contraseña actualizada correctamente.");
-      setPasswordData({ actual: "", nueva: "" });
-      setShowPasswordModal(false);
+      setPasswordModalSuccess("Contraseña actualizada correctamente.");
+      setPasswordData({ actual: "", nueva: "", confirmarNueva: "" }); // Limpiar campos
+      setTimeout(() => {
+        setShowPasswordModal(false); // Cerrar modal después de un éxito
+        setPasswordModalSuccess(null);
+      }, 2000); // Dar tiempo para que el usuario vea el mensaje de éxito
     } catch (error) {
-      alert("Error en la conexión: " + error.message);
+      setPasswordModalError("Error en la conexión o al procesar la solicitud: " + error.message);
     }
   };
 
@@ -139,6 +185,11 @@ export const Profile = () => {
       </div>
     );
 
+  // Asegurarse de que userData no sea null antes de intentar acceder a sus propiedades
+  if (!userData) {
+    return <div style={styles.error}>No se pudo cargar la información del usuario.</div>;
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
@@ -146,6 +197,7 @@ export const Profile = () => {
 
         <section style={styles.section}>
           <h3 style={styles.sectionTitle}>Datos personales</h3>
+          {/* Usuario y Email siempre como ProfileRow (no editables) */}
           <ProfileRow label="Usuario" value={userData.usuario} />
           {isEditing ? (
             <>
@@ -175,6 +227,7 @@ export const Profile = () => {
               <ProfileRow label="Teléfono" value={userData.telefono} />
             </>
           )}
+          {/* Email siempre como ProfileRow (no editable) */}
           <ProfileRow label="Email" value={userData.email} />
         </section>
 
@@ -192,6 +245,7 @@ export const Profile = () => {
                 style={styles.button}
                 onClick={() => {
                   setIsEditing(false);
+                  // Restaurar formData a los datos originales de userData al cancelar la edición
                   setFormData({
                     nombre: userData.nombre || "",
                     apellidos: userData.apellidos || "",
@@ -217,6 +271,18 @@ export const Profile = () => {
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <h3 style={{ marginBottom: 20 }}>Cambiar contraseña</h3>
+
+            {passwordModalError && (
+              <div style={styles.modalMessageError}>
+                {passwordModalError}
+              </div>
+            )}
+            {passwordModalSuccess && (
+              <div style={styles.modalMessageSuccess}>
+                {passwordModalSuccess}
+              </div>
+            )}
+
             <input
               type="password"
               name="actual"
@@ -233,11 +299,24 @@ export const Profile = () => {
               onChange={handlePasswordChange}
               style={styles.modalInput}
             />
+            <input
+              type="password"
+              name="confirmarNueva"
+              placeholder="Confirma nueva contraseña"
+              value={passwordData.confirmarNueva}
+              onChange={handlePasswordChange}
+              style={styles.modalInput}
+            />
             <div style={styles.modalButtons}>
               <button style={styles.button} onClick={handleUpdatePassword}>
                 Actualizar contraseña
               </button>
-              <button style={styles.button} onClick={() => setShowPasswordModal(false)}>
+              <button style={styles.button} onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordData({ actual: "", nueva: "", confirmarNueva: "" }); // Limpiar campos al cancelar
+                  setPasswordModalError(null); // Limpiar mensajes de error/éxito del modal
+                  setPasswordModalSuccess(null);
+              }}>
                 Cancelar
               </button>
             </div>
@@ -396,5 +475,15 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "10px",
+  },
+  modalMessageError: {
+    color: "red",
+    marginBottom: "15px",
+    fontWeight: "bold",
+  },
+  modalMessageSuccess: {
+    color: "lightgreen",
+    marginBottom: "15px",
+    fontWeight: "bold",
   },
 };
