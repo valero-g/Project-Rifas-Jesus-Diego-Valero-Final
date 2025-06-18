@@ -100,7 +100,6 @@ export const Login = () => {
             // Guardamos token y ponemos el login = True
             sessionStorage.setItem("token", data.token);
             dispatch({ type: "logIn"});
-            console.log(store);
             const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
@@ -118,7 +117,6 @@ export const Login = () => {
             // Guardaos los datos de usuario
             setUserData(user);
             dispatch({type: "setUser", payload: user});
-            console.log(store);
             setError(null);
 
             // Redirigir a la página de perfil tras login exitoso
