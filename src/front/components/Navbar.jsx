@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import logo from "../assets/img/4Boleeks.png";
 import "../index.css";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 const navItems = [
     { to: "/ultimos-resultados", label: "Últimos resultados" },
@@ -15,6 +16,7 @@ export const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
+    const { store, dispatch } = useGlobalReducer();
 
     useEffect(() => {
         const handleClickOutside = (e) => {

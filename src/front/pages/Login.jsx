@@ -117,7 +117,6 @@ export const Login = () => {
             // Guardaos los datos de usuario
             setUserData(user);
             dispatch({type: "setUser", payload: user});
-            console.log(store);
             setError(null);
 
             // Redirigir a la página de perfil tras login exitoso

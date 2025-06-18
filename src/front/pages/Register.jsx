@@ -14,7 +14,6 @@ export const Register = () => {
         contraseña: "",
         confirmar_contraseña: "",
     });
-
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
