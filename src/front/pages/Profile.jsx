@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-
 export const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
@@ -8,6 +7,11 @@ export const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    actual: "",
+    nueva: "",
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -59,6 +63,11 @@ export const Profile = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSaveChanges = async () => {
     try {
       const token = sessionStorage.getItem("token");
@@ -82,6 +91,35 @@ export const Profile = () => {
       setIsEditing(false);
       setUpdateSuccess("Datos actualizados correctamente.");
       setTimeout(() => setUpdateSuccess(null), 3000);
+    } catch (error) {
+      alert("Error en la conexión: " + error.message);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/update_password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          actual: passwordData.actual,
+          nueva: passwordData.nueva,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert("Error al cambiar la contraseña: " + (data.msg || "desconocido"));
+        return;
+      }
+
+      alert("Contraseña actualizada correctamente.");
+      setPasswordData({ actual: "", nueva: "" });
+      setShowPasswordModal(false);
     } catch (error) {
       alert("Error en la conexión: " + error.message);
     }
@@ -149,9 +187,7 @@ export const Profile = () => {
         <div style={styles.buttonsContainer}>
           {isEditing ? (
             <>
-              <button style={styles.button} onClick={handleSaveChanges}>
-                Guardar cambios
-              </button>
+              <button style={styles.button} onClick={handleSaveChanges}>Guardar cambios</button>
               <button
                 style={styles.button}
                 onClick={() => {
@@ -170,16 +206,44 @@ export const Profile = () => {
             </>
           ) : (
             <>
-              <button style={styles.button} onClick={() => setIsEditing(true)}>
-                Editar perfil
-              </button>
-              <button style={styles.button} onClick={() => alert("Cambiar contraseña pulsado")}>
-                Cambiar contraseña
-              </button>
+              <button style={styles.button} onClick={() => setIsEditing(true)}>Editar perfil</button>
+              <button style={styles.button} onClick={() => setShowPasswordModal(true)}>Cambiar contraseña</button>
             </>
           )}
         </div>
       </div>
+
+      {showPasswordModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3 style={{ marginBottom: 20 }}>Cambiar contraseña</h3>
+            <input
+              type="password"
+              name="actual"
+              placeholder="Contraseña actual"
+              value={passwordData.actual}
+              onChange={handlePasswordChange}
+              style={styles.modalInput}
+            />
+            <input
+              type="password"
+              name="nueva"
+              placeholder="Nueva contraseña"
+              value={passwordData.nueva}
+              onChange={handlePasswordChange}
+              style={styles.modalInput}
+            />
+            <div style={styles.modalButtons}>
+              <button style={styles.button} onClick={handleUpdatePassword}>
+                Actualizar contraseña
+              </button>
+              <button style={styles.button} onClick={() => setShowPasswordModal(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -258,6 +322,7 @@ const styles = {
     justifyContent: "center",
     gap: "20px",
     marginTop: "30px",
+    flexWrap: "wrap",
   },
   button: {
     backgroundColor: "rgb(59,255,231)",
@@ -269,6 +334,8 @@ const styles = {
     fontSize: "1.1rem",
     cursor: "pointer",
     transition: "background-color 0.3s",
+    minWidth: "180px",
+    marginBottom: "10px",
   },
   loading: {
     backgroundColor: "white",
@@ -291,5 +358,43 @@ const styles = {
     fontSize: "1.2rem",
     padding: 20,
     textAlign: "center",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: "rgb(10,19,31)",
+    border: "1px solid rgb(59,255,231)",
+    borderRadius: "12px",
+    padding: "30px",
+    color: "rgb(59,255,231)",
+    width: "100%",
+    maxWidth: "400px",
+    boxShadow: "0 0 20px rgba(59,255,231,0.3)",
+    textAlign: "center",
+  },
+  modalInput: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "20px",
+    backgroundColor: "#0a1320",
+    border: "1px solid rgba(59,255,231,0.6)",
+    borderRadius: "6px",
+    color: "rgb(59,255,231)",
+    fontSize: "1rem",
+  },
+  modalButtons: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
   },
 };
