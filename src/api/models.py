@@ -120,12 +120,12 @@ class Compra(db.Model):
 class Rifas(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    nombre_rifa: Mapped[str] =mapped_column(String(150), nullable = False)
+    nombre_rifa: Mapped[str] =mapped_column(String(150), nullable = False) #Tiene que ser breve para que no rompa la Card. Algo breve y preciso (ej: Jamon 5J)
     vendedor_id: Mapped[int] = mapped_column(ForeignKey('vendedor.id'), nullable=False)
     fecha_de_sorteo: Mapped[Date] = mapped_column(Date, nullable=False)
     hora_de_sorteo: Mapped[Time] = mapped_column(Time, nullable=False)
     precio_boleto: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2), nullable=False)
-    premio_rifa: Mapped[str] = mapped_column(String(255), nullable=False)
+    premio_rifa: Mapped[str] = mapped_column(String(255), nullable=False) #Descripcion de la rifa
     url_premio: Mapped[str | None] = mapped_column(String(255))
     numero_max_boletos: Mapped[int] = mapped_column(nullable=False)
     status_sorteo: Mapped[str] = mapped_column(String(50), nullable=False)
