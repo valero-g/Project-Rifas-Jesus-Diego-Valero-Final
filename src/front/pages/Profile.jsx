@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Profile = () => {
+  const { store, dispatch } = useGlobalReducer();
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -78,6 +80,7 @@ export const Profile = () => {
   const handleSaveChanges = async () => {
     try {
       const token = sessionStorage.getItem("token");
+
       if (!token) {
         alert("No se encontró token de autenticación para guardar los cambios.");
         return;
@@ -96,12 +99,15 @@ export const Profile = () => {
       };
 
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/${userData.id}`, { // Usamos el ID del usuario para el endpoint PUT
+
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+
         body: JSON.stringify(dataToUpdate),
+
       });
 
       if (!response.ok) {

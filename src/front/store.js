@@ -14,16 +14,16 @@ export default function storeReducer(store, action = {}) {
     case 'logIn':
       return {
         ...store,
-        isLogged:True
+        isLogged: true
       };
-    case 'logOut':
+    case 'logOut': //eliminamos usuario del store y vaciamos carrito
       return {
-        ...store, isLogged:False, usuario: {}
+        ...store, isLogged:false, usuario: {}, carrito:[]
       };
     
     case 'setUser':
       return{...store,
-        usuario: JSON.parse(action.payload)
+        usuario: {id:action.payload.id, usuario:action.payload.usuario, nombre:action.payload.nombre, apellidos:action.payload.apellidos, email:action.payload.email, direccion_envio:action.payload.direccion_envio, dni:action.payload.dni, telefono:action.payload.telefono, stripe_customer_id: action.payload.stripe_customer_id}
       }
       
     case 'add_rifa':
@@ -36,8 +36,48 @@ export default function storeReducer(store, action = {}) {
     case 'dump_rifas':
       // Sobreescribe todo el vector de rifas
       return{ ...store,
-        rifas: JSON.parse(action.payload)
+        rifas: (action.payload)
       }
+    case 'add_number_to_cart': {
+      const existingItem = store.carrito.find(item => item.rifa_id === action.payload.rifa_id);
+
+        if (existingItem) {
+          return {
+            ...store,
+            carrito: store.carrito.map(item =>
+              item.rifa_id === action.payload.rifa_id
+                ? { ...item, numeros: [...item.numeros, action.payload.numero] }
+                : item
+            )
+          };
+        } else {
+          return {
+            ...store,
+            carrito: [...store.carrito, { rifa_id: action.payload.rifa_id, numeros: [action.payload.numero] }]
+          };
+        }
+      }
+
+    case 'delete_number_from_cart': {
+        return {
+          ...store,
+          carrito: store.carrito
+            .map(item =>
+              item.rifa_id === action.payload.rifa_id
+                ? { ...item, numeros: item.numeros.filter(num => num !== action.payload.numero) }
+                : item
+            )
+            .filter(item => item.numeros.length > 0) // Elimina rifa vacía si no quedan números
+        };
+      }
+
+    case 'delete_rifa_from_cart':{
+        return{
+          ...store,
+          carrito: store.carrito.filter(item => item.rifa_id != action.payload.rifa_id)
+        }
+      }
+
     default: 
       console.warn(`Unknown action: ${action.type}`);
       return store;
