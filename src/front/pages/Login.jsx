@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Login = () => {
     const navigate = useNavigate();
-
+    const { store, dispatch } = useGlobalReducer();
     const [showPopup, setShowPopup] = useState(false);
     const [email, setEmail] = useState("");
     const [userOrEmail, setUserOrEmail] = useState("");
@@ -96,9 +97,9 @@ export const Login = () => {
                 setLoading(false);
                 return;
             }
-
+            // Guardamos token y ponemos el login = True
             sessionStorage.setItem("token", data.token);
-
+            dispatch({ type: "logIn"});
             const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
@@ -113,8 +114,10 @@ export const Login = () => {
                 setLoading(false);
                 return;
             }
-
+            // Guardaos los datos de usuario
             setUserData(user);
+            dispatch({type: "setUser", payload: user});
+            console.log(store);
             setError(null);
 
             // Redirigir a la página de perfil tras login exitoso

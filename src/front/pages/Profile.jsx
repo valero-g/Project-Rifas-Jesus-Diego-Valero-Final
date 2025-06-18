@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 
 export const Profile = () => {
+  const { store, dispatch } = useGlobalReducer();
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -62,17 +64,19 @@ export const Profile = () => {
   const handleSaveChanges = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/${store.usuario.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify( {usuario: userData.usuario, ...formData})
       });
 
       if (!response.ok) {
         const error = await response.json();
+        console.log(store.usuario.id);
+        console.log(JSON.stringify( {usuario: userData.usuario, ...formData}))
         alert("Error al actualizar: " + (error.msg || "desconocido"));
         return;
       }

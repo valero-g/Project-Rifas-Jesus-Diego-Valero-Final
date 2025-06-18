@@ -181,15 +181,17 @@ def update_user_by_id(usuario_id):
         current_id = get_jwt_identity()
         request_body= request.get_json(silent = True)
         print(request_body)
+        print(current_id)
         user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
         # Validación de people_id
         if user == None:
             return {"message" : f" El usuario ID {usuario_id} no pudo ser encontrado. "}, 404  
         # Validación del body
-        if "email" not in request_body or "usuario" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
+        if "usuario" not in request_body or "direccion_envio" not in request_body or "dni" not in request_body or "telefono" not in request_body or "nombre" not in request_body or "apellidos" not in request_body:
             return {"message" : f"Request erroneo"}, 400
         # Validación de usuario_id
         if int(current_id) != usuario_id:
+            print("a")
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400 
         # Update de la tabla
         updated_user = db.session.get(Usuario, usuario_id)
