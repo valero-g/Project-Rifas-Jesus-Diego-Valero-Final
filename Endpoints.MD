@@ -162,3 +162,43 @@ BODY:  N/A
 
 RESPUESTA POSITIVA: jsonify(boletos_usuario), 200 (se retornan los boletos con "confirmado" =True que aún tiene el usuario
 RESPUESTAS NEGATIVAS: {"message": "Error en la autentificación de usuario"}, 401 / {"message": "Petición incorrecta. Error en el id de usuario"}, 400 / {"message": "El usuario no tiene boletos"}, 401 / {"message":"Error borrando boletos"}, 500  
+
+## 4) Endpoints de rifas  
+### /rifa  
+DESCRIPCION: Añade una rifa  
+TIPO: POST  
+REQUIERE TOKEN: NO     
+BODY:  
+{  
+    "nombre_rifa": "Rifa del jamón",  
+    "vendedor_id" :1,  
+    "fecha_de_sorteo" : "2025-06-23",  
+    "hora_de_sorteo" : "11:30:00",  
+    "precio_boleto" : 2.50,  
+    "premio_rifa" : "Jamón 5Jotas valorado en 500€",  
+    "url_premio" : "https://www.laboulette.com/imgshop/pro-jamon-iberico-de-bellota-5j(6).jpg",  
+    "numero_max_boletos" :100,  
+    "status_sorteo" : "venta",  
+    "boleto_ganador" : null  
+}  
+RESPUESTA POSITIVA: {"message": f"Rifa añadida a la tabla de rifas"}, 200 
+RESPUESTAS NEGATIVAS:  {"message": "Request request_body is empty"}, 400 / {"message": "Wrong request request_body"}, 400 / {"message": "La rifa ya existe"}, 400 /  {"message": f"Error: No se puede añadir rifa a la tabla de rifas. Fallo interno"}, 500  
+
+### /rifas    
+DESCRIPCION: Devuelve un vector con todas las rifas de la base de datos  
+TIPO: GET    
+REQUIERE TOKEN: NO 
+BODY:    
+N/A  
+RESPUESTA POSITIVA: jsonify(all_rifas), 200  
+RESPUESTAS NEGATIVAS:  {"message": "No se encuentran rifas"}, 404 / {"message": f"Error: No se pueden leer rifas. Fallo interno"}, 500  
+
+### /rifa/<int:rifa_id>
+DESCRIPCION: Devuelve los detalles de la rifa solicitada  
+TIPO: GET    
+REQUIERE TOKEN: NO  
+BODY:    
+N/A  
+RESPUESTA POSITIVA: jsonify(rifa.serialize()), 200  
+RESPUESTAS NEGATIVAS:  {"message": "No se encuentra rifa"}, 404 / {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500   
+

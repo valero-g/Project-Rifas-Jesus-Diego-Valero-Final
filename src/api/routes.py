@@ -65,7 +65,7 @@ def add_rifa():
         rifa = db.session.execute(select(Rifas).where(
             Rifas.nombre_rifa == request_request_body["nombre_rifa"])).scalar_one_or_none()
         if rifa is not None:
-            return {"message": "El vendedor ya existe"}, 400
+            return {"message": "La rifa ya existe"}, 400
 
         # Agregamos la rifa a la tabla
         new_rifa = Rifas(nombre_rifa=request_request_body["nombre_rifa"], vendedor_id=request_request_body["vendedor_id"], fecha_de_sorteo=request_request_body["fecha_de_sorteo"], hora_de_sorteo=request_request_body["hora_de_sorteo"], precio_boleto=request_request_body["precio_boleto"],
@@ -92,6 +92,20 @@ def get_rifas():
     except Exception as e:
         print("Error:", e)
         return {"message": f"Error: No se pueden leer rifas. Fallo interno"}, 500
+    
+@api.route('/rifa/<int:rifa_id>', methods=['GET'])
+def get_rifa(rifa_id):
+    try:
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validacion
+        if rifa == None:
+            return {"message": "No se encuentra rifa"}, 404
+        # Respuesta
+        return jsonify(rifa.serialize()), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
 
 # Endpoint de Usuario
 ######################
