@@ -7,14 +7,6 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 
-const navItems = [
-  { to: "/ultimos-resultados", label: "Últimos resultados" },
-  { to: "/sorteos-activos", label: "Sorteos activos" },
-  { to: "/sobre-nosotros", label: "Sobre Nosotros" },
-  { to: "/bases-legales", label: "Bases legales de los sorteos" },
-  { to: "/politica-privacidad", label: "Política y privacidad" },
-];
-
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -45,7 +37,6 @@ export const Navbar = () => {
     navigate("/");
   };
 
-  // Estilos para botones
   const buttonBaseStyle = {
     borderRadius: "30px",
     padding: "8px 18px",
@@ -94,13 +85,34 @@ export const Navbar = () => {
     boxShadow: "0 4px 12px rgba(255, 255, 255, 0.7)",
   };
 
-  // Estado para hover botones
   const [hoveredBtn, setHoveredBtn] = useState(null);
+
+  const menuLinkStyle = {
+    color: "rgb(59,255,231)",
+    textDecoration: "none",
+    fontWeight: "500",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    transition: "all 0.3s ease",
+    display: "block",
+  };
+
+  const groupTitleStyle = {
+    fontSize: "0.9rem",
+    fontWeight: "600",
+    color: "#ccc",
+    margin: "4px 0 2px 6px",
+  };
+
+  const dividerStyle = {
+    border: "none",
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    margin: "8px 0",
+  };
 
   return (
     <nav style={{ backgroundColor: "rgb(10,19,31)", padding: "10px 0", width: "100%" }}>
       <div className="container-fluid d-flex align-items-center position-relative m-0 justify-content-between">
-        {/* Logo y menú */}
         <div className="d-flex align-items-center gap-2">
           <button
             ref={buttonRef}
@@ -181,7 +193,7 @@ export const Navbar = () => {
                   title={`Bienvenido, ${store.usuario.nombre}`}
                 >
                   <FontAwesomeIcon icon={faUser} style={{ color: "#0a131f", fontSize: "1.3rem" }} />
-                  Bienvenido, <strong>{store.usuario.nombre}</strong>
+                  Te damos la bienvenida, <strong>{store.usuario.nombre}</strong>
                 </span>
               )}
               <button
@@ -245,37 +257,49 @@ export const Navbar = () => {
             position: "absolute",
             top: "100%",
             left: "10px",
-            backgroundColor: "rgb(10,19,31)",
-            border: "1px solid rgb(59,255,231)",
-            borderRadius: "5px",
-            padding: "10px",
-            marginTop: "5px",
+            backgroundColor: "#0a131f",
+            border: "1px solid #3bfff7",
+            borderRadius: "12px",
+            padding: "15px",
+            marginTop: "10px",
             display: menuOpen ? "flex" : "none",
             flexDirection: "column",
-            gap: "5px",
+            gap: "10px",
             zIndex: 1000,
-            minWidth: "220px",
+            minWidth: "240px",
+            boxShadow: "0 8px 24px rgba(59, 255, 231, 0.15)",
+            animation: "fadeSlideIn 0.4s ease",
           }}
         >
-          {navItems.map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                color: "rgb(59,255,231)",
-                textDecoration: "none",
-                fontWeight: "500",
-                padding: "5px 10px",
-                borderRadius: "3px",
-                transition: "background-color 0.3s ease",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(59,255,231,0.15)")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-            >
-              {label}
-            </Link>
-          ))}
+          {store.isLogged && (
+            <>
+              <span style={groupTitleStyle}>Cuenta</span>
+              <Link to="/profile" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+                🏠 Perfil de usuario
+              </Link>
+              <hr style={dividerStyle} />
+            </>
+          )}
+
+          <span style={groupTitleStyle}>Explorar</span>
+          <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+            🎯 Últimos resultados
+          </Link>
+          <Link to="/sorteos-activos" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+             🎁  Sorteos activos
+          </Link>
+          <hr style={dividerStyle} />
+
+          <span style={groupTitleStyle}>Información</span>
+          <Link to="/sobre-nosotros" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+            👤 Sobre Nosotros
+          </Link>
+          <Link to="/bases-legales" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+            📜 Bases legales
+          </Link>
+          <Link to="/politica-privacidad" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+            🔒 Política y privacidad
+          </Link>
         </div>
       </div>
     </nav>

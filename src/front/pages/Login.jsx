@@ -120,8 +120,8 @@ export const Login = () => {
             console.log(store);
             setError(null);
 
-            // Redirigir a la página de perfil tras login exitoso
-            navigate('/mi-perfil');
+            // Redirigir a la página de inicio (Home) tras login exitoso
+            navigate('/'); // CAMBIO REALIZADO AQUÍ
         } catch (err) {
             setError("Error en la petición");
             console.error(err);

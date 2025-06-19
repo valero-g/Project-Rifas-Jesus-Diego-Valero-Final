@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CardHome from "../components/CardHome.jsx";
-
+import fondo from "../assets/img/fondo.png"; // Importa tu imagen de fondo
 
 function BannerCarousel() {
     const banners = [
@@ -40,7 +40,6 @@ function BannerCarousel() {
     }, []);
 
     return (
-        // CAMBIO CLAVE AQUÍ: De "100vw" a "100%"
         <div style={{ width: "100%", height: "300px", overflow: "hidden", position: "relative" }}>
             {banners.map((banner, index) => (
                 <div
@@ -49,7 +48,7 @@ function BannerCarousel() {
                         position: "absolute",
                         top: 0,
                         left: `${(index - current) * 100}%`,
-                        width: "100%", // Asegura que cada slide interna también ocupe el 100% del contenedor padre
+                        width: "100%",
                         height: "100%",
                         backgroundImage: `url(${banner.background})`,
                         backgroundSize: "cover",
@@ -62,7 +61,7 @@ function BannerCarousel() {
                         alignItems: "center",
                         textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
                         padding: "0 2rem",
-                        boxSizing: "border-box", // Importante para que el padding no cause desbordamiento
+                        boxSizing: "border-box",
                     }}
                 >
                     <h2 style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{banner.title}</h2>
@@ -109,8 +108,8 @@ export const Home = () => {
                         boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
                     }}
                 >
-                    <h4>Descripción del sorteo</h4>
-                    <p>{popupContent}</p>
+                    <h4 style={{ color: "#000000" }}>Descripción del sorteo</h4> {/* Color negro para el título */}
+                    <p style={{ color: "#000000" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
                     <button
                         onClick={() => setShowPopup(false)}
                         style={{
@@ -149,13 +148,27 @@ export const Home = () => {
     }
 
     return (
-        <>
+        <div
+            style={{
+                backgroundImage: `url(${fondo})`,
+                // Regresamos a 'cover' para que ocupe todo el espacio
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+                backgroundAttachment: "fixed",
+                // Centramos la imagen para que lo más importante esté visible
+                backgroundPosition: "center center",
+                minHeight: "100vh",
+                color: "#FFFFFF",
+            }}
+        >
             <BannerCarousel />
 
             <div
                 className="text-center py-5"
                 style={{
-                    backgroundColor: "#FFFFFF",
+                    // Asegúrate de que este div no tenga un color de fondo opaco si quieres ver la imagen
+                    // Si necesitas un fondo, considera rgba para transparencia
+                    // backgroundColor: "#FFFFFF", 
                     color: "#000000",
                     padding: "3rem 1rem",
                 }}
@@ -241,8 +254,6 @@ export const Home = () => {
             }
         `}
             </style>
-        </>
-
-
+        </div>
     );
 };

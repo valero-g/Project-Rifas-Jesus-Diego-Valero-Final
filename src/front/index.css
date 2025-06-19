@@ -50,7 +50,7 @@
 
 .botonComprar:hover {
   background-color: rgb(59, 255, 231);
-  color: rgb(10, 19, 31)
+  color: rgb(10, 19, 31);
 }
 
 @keyframes gradientShift {
@@ -90,4 +90,19 @@
     transform: scale(1);
     filter: drop-shadow(0 0 3px #3bfff7);
   }
+}
+
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.menu-dropdown a:hover {
+  background-color: rgba(59, 255, 231, 0.15);
+  box-shadow: 0 0 6px rgba(59, 255, 231, 0.3);
 }
