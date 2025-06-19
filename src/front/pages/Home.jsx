@@ -100,16 +100,16 @@ export const Home = () => {
             >
                 <div
                     style={{
-                        backgroundColor: "#fff",
+                        backgroundColor: "#0A131F",
                         padding: "20px",
                         borderRadius: "12px",
+                        border:"1px solid #3BFFE7",
                         width: "300px",
                         textAlign: "center",
                         boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
                     }}
                 >
-                    <h4 style={{ color: "#000000" }}>Descripción del sorteo</h4> {/* Color negro para el título */}
-                    <p style={{ color: "#000000" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
+                    <p style={{ color: "white" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
                     <button
                         onClick={() => setShowPopup(false)}
                         style={{
@@ -142,6 +142,7 @@ export const Home = () => {
             if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
             const data = await response.json();
             setRifas(data);
+            dispatch({type:'dump_rifas', payload:data })
         } catch (error) {
             console.error("Error al obtener las rifas:", error);
         }
@@ -226,6 +227,7 @@ export const Home = () => {
                     {rifas.map((rifa) => (
                         <div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
                             <CardHome
+                                id={rifa.id}
                                 nombre={rifa.nombre_rifa}
                                 fecha={rifa.fecha_de_sorteo}
                                 url={rifa.url_premio}

@@ -30,7 +30,7 @@ export const router = createBrowserRouter(
             <Route path="/bases-legales" element={<LegalBases />} />
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
             <Route path="/checkout" element={<CartPage />} />
-            <Route path="/seleccion-boletos" element={<SelectTicket />} />
+            <Route path="/seleccion-boletos/:id" element={<SelectTicket />} />
         </Route>
     )
 );

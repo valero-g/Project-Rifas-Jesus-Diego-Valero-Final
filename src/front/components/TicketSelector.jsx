@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
-export default function TicketSelector() {
+export default function TicketSelector({maxNumber, precio}) {
 
-    const maxNumber = 100;
     const groupSize = 10;
     const grupos = [];
     for (let i = 1; i <= maxNumber; i += groupSize) {
@@ -248,6 +247,9 @@ export default function TicketSelector() {
     };
 
 
+    const total = selectedTickets.size * precio
+
+
     return (
         <div style={{
             //flexGrow: 1,
@@ -287,11 +289,19 @@ export default function TicketSelector() {
                 marginBottom: "30px",
                 width: '100%'
             }} />
-            <div className="d-flex justify-content-center">
+            <div className="d-flex justify-content-around">
                 <BoletosSeleccionados
                     seleccionados={selectedTickets}
                     onRemove={removeTicket}
                 />
+                <div className="d-flex justify-content-center align-items-center w-25">
+                    <p style={{
+                        fontSize: "40px",
+                        fontWeight: 'bold'
+                    }}>
+                        {total.toFixed(2)}€
+                    </p>
+                </div>
             </div>
             <hr style={{
                 borderColor: '#d3d3d3',
@@ -313,6 +323,7 @@ export default function TicketSelector() {
                         backgroundColor: '#3BFFE7',
                         color: '#0A131F',
                         border: 'none',
+                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
                         fontSize: '18px',
                         fontWeight: 'bold',
                         display: 'flex',
@@ -321,18 +332,29 @@ export default function TicketSelector() {
                     }}>
                     Al azar
                 </button>
-                <p style={{
-                    fontSize: "30px",
-                    fontWeight: 'bold'
-                }}>
-                    2,00€
-                </p>
+                <button
+                    style={{
+                        borderRadius: '15px',
+                        padding: '16px 32px',
+                        backgroundColor: 'yellow',
+                        color: 'black',
+                        border: 'none',
+                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                    Añadir al carrito
+                </button>
                 <button style={{
                     borderRadius: '15px',
                     padding: '16px 32px',
                     backgroundColor: '#0A131F',
                     color: '#3BFFE7',
                     border: 'none',
+                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
                     fontSize: '18px',
                     fontWeight: 'bold',
                     display: 'flex',
