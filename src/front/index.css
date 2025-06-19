@@ -50,5 +50,59 @@
 
 .botonComprar:hover {
   background-color: rgb(59, 255, 231);
-  color: rgb(10, 19, 31)
+  color: rgb(10, 19, 31);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulseCart {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px #3bfff7);
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px #3bfff7);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px #3bfff7);
+  }
+}
+
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.menu-dropdown a:hover {
+  background-color: rgba(59, 255, 231, 0.15);
+  box-shadow: 0 0 6px rgba(59, 255, 231, 0.3);
 }

@@ -1,31 +1,18 @@
+import logo from "../assets/img/4Boleeks.png";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
 	const footerStyle = {
 		backgroundColor: 'rgb(10, 19, 31)',
-		color: '#e0e0e0',       
+		color: '#e0e0e0',
 		paddingTop: '3rem',
 		paddingBottom: '1rem',
 		marginTop: 'auto',
 	};
 
-	const titleStyle = {
-		color: '#f5a623',     
-		textTransform: 'uppercase',
-		fontWeight: '700',
-		marginBottom: '1rem',
-	};
-
 	const linkStyle = {
 		color: '#e0e0e0',
 		textDecoration: 'none',
-	};
-
-	const titleStyle4Boleeks = {
-		color: 'rgb(59, 255, 231)', 
-		textTransform: 'uppercase',
-		fontWeight: '700',
-		marginBottom: '1rem',
 	};
 
 	const titleStyleCyan = {
@@ -35,13 +22,27 @@ export const Footer = () => {
 		marginBottom: '1rem',
 	};
 
+	const logoContainerStyle = {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: '1rem',
+	};
+
+	const logoStyle = {
+		height: '80px',
+		objectFit: 'contain',
+	};
+
 	return (
 		<footer style={footerStyle}>
 			<div className="container text-md-left">
 				<div className="row text-md-left">
 
 					<div className="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-						<h5 style={titleStyle4Boleeks}>4Boleeks</h5>
+						<div style={logoContainerStyle}>
+							<img src={logo} alt="4Boleeks logo" style={logoStyle} />
+						</div>
 						<p>
 							Participa en nuestras rifas 100% legales y seguras. ¡Tu suerte puede cambiar hoy!
 						</p>
