@@ -23,7 +23,7 @@ export const router = createBrowserRouter(
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/mi-perfil" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} /> {/* ¡CAMBIO AQUÍ! */}
             <Route path="/ultimos-resultados" element={<LastResults />} />
             <Route path="/sorteos-activos" element={<ActiveDraws />} />
             <Route path="/sobre-nosotros" element={<AboutUs />} />

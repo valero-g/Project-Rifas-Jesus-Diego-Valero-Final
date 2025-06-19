@@ -117,11 +117,10 @@ export const Login = () => {
             // Guardaos los datos de usuario
             setUserData(user);
             dispatch({type: "setUser", payload: user});
-            console.log(store);
             setError(null);
 
-            // Redirigir a la página de perfil tras login exitoso
-            navigate('/mi-perfil');
+            // Redirigir a la página de inicio (Home) tras login exitoso
+            navigate('/'); // CAMBIO REALIZADO AQUÍ
         } catch (err) {
             setError("Error en la petición");
             console.error(err);
