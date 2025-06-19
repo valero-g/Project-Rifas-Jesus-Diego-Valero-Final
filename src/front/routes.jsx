@@ -15,6 +15,7 @@ import { LegalBases } from "./pages/LegalBases";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { CartPage } from "./pages/CartPage";
 import { Profile } from "./pages/Profile"; 
+import { SelectTicket } from "./pages/SelectTicket";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -29,6 +30,7 @@ export const router = createBrowserRouter(
             <Route path="/bases-legales" element={<LegalBases />} />
             <Route path="/politica-privacidad" element={<PrivacyPolicy />} />
             <Route path="/checkout" element={<CartPage />} />
+            <Route path="/seleccion-boletos" element={<SelectTicket />} />
         </Route>
     )
 );
