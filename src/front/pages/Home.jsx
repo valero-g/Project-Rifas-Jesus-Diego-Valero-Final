@@ -132,6 +132,7 @@ export const Home = () => {
 
 	useEffect(() => {
 		getRifas();
+
 	}, []);
 
 	async function getRifas() {
@@ -148,6 +149,8 @@ export const Home = () => {
 			console.error("Error al obtener las rifas:", error);
 		}
 	}
+
+
 
 	return (
 		<>

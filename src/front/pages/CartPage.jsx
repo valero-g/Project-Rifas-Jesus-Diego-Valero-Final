@@ -1,10 +1,11 @@
 // src/pages/CartPage.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
 
 export const CartPage = () => {
-    
+    const { store, dispatch } = useGlobalReducer();
     const countNumbersPlayed = (numbersString) => {
         if (!numbersString) return 0;
         const numbers = numbersString.split(',').filter(num => num.trim() !== '');
@@ -12,14 +13,17 @@ export const CartPage = () => {
     };
 
 
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Rifa 1", numbersPlayed: "1,10", price: 1.00 },
-        { id: 2, name: "Rifa 2", numbersPlayed: "11,20", price: 2.00 },
-        { id: 3, name: "Rifa 3", numbersPlayed: "21,30,3,4", price: 5.00 },
-        { id: 4, name: "Rifa 4", numbersPlayed: "5", price: 10.00 },
+    const [cartItems, setCartItems] = useState([]
+        //{ id: 1, name: "Rifa 1", numbersPlayed: "1,10", price: 1.00 },
+        //{ id: 2, name: "Rifa 2", numbersPlayed: "11,20", price: 2.00 },
+        //{ id: 3, name: "Rifa 3", numbersPlayed: "21,30,3,4", price: 5.00 },
+        //{ id: 4, name: "Rifa 4", numbersPlayed: "5", price: 10.00 },
         
-    ]);
+    );
 
+    useEffect( ()=>{
+        store.carrito.map( (item,i) => setCartItems(...store, {id: i, name: store.rifas.find(item => item.rifa_id === store.rifas.id).nombre_rifa, price: store.rifas.find(item => item.rifa_id === store.rifas.id).precio, numbersPlayed: item.numbers}));
+    }, [])
 
     const updatedCartItems = cartItems.map(item => ({
         ...item,
@@ -31,10 +35,51 @@ export const CartPage = () => {
     };
 
     const handleRemoveItem = (id) => {
+        const cartItemToRemove = cartItems.find(item => item.id === id);
+        cartItemToRemove.numbersPlayed.map(deleteNumber(number, cartItemToRemove.rifa_id));
+
         setCartItems(prevItems =>
             prevItems.filter(item => item.id !== id)
         );
     };
+
+    const deleteNumber = async(number, rifa_id) => {
+        e.preventDefault();
+        const backendUrl = import.meta.env.VITE_BACKEND_URL
+        if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
+            
+            const response = await fetch(backendUrl + "/api/boleto",
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            numero: number,
+                            rifa_id: rifa_id,
+                            usario_id:store[usuario].usuario_id 
+                        })
+                    })
+                const data = await response.json()
+
+                if (response.ok) {
+                    console.log(data);
+                }
+                else {
+                        if (response.status == 400 ) {
+                            setErrorMessage(data["message"]);
+                            console.log(data);
+                        }else{
+                            console.log('error: ', response.status, response.statusText);
+                            setErrorMessage("Unable to register user");
+                            /* Realiza el tratamiento del error que devolvió el request HTTP */
+                            return { error: { status: response.status, statusText: response.statusText } };
+                            
+                        }
+                }
+            
+    }
+
 
     return (
         <div style={{

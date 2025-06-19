@@ -1,4 +1,8 @@
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+
 export const LegalBases = () => {
+    const { store, dispatch } = useGlobalReducer();
+    console.log(store)
     return (
         <div
             style={{
