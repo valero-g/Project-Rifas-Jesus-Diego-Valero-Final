@@ -10,7 +10,7 @@ const CardHome = ({ nombre, fecha, url, onInfoClick }) => {
 
     const handleClick = () => {
         if (store.isLogged) {
-            navigate("/Register");
+            navigate("/seleccion-boletos")
         } else {
             navigate("/Login");
         }
@@ -85,7 +85,7 @@ const CardHome = ({ nombre, fecha, url, onInfoClick }) => {
                         i
                     </button>
                     <button
-                        onClick={handleClick}
+                        onClick= {handleClick}
                         style={{
                             backgroundColor: "#3BFFE7",
                             color: "#000000",
