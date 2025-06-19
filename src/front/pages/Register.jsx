@@ -186,8 +186,8 @@ export const Register = () => {
                         borderRadius: "8px",
                         backgroundColor: "rgba(255,0,0,0.1)"
                     }}>
-                        <p style={{marginBottom: "10px"}}>Por favor, corrige los siguientes errores:</p>
-                        <ul style={{listStyleType: "disc", marginLeft: "20px"}}>
+                        <p style={{ marginBottom: "10px" }}>Por favor, corrige los siguientes errores:</p>
+                        <ul style={{ listStyleType: "disc", marginLeft: "20px" }}>
                             {Object.entries(errors).map(([key, value]) => (
                                 <li key={key}>{value}</li>
                             ))}
