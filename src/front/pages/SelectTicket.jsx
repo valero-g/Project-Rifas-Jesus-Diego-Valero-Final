@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import TicketSelector from '../components/TicketSelector.jsx';
 import fondo from "../assets/img/fondo.png";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const SelectTicket = () => {
+
+    const { store, dispatch } = useGlobalReducer()
+
 
     const [rifa, setRifa] = useState(null);
     const { id } = useParams();
@@ -14,6 +18,27 @@ export const SelectTicket = () => {
     const BackHome = () => {
         navigate('/');
     };
+
+
+    const addTicketsToCart = (selectedNumbers) => {
+        console.log("Números a añadir al carrito:", selectedNumbers);
+        selectedNumbers.forEach(numero => {
+            dispatch({
+                type: 'add_number_to_cart',
+                payload: { rifa_id: rifa.id, numero }
+            });
+        });
+    };
+
+
+
+    
+
+    useEffect(() => {
+        console.log("Carrito actualizado:", store.carrito);
+    }, [store.carrito]);
+
+
 
     useEffect(() => {
         getRifa()
@@ -136,6 +161,7 @@ export const SelectTicket = () => {
                     <TicketSelector
                         maxNumber={rifa?.numero_max_boletos || 100}
                         precio={rifa.precio_boleto}
+                        onSelectTickets={addTicketsToCart}
                     />
                 </div>
             </div>
