@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function TicketSelector({maxNumber, precio}) {
+export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
 
     const groupSize = 10;
     const grupos = [];
@@ -248,6 +248,7 @@ export default function TicketSelector({maxNumber, precio}) {
 
 
     const total = selectedTickets.size * precio
+    const selectedArray = Array.from(selectedTickets);
 
 
     return (
@@ -332,7 +333,7 @@ export default function TicketSelector({maxNumber, precio}) {
                     }}>
                     Al azar
                 </button>
-                <button
+                <button onClick={() => onSelectTickets(selectedArray)}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',
@@ -348,19 +349,20 @@ export default function TicketSelector({maxNumber, precio}) {
                     }}>
                     Añadir al carrito
                 </button>
-                <button style={{
-                    borderRadius: '15px',
-                    padding: '16px 32px',
-                    backgroundColor: '#0A131F',
-                    color: '#3BFFE7',
-                    border: 'none',
-                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}>
+                <button onClick={() => onSelectTickets(selectedArray)}
+                    style={{
+                        borderRadius: '15px',
+                        padding: '16px 32px',
+                        backgroundColor: '#0A131F',
+                        color: '#3BFFE7',
+                        border: 'none',
+                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
                     Continuar
                 </button>
             </div>
