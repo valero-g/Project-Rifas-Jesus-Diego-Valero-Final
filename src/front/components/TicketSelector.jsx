@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
+
+    const { store } = useGlobalReducer();
+    const navigate = useNavigate();
+
+    // IMPORTANTE: Necesitamos el ID de la rifa para filtrar correctamente
+    // Si este componente no lo recibe como prop, hacelo en el padre.
+    const rifaId = store?.rifaSeleccionada?.id || null;
+
+    const numerosEnCarrito = store.carrito
+        .filter(item => item.rifa_id === rifaId)
+        .flatMap(item => item.numeros); // todos los números ocupados en esta rifa
+
 
     const groupSize = 10;
     const grupos = [];
@@ -12,6 +26,8 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
     const [selectedTickets, setSelectedTickets] = useState(new Set());
 
     const toggleTicket = (n) => {
+        if (numerosEnCarrito.includes(n)) return; // número ya reservado, ignorar
+
         const newSet = new Set(selectedTickets);
 
         if (newSet.has(n)) {
@@ -25,7 +41,8 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
         }
 
         setSelectedTickets(newSet);
-    };;
+    };
+
 
 
     const removeTicket = (n) => {
@@ -91,28 +108,45 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     marginTop: '15px',
                     marginBottom: "15px"
                 }}>
-                    {boletos.map((n) => (
-                        <div
-                            key={n}
-                            onClick={() => onToggle(n)}
-                            style={{
-                                width: '50px',
-                                height: '50px',
-                                borderRadius: '50%',
-                                backgroundColor: seleccionados.has(n) ? '#0A131F' : 'none',
-                                color: seleccionados.has(n) ? '#3BFFE7' : '#0A131F',
-                                border: seleccionados.has(n) ? '0' : '2px solid #3BFFE7',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                transition: 'background-color 0.3s, color 0.3s',
-                            }}
-                        >
-                            {n}
-                        </div>
-                    ))}
+                    {boletos.map((n) => {
+                        const reservado = numerosEnCarrito.includes(n);
+                        const seleccionado = seleccionados.has(n);
+
+                        return (
+                            <div
+                                key={n}
+                                onClick={() => !reservado && onToggle(n)}
+                                style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '50%',
+                                    backgroundColor: reservado
+                                        ? '#ffcccc'  // rojo claro
+                                        : seleccionado
+                                            ? '#0A131F'  // azul oscuro
+                                            : 'none',
+                                    color: reservado
+                                        ? '#cc0000' // rojo texto
+                                        : seleccionado
+                                            ? '#3BFFE7'
+                                            : '#0A131F',
+                                    border: reservado
+                                        ? '2px solid #cc0000'
+                                        : seleccionado
+                                            ? '0'
+                                            : '2px solid #3BFFE7',
+                                    cursor: reservado ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    transition: 'background-color 0.3s, color 0.3s',
+                                }}
+                            >
+                                {n}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -230,18 +264,24 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
 
         const availableTickets = [];
 
-        // Llena con todos los boletos posibles (1 a maxNumber)
+        // Crea lista de números aún no seleccionados
         for (let i = 1; i <= maxNumber; i++) {
-            availableTickets.push(i);
+            if (!selectedTickets.has(i)) {
+                availableTickets.push(i);
+            }
         }
 
-        const newSet = new Set(selectedTickets);
+        if (availableTickets.length === 0) {
+            alert("No hay boletos disponibles para seleccionar.");
+            return;
+        }
 
+        // Elige uno al azar entre los disponibles
         const randomIndex = Math.floor(Math.random() * availableTickets.length);
         const randomTicket = availableTickets[randomIndex];
-        if (!newSet.has(randomTicket)) {
-            newSet.add(randomTicket);
-        }
+
+        const newSet = new Set(selectedTickets);
+        newSet.add(randomTicket);
 
         setSelectedTickets(newSet);
     };
@@ -249,6 +289,69 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
 
     const total = selectedTickets.size * precio
     const selectedArray = Array.from(selectedTickets);
+
+
+    const [showPopup, setShowPopup] = useState(false);
+    const [popupContent, setPopupContent] = useState("");
+
+    const renderPopup = () => {
+
+        if (!showPopup) return null;
+
+        return (
+
+            <div
+                style={{
+                    position: "fixed",
+                    top: 0, left: 0,
+                    width: "100%", height: "100%",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    display: "flex", justifyContent: "center", alignItems: "center",
+                    zIndex: 9999,
+                }}
+            >
+                <div
+                    style={{
+                        backgroundColor: "#0A131F",
+                        padding: "20px",
+                        borderRadius: "12px",
+                        border: "1px solid #3BFFE7",
+                        width: "300px",
+                        textAlign: "center",
+                        boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
+                    }}
+                >
+                    <p style={{ color: "white" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
+                    <button
+                        onClick={() => {setShowPopup(false);
+                            navigate("/")}}
+                        style={{
+                            marginTop: "10px",
+                            padding: "8px 16px",
+                            backgroundColor: "#3BFFE7",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        Volver
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+
+    const infoClick = () => {
+        setPopupContent("Boletos añadidos al carrito correctamente");
+        setShowPopup(true);
+    };
+
+    const AddCartAction = () => {
+        onSelectTickets(selectedArray);
+        infoClick()
+    };
 
 
     return (
@@ -333,7 +436,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     }}>
                     Al azar
                 </button>
-                <button onClick={() => onSelectTickets(selectedArray)}
+                <button onClick={AddCartAction}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',
@@ -349,7 +452,9 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     }}>
                     Añadir al carrito
                 </button>
-                <button onClick={() => onSelectTickets(selectedArray)}
+                <button onClick={() => {onSelectTickets(selectedArray);
+                    navigate("/checkout")
+                }}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',
@@ -363,9 +468,24 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}>
-                    Continuar
+                    Ir al carrito
                 </button>
             </div>
+            {renderPopup()}
+            <style>
+                {`
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `}
+            </style>
         </div>
     );
 }
