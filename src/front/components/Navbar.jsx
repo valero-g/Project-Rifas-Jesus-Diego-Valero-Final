@@ -34,6 +34,7 @@ export const Navbar = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     dispatch({ type: "logOut" });
+    sessionStorage.removeItem("isLogged");
     navigate("/");
   };
 

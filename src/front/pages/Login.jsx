@@ -100,6 +100,7 @@ export const Login = () => {
             // Guardamos token y ponemos el login = True en el context, y guardamos también en el sessionStorage
             sessionStorage.setItem("token", data.token);
             dispatch({ type: "logIn"});
+            sessionStorage.setItem("isLogged", "true");
             const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {

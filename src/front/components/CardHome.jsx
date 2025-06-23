@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx"
 import React from 'react';
 
-const CardHome = ({ nombre, fecha, url, onInfoClick }) => {
+const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
 
     const navigate = useNavigate();
     const { store } = useGlobalReducer();
 
     const handleClick = () => {
         if (store.isLogged) {
-            navigate("/seleccion-boletos")
+            navigate(`/seleccion-boletos/${id}`)
         } else {
             navigate("/Login");
         }
