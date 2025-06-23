@@ -21,18 +21,46 @@ export const SelectTicket = () => {
 
 
     const addTicketsToCart = (selectedNumbers) => {
-        console.log("Números a añadir al carrito:", selectedNumbers);
-        selectedNumbers.forEach(numero => {
+        console.log("Números seleccionados para añadir al carrito:", selectedNumbers);
+
+        const rifaId = rifa.id;
+
+        const rifaEnCarrito = store.carrito.find(item => item.rifa_id === rifaId);
+        const numerosExistentes = rifaEnCarrito ? rifaEnCarrito.numeros : [];
+
+        // 1. Números nuevos a agregar
+        const nuevos = selectedNumbers.filter(n => !numerosExistentes.includes(n));
+
+        // 2. Números eliminados (deseleccionados)
+        const eliminados = numerosExistentes.filter(n => !selectedNumbers.includes(n));
+
+        // 3. Eliminar números que ya no están seleccionados
+        eliminados.forEach(numero => {
             dispatch({
-                type: 'add_number_to_cart',
-                payload: { rifa_id: rifa.id, numero }
+                type: 'delete_number_from_cart',
+                payload: {
+                    rifa_id: rifaId,
+                    numero,
+                }
             });
         });
+
+        // 4. Agregar nuevos números seleccionados
+        nuevos.forEach(numero => {
+            dispatch({
+                type: 'add_number_to_cart',
+                payload: {
+                    rifa_id: rifaId,
+                    numero,
+                }
+            });
+        });
+
+        if (nuevos.length === 0 && eliminados.length === 0) {
+            alert("No hay cambios en la selección de boletos.");
+        }
     };
 
-
-
-    
 
     useEffect(() => {
         console.log("Carrito actualizado:", store.carrito);
@@ -162,6 +190,7 @@ export const SelectTicket = () => {
                         maxNumber={rifa?.numero_max_boletos || 100}
                         precio={rifa.precio_boleto}
                         onSelectTickets={addTicketsToCart}
+                        rifaId={rifa.id}
                     />
                 </div>
             </div>
