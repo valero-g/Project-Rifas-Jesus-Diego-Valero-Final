@@ -97,9 +97,10 @@ export const Login = () => {
                 setLoading(false);
                 return;
             }
-            // Guardamos token y ponemos el login = True
+            // Guardamos token y ponemos el login = True en el context, y guardamos también en el sessionStorage
             sessionStorage.setItem("token", data.token);
             dispatch({ type: "logIn"});
+            sessionStorage.setItem("isLogged", "true");
             const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
@@ -114,7 +115,7 @@ export const Login = () => {
                 setLoading(false);
                 return;
             }
-            // Guardaos los datos de usuario
+            // Guardaos los datos de usuario, en el contexto y guardamos el userid en el session storage
             setUserData(user);
             dispatch({type: "setUser", payload: user});
             setError(null);
