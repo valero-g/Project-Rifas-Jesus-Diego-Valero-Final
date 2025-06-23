@@ -2,7 +2,7 @@ import { json } from "react-router-dom";
 
 export const initialStore=()=>{
   return{
-    isLogged: false,
+    isLogged: sessionStorage.getItem("isLogged") === "true",
     usuario:{},
     rifas: [],
     carrito:[]
