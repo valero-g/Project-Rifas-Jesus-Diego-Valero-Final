@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import and_, null, select
-from api.models import Boleto, db, Usuario, Vendedor, Rifas
+from api.models import Boleto, db, Usuario, Vendedor, Rifas, DetalleCompra, Compra
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 import traceback
@@ -427,7 +427,7 @@ def get_boletos_de_usuario(usuario_id):
         # Validacion de user
         if (user == None):
             return {"message": "El usuario no existe"}, 400
-        boletos_usuario = db.session.execute(select(Boleto).where(Boleto.usuario_id == current_id)).scalars().all()
+        boletos_usuario = db.session.execute(select(Boleto).where(Boleto.usuario_id == usuario_id)).scalars().all()
         boletos_usuario = list(map(lambda x: x.serialize(), boletos_usuario))
         
         return jsonify(boletos_usuario), 200
@@ -465,7 +465,7 @@ def add_boleto():
         if request_body["numero"]> rifa.numero_max_boletos:
             return {"message": "El número es mayor que el número máximo de boletos de la rifa"}, 400
         # Validación de no existencia del boleto
-        boleto = db.session.execute(select(Boleto).where(Boleto.numero == request_body["numero"])).scalar_one_or_none()
+        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"]))).scalar_one_or_none()
         if boleto != None:
             return {"message":"El boleto ya existe"}, 404
         # Añadimos boleto
@@ -540,7 +540,7 @@ def delete_boleto():
         if rifa == None:
             return {"message": "La rifa no existe"}, 400
         # Validación de no existencia del boleto
-        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.numero == request_body["numero"]))).scalar_one_or_none()
+        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
         if boleto == None:
             return {"message":"El boleto no existe"}, 400
         # Borramos boleto
@@ -590,6 +590,71 @@ def delete_boleto_by_userid(usuario_id):
     except Exception as e:
         print("Error: ",e)
         return {"message":"Error borrando boletos"}, 500
+
+
+# SPRINT #3 Endpoints de Detalle compra
+@api.route('/detalle-compra', methods = ['POST'])
+@jwt_required()
+def add_detalle_compra():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        request_body =  request.get_json(silent = True)
+
+        # Validación de body
+        if request_body == None:
+            return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if "user_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "vendedor_id" not in request_body.keys() or "stripe_session_id" not in request_body.keys() or "status" not in request_body.keys() or "compra_id" not in request_body.keys():
+             return {"message" : "Petición errónea. Body incorrecto"}, 400
+        if int(current_id) != request_body["user_id"]:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        if rifa == None:
+            return{"message": "La rifa no existe"}, 400
+        # Validacion de vendedor 
+        vendedor = db.session.execute(select(Vendedor).where(Vendedor.id == request_body["vendedor_id"])).scalar_one_or_none()
+        if vendedor == None:
+            return{"message": "El vendedor no existe"}, 400
+        # Falta validación de Compra
+
+        # Añadimos detalle de compra
+        detalle_compra = DetalleCompra(user_id = request_body["user_id"], compra_id = request_body["compra_id"],vendedor_id = request_body["vendedor_id"],stripe_session_id = request_body["stripe_session_id"], status = request_body["Status"] )
+        db.session.add(detalle_compra)
+        db.session.commit()
+        return jsonify(detalle_compra.serialize()), 200
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error introduciendo detalle de compra"}, 500
+
+# GET de detalle compra
+@api.route('/detalle-compra/<int:usuario_id>', methods = ['GET'])
+@jwt_required()
+def get_detalle_compra(usuario_id):
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        # Validacion de id de usuario
+        if int(current_id) != usuario_id:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        
+        # Validacion de user
+        if (user == None):
+            return {"message": "El usuario no existe"}, 400
+        detalle_compra_usuario = db.session.execute(select(DetalleCompra).where(DetalleCompra.user_id == current_id)).scalars().all()
+        detalle_compra_usuario = list(map(lambda x: x.serialize(), detalle_compra_usuario))
+        
+        return jsonify(detalle_compra_usuario), 200
+
+    except Exception as e:
+        print("Error", e)
+        return {"message": "Error recuperando los detalles de compra del usuario"}, 500
+
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
