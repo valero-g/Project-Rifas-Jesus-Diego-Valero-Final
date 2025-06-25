@@ -15,6 +15,7 @@ from api.extensions import mail
 import os
 from datetime import timedelta
 from api.emails import send_email_verification, send_email_password_recovery,send_email_random_password, generar_clave
+import stripe
 
 
 api = Blueprint('api', __name__)
@@ -22,26 +23,28 @@ api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
 
+#Stripe api_key
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 # Endpoint de Vendedor -Solo hacemos POST inicialmente
 @api.route('/vendedor', methods=['POST'])
 def add_vendedor():
     try:
-        request_request_body = request.get_json(silent=True)
+        request_body = request.get_json(silent=True)
         # Validacion de request
-        if request_request_body is None:
+        if request_body is None:
             return {"message": "Request request_body is empty"}, 400
-        if "nombre" not in request_request_body or "email" not in request_request_body or "direccion" not in request_request_body or "telefono" not in request_request_body or "persona_contacto" not in request_request_body:
+        if "nombre" not in request_body or "email" not in request_body or "direccion" not in request_body or "telefono" not in request_body or "persona_contacto" not in request_body:
             return {"message": "Wrong request request_body"}, 400
         # Validación de la existencia de Vendedor
         vendedor = db.session.execute(select(Vendedor).where(
-            Vendedor.nombre == request_request_body["nombre"])).scalar_one_or_none()
+            Vendedor.nombre == request_body["nombre"])).scalar_one_or_none()
         if vendedor is not None:
             return {"message": "El vendedor ya existe"}, 400
 
         # Agregamos el vendedor a la tabla
-        new_vendedor = Vendedor(nombre=request_request_body["nombre"], direccion=request_request_body["direccion"],
-                                telefono=request_request_body["telefono"], email=request_request_body["email"], persona_contacto=request_request_body["persona_contacto"])
+        new_vendedor = Vendedor(nombre=request_body["nombre"], direccion=request_body["direccion"],
+                                telefono=request_body["telefono"], email=request_body["email"], persona_contacto=request_body["persona_contacto"])
         db.session.add(new_vendedor)
         db.session.commit()
         return {"message": f"Vendedor añadido a la tabla de vendedores"}, 200
@@ -55,21 +58,30 @@ def add_vendedor():
 @api.route('/rifa', methods=['POST'])
 def add_rifa():
     try:
-        request_request_body = request.get_json(silent=True)
+        request_body = request.get_json(silent=True)
         # Validacion de request
-        if request_request_body is None:
+        if request_body is None:
             return {"message": "Request request_body is empty"}, 400
-        if "vendedor_id" not in request_request_body or "nombre_rifa" not in request_request_body or "fecha_de_sorteo" not in request_request_body or "hora_de_sorteo" not in request_request_body or "precio_boleto" not in request_request_body or "premio_rifa" not in request_request_body or "url_premio" not in request_request_body or "numero_max_boletos" not in request_request_body or "status_sorteo" not in request_request_body or "boleto_ganador" not in request_request_body:
+        if "vendedor_id" not in request_body or "nombre_rifa" not in request_body or "fecha_de_sorteo" not in request_body or "hora_de_sorteo" not in request_body or "precio_boleto" not in request_body or "premio_rifa" not in request_body or "url_premio" not in request_body or "numero_max_boletos" not in request_body or "status_sorteo" not in request_body or "boleto_ganador" not in request_body:
             return {"message": "Wrong request request_body"}, 400
         # Validación de la existencia de Rifa
-        rifa = db.session.execute(select(Rifas).where(
-            Rifas.nombre_rifa == request_request_body["nombre_rifa"])).scalar_one_or_none()
+        rifa = db.session.execute(select(Rifas).where(Rifas.nombre_rifa == request_body["nombre_rifa"])).scalar_one_or_none()
         if rifa is not None:
             return {"message": "La rifa ya existe"}, 400
 
+        #Crewmos el precio y producto de Stripe
+        product = stripe.Product.create(name=request_body["nombre_rifa"])
+        price = stripe.Price.create(
+            product=product.id,
+            unit_amount=int(float(request_body["precio_boleto"]) * 100),
+            currency="eur",
+        )
         # Agregamos la rifa a la tabla
-        new_rifa = Rifas(nombre_rifa=request_request_body["nombre_rifa"], vendedor_id=request_request_body["vendedor_id"], fecha_de_sorteo=request_request_body["fecha_de_sorteo"], hora_de_sorteo=request_request_body["hora_de_sorteo"], precio_boleto=request_request_body["precio_boleto"],
-                         premio_rifa=request_request_body["premio_rifa"], url_premio=request_request_body["url_premio"], numero_max_boletos=request_request_body["numero_max_boletos"], status_sorteo=request_request_body["status_sorteo"], boleto_ganador=request_request_body["boleto_ganador"])
+        new_rifa = Rifas(nombre_rifa=request_body["nombre_rifa"], vendedor_id=request_body["vendedor_id"], fecha_de_sorteo=request_body["fecha_de_sorteo"], hora_de_sorteo=request_body["hora_de_sorteo"], precio_boleto=request_body["precio_boleto"],
+                         premio_rifa=request_body["premio_rifa"], url_premio=request_body["url_premio"], numero_max_boletos=request_body["numero_max_boletos"], status_sorteo=request_body["status_sorteo"], boleto_ganador=request_body["boleto_ganador"], numero_boletos_vendidos = 0, stripe_product_id = product.id, stripe_price_id = price.id)
+        
+  
+        
         db.session.add(new_rifa)
         db.session.commit()
         return {"message": f"Rifa añadida a la tabla de rifas"}, 200
@@ -106,6 +118,100 @@ def get_rifa(rifa_id):
     except Exception as e:
         print("Error:", e)
         return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
+
+
+@api.route('/rifa/<int:rifa_id>', methods=['PUT'])
+def modify_rifa(rifa_id):
+    try:
+        request_body = request.get_json(silent=True)
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validación de rifa_id
+        if rifa == None:
+            return {"message" : f" La rifa ID {rifa_id} no pudo ser encontrado. "}, 404  
+        # Validación del body
+        if "nombre_rifa" not in request_body or "vendedor_id" not in request_body or "fecha_de_sorteo" not in request_body or "hora_de_sorteo" not in request_body or "precio_boleto" not in request_body or "premio_rifa" not in request_body or "url_premio" not in request_body or "numero_max_boletos" not in request_body or "status_sorteo" not in request_body or "boleto_ganador" not in request_body:
+            return {"message" : f"Request erroneo"}, 400
+
+        # Update de la tabla
+        updated_rifa = db.session.get(Rifas, rifa_id)
+        updated_rifa.nombre_rifa = request_body["nombre_rifa"] 
+        updated_rifa.vendedor_id = request_body["vendedor_id"]
+        updated_rifa.fecha_de_sorteo = request_body["fecha_de_sorteo"]
+        updated_rifa.hora_de_sorteo = request_body["hora_de_sorteo"]
+        updated_rifa.precio_boleto = request_body["precio_boleto"]
+        updated_rifa.premio_rifa = request_body["premio_rifa"]
+        updated_rifa.url_premio = request_body["url_premio"]
+        updated_rifa.numero_max_boletos = request_body["numero_max_boletos"]
+        updated_rifa.status_sorteo = request_body["status_sorteo"]
+        updated_rifa.boleto_ganador = request_body["boleto_ganador"]
+        if "numero_boletos_vendidos" in request_body:
+            updated_rifa.numero_boletos_vendidos = request_body["numero_boletos_vendidos"]
+        else:
+            updated_rifa.numero_boletos_vendidos = rifa.numero_boletos_vendidos
+        
+        if rifa.stripe_product_id == None:
+            # Añadimos el Stripe product ID 
+            # Crear producto y precio en Stripe
+            product = stripe.Product.create(name=updated_rifa.nombre_rifa)
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=int(float(updated_rifa.precio_boleto) * 100),
+                currency="eur",
+            )
+
+            # Guardar los IDs
+            updated_rifa.stripe_product_id = product.id
+            updated_rifa.stripe_price_id = price.id
+
+        db.session.commit()
+
+        # Retornamos el usuario actualizado
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        return rifa.serialize(),200        
+    
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se puede modificar la rifa. Fallo interno"}, 500
+
+@api.route('/rifa-status/<int:rifa_id>', methods=['PUT'])
+def modify_rifa_status(rifa_id):
+    try:
+        request_body = request.get_json(silent=True)
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validación de rifa_id
+        if rifa == None:
+            return {"message" : f" La rifa ID {rifa_id} no pudo ser encontrado. "}, 404  
+        # Validación del body
+        if "status_sorteo" not in request_body or "numero_boletos_vendidos" not in request_body or "boleto_ganador" not in request_body:
+            return {"message" : f"Request erroneo. El body debe contar status_sorteo, numero_boletos_vendidos y boleto_ganador"}, 400
+
+        # Update de la tabla
+        rifa.status_sorteo = request_body["status_sorteo"]
+        rifa.boleto_ganador = request_body["boleto_ganador"]
+        rifa.numero_boletos_vendidos = request_body["numero_boletos_vendidos"]
+        
+        if rifa.stripe_product_id == None:
+            # Añadimos el Stripe product ID 
+            # Crear producto y precio en Stripe
+            product = stripe.Product.create(name=rifa.nombre_rifa)
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=int(float(rifa.precio_boleto) * 100),
+                currency="eur",
+            )
+            # Guardar los IDs
+            rifa.stripe_product_id = product.id
+            rifa.stripe_price_id = price.id
+
+        db.session.commit()
+
+        # Retornamos el usuario actualizado
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == rifa_id)).scalar_one_or_none()
+        return rifa.serialize(),200        
+    
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se puede modificar la rifa. Fallo interno"}, 500
 
 # Endpoint de Usuario
 ######################

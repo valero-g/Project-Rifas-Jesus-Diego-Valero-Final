@@ -8,11 +8,13 @@ from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
 from api.models import db
 from api.routes import api
+from api.payments import payments_bp
 from api.admin import setup_admin
 from api.commands import setup_commands
 from api.extensions import mail
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+import stripe
 
 # from models import Person
 
@@ -62,6 +64,9 @@ setup_commands(app)
 
 # Add all endpoints from the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
+
+# Add payments endpoints from the Payments API
+app.register_blueprint(payments_bp, url_prefix='/api/payments')
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
