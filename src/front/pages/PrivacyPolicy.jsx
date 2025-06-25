@@ -27,7 +27,7 @@ export const PrivacyPolicy = () => {
                 </h1>
 
                 <p style={{ lineHeight: "1.6" }}>
-                    En <strong style={{ color: "rgb(59,255,231)" }}>Boleeks</strong> nos tomamos muy en serio la privacidad y seguridad de nuestros usuarios. Esta política detalla cómo recopilamos, usamos, protegemos y compartimos tu información personal.
+                    En <strong style={{ color: "rgb(59,255,231)" }}>4Boleeks</strong> nos tomamos muy en serio la privacidad y seguridad de nuestros usuarios. Esta política detalla cómo recopilamos, usamos, protegemos y compartimos tu información personal.
                 </p>
 
                 <p style={{ marginTop: "20px", lineHeight: "1.6" }}>

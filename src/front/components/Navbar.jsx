@@ -34,9 +34,9 @@ export const Navbar = () => {
     const numerosArray = Array.isArray(item.numeros)
       ? item.numeros
       : item.numeros
-          ?.split(",")
-          .map((n) => n.trim())
-          .filter((n) => n !== "") || [];
+        ?.split(",")
+        .map((n) => n.trim())
+        .filter((n) => n !== "") || [];
     return acc + numerosArray.length;
   }, 0);
 
