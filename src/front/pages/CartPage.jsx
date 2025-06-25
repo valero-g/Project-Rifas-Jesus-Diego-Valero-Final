@@ -6,9 +6,10 @@ import { Link } from 'react-router-dom';
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
-    const countNumbersPlayed = (numbersString) => {
-        if (!numbersString) return 0;
-        const numbers = numbersString.split(',').filter(num => num.trim() !== '');
+    const countNumbersPlayed = (numbers) => {
+    //const countNumbersPlayed = (numbersString) => {
+    //    if (!numbersString) return 0;
+    //    const numbers = numbersString.split(',').filter(num => num.trim() !== '');
         return numbers.length;
     };
 
@@ -22,7 +23,19 @@ export const CartPage = () => {
     );
 
     useEffect( ()=>{
-        store.carrito.map( (item,i) => setCartItems(...store, {id: i, name: store.rifas.find(item => item.rifa_id === store.rifas.id).nombre_rifa, price: store.rifas.find(item => item.rifa_id === store.rifas.id).precio, numbersPlayed: item.numbers}));
+    const updatedCartItems = store.carrito.map((item, i) => {
+        const rifa = store.rifas.find(r => r.id === item.rifa_id);
+        console.log(rifa);
+        return {
+            id: i,
+            rifa_id: rifa.id,
+            name: rifa?.nombre_rifa || 'Nombre desconocido',
+            price: parseFloat(rifa?.precio_boleto || 0),
+            numbersPlayed: item.numeros
+        };
+    });
+    setCartItems(updatedCartItems);
+    console.log(updatedCartItems);
     }, [])
 
     const updatedCartItems = cartItems.map(item => ({
@@ -36,47 +49,70 @@ export const CartPage = () => {
 
     const handleRemoveItem = (id) => {
         const cartItemToRemove = cartItems.find(item => item.id === id);
-        cartItemToRemove.numbersPlayed.map(deleteNumber(number, cartItemToRemove.rifa_id));
+        //console.log(cartItemToRemove);
+        cartItemToRemove.numbersPlayed.map( number => 
+        {
+            if (deleteNumber(number, cartItemToRemove.rifa_id)) {
+                dispatch({type:'delete_number_from_cart', payload:{rifa_id: cartItemToRemove.rifa_id,numero:number}});
+                //console.log(store);
+            };
+            });
 
         setCartItems(prevItems =>
             prevItems.filter(item => item.id !== id)
         );
+        
     };
 
     const deleteNumber = async(number, rifa_id) => {
-        e.preventDefault();
-        const backendUrl = import.meta.env.VITE_BACKEND_URL
-        if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
-            
+        try{
+            //console.log("Numero a borrar :", number);
+            //console.log("Numero de rifa:", rifa_id);
+            //console.log("usuario ", store.usuario.id);
+            const backendUrl = import.meta.env.VITE_BACKEND_URL
+            if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                alert("No se encontró token de autenticación para guardar los cambios.");
+                return 0;
+            }   
+                
             const response = await fetch(backendUrl + "/api/boleto",
-                    {
-                        method: "DELETE",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            numero: number,
-                            rifa_id: rifa_id,
-                            usario_id:store[usuario].usuario_id 
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                numero: number,
+                                rifa_id: rifa_id,
+                                usuario_id:store.usuario.id 
+                            })
                         })
-                    })
-                const data = await response.json()
+                    const data = await response.json()
 
-                if (response.ok) {
-                    console.log(data);
-                }
-                else {
-                        if (response.status == 400 ) {
-                            setErrorMessage(data["message"]);
-                            console.log(data);
-                        }else{
-                            console.log('error: ', response.status, response.statusText);
-                            setErrorMessage("Unable to register user");
-                            /* Realiza el tratamiento del error que devolvió el request HTTP */
-                            return { error: { status: response.status, statusText: response.statusText } };
-                            
-                        }
-                }
+                    if (response.ok) {
+                        console.log(data);
+                        console.log(`Numero ${number} eliminado correctamente`);
+                        return true;
+                    }
+                    else {
+                            if (response.status == 400 ) {
+                                console.log("Error en la petición");
+                                console.log(response.statusText);
+                            }else{
+                                console.log('error: ', response.status, response.statusText);
+                                console.log("No se puede borrar boleto");
+                                /* Realiza el tratamiento del error que devolvió el request HTTP */
+                                return { error: { status: response.status, statusText: response.statusText } };
+                                
+                            }
+                    }
+        }
+        catch (error) {
+			console.error("No se pudo borrar el numero", error);
+		}
             
     }
 
@@ -147,7 +183,7 @@ export const CartPage = () => {
                                         <p style={{ margin: 0, color: "white" }}>{item.name}</p>
                                     </div>
                                     <div style={{ flex: 1.5, textAlign: "center" }}>
-                                        <p style={{ margin: 0 }}>{item.numbersPlayed}</p>
+                                        <p style={{ margin: 0 }}>{item.numbersPlayed.join(", ")}</p>
                                     </div>
                                     <div style={{ flex: 1.5, textAlign: "center" }}>
                                         <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>
