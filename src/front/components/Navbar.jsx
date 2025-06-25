@@ -28,8 +28,17 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  const cartItems = [];
-  const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // Calcular total de números en el carrito
+  const totalCartItems = store.carrito.reduce((acc, item) => {
+    // item.numeros puede ser string "1,2,3" o array
+    const numerosArray = Array.isArray(item.numeros)
+      ? item.numeros
+      : item.numeros
+        ?.split(",")
+        .map((n) => n.trim())
+        .filter((n) => n !== "") || [];
+    return acc + numerosArray.length;
+  }, 0);
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -275,9 +284,15 @@ export const Navbar = () => {
           {store.isLogged && (
             <>
               <span style={groupTitleStyle}>Cuenta</span>
+
               <Link to="/profile" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
                 🏠 Perfil de usuario
               </Link>
+
+              <Link to="/myrifas" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+                🎟️ Mis boletos
+              </Link>
+
               <hr style={dividerStyle} />
             </>
           )}
@@ -287,7 +302,7 @@ export const Navbar = () => {
             🎯 Últimos resultados
           </Link>
           <Link to="/sorteos-activos" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-             🎁  Sorteos activos
+            🎁  Sorteos activos
           </Link>
           <hr style={dividerStyle} />
 
