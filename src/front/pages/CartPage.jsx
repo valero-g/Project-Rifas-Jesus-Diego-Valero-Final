@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
+import { loadStripe } from "@stripe/stripe-js";
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
+    const stripePromise = loadStripe("pk_test_51RcRIX4YU32R1sGLVqY5P2QvLNfxo5L4iG1NMyojQNkLrRtp647N30x1OLpT7GaaC24o2RWJ5NhLkIsqGRJZsLev00Ovt3rXvN");
     const countNumbersPlayed = (numbers) => {
     //const countNumbersPlayed = (numbersString) => {
     //    if (!numbersString) return 0;
@@ -116,6 +118,36 @@ export const CartPage = () => {
             
     }
 
+    const handleCheckout = async () =>{
+        try{
+            const backendUrl = import.meta.env.VITE_BACKEND_URL;
+            if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file");
+            const checkoutCart = store.carrito.map(rifa =>  {
+                        return {rifa_id: rifa.rifa_id, quantity: rifa.numeros.length}
+                    }
+                );
+            if (checkoutCart.length === 0) {
+                throw new Error("El carrito está vacío");
+            }
+            console.log (checkoutCart);
+            const res = await fetch(backendUrl +"/api/payments/create-checkout-session", {
+                method: "POST",
+                 headers: {
+                 "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ items: checkoutCart })
+            });
+
+            const data = await res.json();
+            const stripe = await stripePromise;
+            console.log("Respuesta del backend:", data);
+            await stripe.redirectToCheckout({ sessionId: data.id });
+                }
+        catch (error){
+                console.error("No se pudo realizar el checkout", error);
+            }
+
+    }
 
     return (
         <div style={{
@@ -219,7 +251,8 @@ export const CartPage = () => {
 
                         <div style={{ textAlign: "right", marginTop: "30px", paddingTop: "20px", borderTop: "2px solid rgb(59,255,231)" }}>
                             <h2 style={{ color: "rgb(59,255,231)", marginBottom: "20px" }}>Total: {calculateTotal()}€</h2>
-                            <Link to="/checkout" style={{ textDecoration: "none" }}>
+                            {//<Link to="/checkout" style={{ textDecoration: "none" }}>
+                            }
                                 <button
                                     className="btn"
                                     style={{
@@ -232,10 +265,12 @@ export const CartPage = () => {
                                         borderRadius: "5px",
                                         cursor: "pointer"
                                     }}
+                                    onClick={handleCheckout}
                                 >
                                     Proceder al Pago
                                 </button>
-                            </Link>
+                           {//</Link>
+                           }
                         </div>
                     </>
                 )}
