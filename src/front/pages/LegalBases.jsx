@@ -29,7 +29,7 @@ export const LegalBases = () => {
                 <h1 style={{ color: "rgb(59,255,231)", marginBottom: "20px" }}>📝 Bases Legales de los Sorteos</h1>
 
                 <p style={{ marginBottom: "20px", lineHeight: "1.6" }}>
-                    En <strong style={{ color: "rgb(59,255,231)" }}>Boleeks</strong>, nos comprometemos a garantizar la transparencia,
+                    En <strong style={{ color: "rgb(59,255,231)" }}>4Boleeks</strong>, nos comprometemos a garantizar la transparencia,
                     equidad y legalidad en todos los sorteos realizados a través de nuestra plataforma.
                     A continuación, se detallan las condiciones y normativas que rigen el funcionamiento de nuestras rifas:
                 </p>
