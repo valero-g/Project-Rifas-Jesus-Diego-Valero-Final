@@ -6,7 +6,7 @@ import os
 
 payments_bp = Blueprint('payments', __name__)
 
-stripe.api_key = "sk_test_51RcRIX4YU32R1sGLSS7O5uwOHxGKf0OmFTBPpb9dyMhDTnMSkbilXEE2zmTMTiYFe4JjIoKXNzY5wvnNMN54xiG40089ina0Xs"
+stripe.api_key = stripe.api_key = os.getnev('STRIPE_SECRET_KEY')
 
 
 @payments_bp.route("/create-checkout-session", methods=["POST"])

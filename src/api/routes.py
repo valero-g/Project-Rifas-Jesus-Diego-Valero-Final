@@ -24,7 +24,7 @@ api = Blueprint('api', __name__)
 CORS(api)
 
 #Stripe api_key
-stripe.api_key = "sk_test_51RcRIX4YU32R1sGLSS7O5uwOHxGKf0OmFTBPpb9dyMhDTnMSkbilXEE2zmTMTiYFe4JjIoKXNzY5wvnNMN54xiG40089ina0Xs"
+stripe.api_key = os.getnev('STRIPE_SECRET_KEY')
 
 # Endpoint de Vendedor -Solo hacemos POST inicialmente
 @api.route('/vendedor', methods=['POST'])
