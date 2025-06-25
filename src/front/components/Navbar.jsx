@@ -275,19 +275,26 @@ export const Navbar = () => {
           {store.isLogged && (
             <>
               <span style={groupTitleStyle}>Cuenta</span>
+
               <Link to="/profile" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
                 🏠 Perfil de usuario
               </Link>
+
+              <Link to="/myrifas" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+                🎟️ Mis boletos
+              </Link>
+
               <hr style={dividerStyle} />
             </>
           )}
+
 
           <span style={groupTitleStyle}>Explorar</span>
           <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
             🎯 Últimos resultados
           </Link>
           <Link to="/sorteos-activos" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-             🎁  Sorteos activos
+            🎁  Sorteos activos
           </Link>
           <hr style={dividerStyle} />
 
