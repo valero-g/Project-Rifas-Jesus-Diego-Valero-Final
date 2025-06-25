@@ -28,8 +28,17 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  const cartItems = [];
-  const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // Calcular total de números en el carrito
+  const totalCartItems = store.carrito.reduce((acc, item) => {
+    // item.numeros puede ser string "1,2,3" o array
+    const numerosArray = Array.isArray(item.numeros)
+      ? item.numeros
+      : item.numeros
+          ?.split(",")
+          .map((n) => n.trim())
+          .filter((n) => n !== "") || [];
+    return acc + numerosArray.length;
+  }, 0);
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -287,7 +296,6 @@ export const Navbar = () => {
               <hr style={dividerStyle} />
             </>
           )}
-
 
           <span style={groupTitleStyle}>Explorar</span>
           <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
