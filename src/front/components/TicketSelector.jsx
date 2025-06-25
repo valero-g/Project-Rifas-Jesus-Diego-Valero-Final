@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
-export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
+export default function TicketSelector({ maxNumber, precio, onSelectTickets, rifaId }) {
 
     const { store } = useGlobalReducer();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!rifaId) return;
+
+        // Buscar los boletos ya en el carrito para esta rifa
+        const boletosEnStore = store.carrito
+            .filter(item => item.rifa_id === rifaId)
+            .flatMap(item => item.numeros || []);
+        console.log("boletosEnStore desde el store:", boletosEnStore)
+
+        // Inicializa el set de tickets seleccionados
+        setSelectedTickets(new Set(boletosEnStore));
+    }, [rifaId]);
+
+
+
     // IMPORTANTE: Necesitamos el ID de la rifa para filtrar correctamente
     // Si este componente no lo recibe como prop, hacelo en el padre.
-    const rifaId = store?.rifaSeleccionada?.id || null;
+
 
     const numerosEnCarrito = store.carrito
         .filter(item => item.rifa_id === rifaId)
@@ -26,6 +41,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
     const [selectedTickets, setSelectedTickets] = useState(new Set());
 
     const toggleTicket = (n) => {
+        console.log("toggleTicket recibe n:", n);
         if (numerosEnCarrito.includes(n)) return; // número ya reservado, ignorar
 
         const newSet = new Set(selectedTickets);
@@ -323,8 +339,10 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                 >
                     <p style={{ color: "white" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
                     <button
-                        onClick={() => {setShowPopup(false);
-                            navigate("/")}}
+                        onClick={() => {
+                            setShowPopup(false);
+                            navigate("/")
+                        }}
                         style={{
                             marginTop: "10px",
                             padding: "8px 16px",
@@ -349,9 +367,81 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
     };
 
     const AddCartAction = () => {
-        onSelectTickets(selectedArray);
-        infoClick()
+        if (!rifaId) {
+            alert("No hay rifa seleccionada");
+            return;
+        }
+
+        const selectedArray = Array.from(selectedTickets);
+
+        if (selectedArray.some(n => typeof n !== 'number')) {
+            alert("Hay boletos inválidos");
+            return;
+        }
+
+        // Boletos ya en el carrito de esta rifa
+        const existentes = store.carrito.find(item => item.rifa_id === rifaId)?.numeros || [];
+
+        // ⚠️ Filtrar para mandar solo los nuevos
+        const nuevosBoletos = selectedArray.filter(n => !existentes.includes(n));
+
+        if (nuevosBoletos.length === 0) {
+            alert("No hay boletos nuevos para añadir al carrito.");
+            return;
+        }
+
+        const carritoSinEstaRifa = store.carrito.filter(item => item.rifa_id !== rifaId);
+        const nuevaEntrada = {
+            rifa_id: rifaId,
+            numeros: [...existentes, ...nuevosBoletos],
+        };
+
+        console.log("Nueva entrada (solo nuevos):", nuevaEntrada);
+        onSelectTickets([...carritoSinEstaRifa, nuevaEntrada]);
+
+        setSelectedTickets(new Set());  // añadido nuevo 2: limpiar selección para evitar duplicados en UI
+        infoClick();
     };
+
+
+    const GoCartAction = () => {
+        if (!rifaId) {
+            alert("No hay rifa seleccionada");
+            return;
+        }
+
+        const selectedArray = Array.from(selectedTickets);
+
+        if (selectedArray.some(n => typeof n !== 'number')) {
+            alert("Hay boletos inválidos");
+            return;
+        }
+
+        // Boletos ya en el carrito de esta rifa
+        const existentes = store.carrito.find(item => item.rifa_id === rifaId)?.numeros || [];
+
+        // ⚠️ Filtrar para mandar solo los nuevos
+        const nuevosBoletos = selectedArray.filter(n => !existentes.includes(n));
+
+        if (nuevosBoletos.length === 0) {
+            alert("No hay boletos nuevos para añadir al carrito.");
+            return;
+        }
+
+        const carritoSinEstaRifa = store.carrito.filter(item => item.rifa_id !== rifaId);
+        const nuevaEntrada = {
+            rifa_id: rifaId,
+            numeros: [...existentes, ...nuevosBoletos],
+        };
+
+        console.log("Nueva entrada (solo nuevos):", nuevaEntrada);
+        onSelectTickets([...carritoSinEstaRifa, nuevaEntrada]);
+
+        setSelectedTickets(new Set());  // añadido nuevo 2: limpiar selección para evitar duplicados en UI
+        navigate("/checkout")
+    };
+
+
 
 
     return (
@@ -452,9 +542,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     }}>
                     Añadir al carrito
                 </button>
-                <button onClick={() => {onSelectTickets(selectedArray);
-                    navigate("/checkout")
-                }}
+                <button onClick={GoCartAction}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',

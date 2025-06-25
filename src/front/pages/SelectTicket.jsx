@@ -19,8 +19,55 @@ export const SelectTicket = () => {
         navigate('/');
     };
 
+    /*if (!store.usuario?.id || !rifa?.id || !numero) {
+        console.error("Faltan datos para crear el boleto:", {
+            usuario_id: store.usuario?.id,
+            rifa_id: rifa?.id,
+            //numero
+        });
+        return;
+    }*/
 
-    const addTicketsToCart = (selectedNumbers) => {
+    async function crearBoleto({ usuario_id, rifa_id, numero }) {
+        const token = sessionStorage.getItem("token"); // Obtener token almacenado
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Añadir token aquí
+                },
+                body: JSON.stringify({
+                    usuario_id,
+                    rifa_id,
+                    numero,
+                    confirmado: false
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                dispatch({
+                    type: 'add_number_to_cart',
+                    payload: {
+                        rifa_id,
+                        numero,
+                    }
+                });
+                return { success: true, boleto: data };
+            } else {
+                return { success: false, message: data.message || 'Error desconocido' };
+            }
+        } catch (error) {
+            return { success: false, message: 'Error de red o inesperado' };
+        }
+    }
+
+
+
+    const addTicketsToCart = async (selectedNumbers) => {
         console.log("Números seleccionados para añadir al carrito:", selectedNumbers);
 
         const rifaId = rifa.id;
@@ -46,15 +93,17 @@ export const SelectTicket = () => {
         });
 
         // 4. Agregar nuevos números seleccionados
-        nuevos.forEach(numero => {
-            dispatch({
-                type: 'add_number_to_cart',
-                payload: {
-                    rifa_id: rifaId,
-                    numero,
-                }
+        for (const numero of nuevos) {
+            const res = await crearBoleto({
+                usuario_id: store.usuario?.id,
+                rifa_id: rifaId,
+                numero
             });
-        });
+
+            if (!res.success) {
+                alert(`Error al crear boleto ${numero}: ${res.message}`);
+            }
+        }
 
         if (nuevos.length === 0 && eliminados.length === 0) {
             alert("No hay cambios en la selección de boletos.");
@@ -91,17 +140,7 @@ export const SelectTicket = () => {
         return <div style={{ color: "#000", padding: "2rem" }}><strong>Cargando rifa...</strong></div>;
     }
     return (
-        <div /*style={{
-            backgroundImage: `url(${fondo})`,
-            // Regresamos a 'cover' para que ocupe todo el espacio
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
-            backgroundAttachment: "fixed",
-            // Centramos la imagen para que lo más importante esté visible
-            backgroundPosition: "center center",
-            minHeight: "100vh",
-            color: "#FFFFFF",
-        }}*/>
+        <div>
             <div style={{ marginLeft: "149px", marginTop: "15px" }}>
                 <p style={{ cursor: 'pointer' }} onClick={BackHome}> <i className="fas fa-arrow-left"></i> <strong>Volver</strong></p>
             </div>
