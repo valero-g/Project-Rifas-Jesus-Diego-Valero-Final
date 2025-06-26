@@ -162,7 +162,7 @@ export const Register = () => {
                     paddingBottom: "5px"
                 }}>Credenciales de acceso</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                    {renderInput("contraseña", "Contraseña", "password", formData, handleChange, "Debe contener letras, números y caracteres especiales.", errors.contraseña)}
+                    {renderInput("contraseña", "Contraseña", "password", formData, handleChange, "Puede contener letras, números y caracteres especiales.", errors.contraseña)}
                     {renderInput("confirmar_contraseña", "Confirmar contraseña", "password", formData, handleChange, "Repite tu contraseña exactamente igual que el campo anterior.", errors.confirmar_contraseña)}
                 </div>
 

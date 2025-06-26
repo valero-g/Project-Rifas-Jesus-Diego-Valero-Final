@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
+import { loadStripe } from "@stripe/stripe-js";
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
+    const stripePromise = loadStripe("pk_test_51RcRIX4YU32R1sGLVqY5P2QvLNfxo5L4iG1NMyojQNkLrRtp647N30x1OLpT7GaaC24o2RWJ5NhLkIsqGRJZsLev00Ovt3rXvN");
     const countNumbersPlayed = (numbers) => {
-    //const countNumbersPlayed = (numbersString) => {
-    //    if (!numbersString) return 0;
-    //    const numbers = numbersString.split(',').filter(num => num.trim() !== '');
+        //const countNumbersPlayed = (numbersString) => {
+        //    if (!numbersString) return 0;
+        //    const numbers = numbersString.split(',').filter(num => num.trim() !== '');
         return numbers.length;
     };
 
@@ -19,23 +21,23 @@ export const CartPage = () => {
         //{ id: 2, name: "Rifa 2", numbersPlayed: "11,20", price: 2.00 },
         //{ id: 3, name: "Rifa 3", numbersPlayed: "21,30,3,4", price: 5.00 },
         //{ id: 4, name: "Rifa 4", numbersPlayed: "5", price: 10.00 },
-        
+
     );
 
-    useEffect( ()=>{
-    const updatedCartItems = store.carrito.map((item, i) => {
-        const rifa = store.rifas.find(r => r.id === item.rifa_id);
-        console.log(rifa);
-        return {
-            id: i,
-            rifa_id: rifa.id,
-            name: rifa?.nombre_rifa || 'Nombre desconocido',
-            price: parseFloat(rifa?.precio_boleto || 0),
-            numbersPlayed: item.numeros
-        };
-    });
-    setCartItems(updatedCartItems);
-    console.log(updatedCartItems);
+    useEffect(() => {
+        const updatedCartItems = store.carrito.map((item, i) => {
+            const rifa = store.rifas.find(r => r.id === item.rifa_id);
+            console.log(rifa);
+            return {
+                id: i,
+                rifa_id: rifa.id,
+                name: rifa?.nombre_rifa || 'Nombre desconocido',
+                price: parseFloat(rifa?.precio_boleto || 0),
+                numbersPlayed: item.numeros
+            };
+        });
+        setCartItems(updatedCartItems);
+        console.log(updatedCartItems);
     }, [])
 
     const updatedCartItems = cartItems.map(item => ({
@@ -50,22 +52,21 @@ export const CartPage = () => {
     const handleRemoveItem = (id) => {
         const cartItemToRemove = cartItems.find(item => item.id === id);
         //console.log(cartItemToRemove);
-        cartItemToRemove.numbersPlayed.map( number => 
-        {
+        cartItemToRemove.numbersPlayed.map(number => {
             if (deleteNumber(number, cartItemToRemove.rifa_id)) {
-                dispatch({type:'delete_number_from_cart', payload:{rifa_id: cartItemToRemove.rifa_id,numero:number}});
+                dispatch({ type: 'delete_number_from_cart', payload: { rifa_id: cartItemToRemove.rifa_id, numero: number } });
                 //console.log(store);
             };
-            });
+        });
 
         setCartItems(prevItems =>
             prevItems.filter(item => item.id !== id)
         );
-        
+
     };
 
-    const deleteNumber = async(number, rifa_id) => {
-        try{
+    const deleteNumber = async (number, rifa_id) => {
+        try {
             //console.log("Numero a borrar :", number);
             //console.log("Numero de rifa:", rifa_id);
             //console.log("usuario ", store.usuario.id);
@@ -75,47 +76,77 @@ export const CartPage = () => {
             if (!token) {
                 alert("No se encontró token de autenticación para guardar los cambios.");
                 return 0;
-            }   
-                
-            const response = await fetch(backendUrl + "/api/boleto",
-                        {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                                numero: number,
-                                rifa_id: rifa_id,
-                                usuario_id:store.usuario.id 
-                            })
-                        })
-                    const data = await response.json()
+            }
 
-                    if (response.ok) {
-                        console.log(data);
-                        console.log(`Numero ${number} eliminado correctamente`);
-                        return true;
-                    }
-                    else {
-                            if (response.status == 400 ) {
-                                console.log("Error en la petición");
-                                console.log(response.statusText);
-                            }else{
-                                console.log('error: ', response.status, response.statusText);
-                                console.log("No se puede borrar boleto");
-                                /* Realiza el tratamiento del error que devolvió el request HTTP */
-                                return { error: { status: response.status, statusText: response.statusText } };
-                                
-                            }
-                    }
+            const response = await fetch(backendUrl + "/api/boleto",
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        numero: number,
+                        rifa_id: rifa_id,
+                        usuario_id: store.usuario.id
+                    })
+                })
+            const data = await response.json()
+
+            if (response.ok) {
+                console.log(data);
+                console.log(`Numero ${number} eliminado correctamente`);
+                return true;
+            }
+            else {
+                if (response.status == 400) {
+                    console.log("Error en la petición");
+                    console.log(response.statusText);
+                } else {
+                    console.log('error: ', response.status, response.statusText);
+                    console.log("No se puede borrar boleto");
+                    /* Realiza el tratamiento del error que devolvió el request HTTP */
+                    return { error: { status: response.status, statusText: response.statusText } };
+
+                }
+            }
         }
         catch (error) {
-			console.error("No se pudo borrar el numero", error);
-		}
-            
+            console.error("No se pudo borrar el numero", error);
+        }
+
     }
 
+    const handleCheckout = async () => {
+        try {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL;
+            if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file");
+            const checkoutCart = store.carrito.map(rifa => {
+                return { rifa_id: rifa.rifa_id, quantity: rifa.numeros.length }
+            }
+            );
+            if (checkoutCart.length === 0) {
+                throw new Error("El carrito está vacío");
+            }
+            console.log(checkoutCart);
+            const res = await fetch(backendUrl + "/api/payments/create-checkout-session", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ items: checkoutCart })
+            });
+
+            const data = await res.json();
+            const stripe = await stripePromise;
+            console.log("Respuesta del backend:", data);
+            await stripe.redirectToCheckout({ sessionId: data.id });
+        }
+        catch (error) {
+            console.error("No se pudo realizar el checkout", error);
+        }
+
+    }
 
     return (
         <div style={{
@@ -168,7 +199,7 @@ export const CartPage = () => {
                             <div style={{ width: "30px" }}></div>
                         </div>
 
-                        
+
                         <div style={{ marginBottom: "20px" }}>
                             {updatedCartItems.map(item => (
                                 <div key={item.id} style={{
@@ -219,23 +250,26 @@ export const CartPage = () => {
 
                         <div style={{ textAlign: "right", marginTop: "30px", paddingTop: "20px", borderTop: "2px solid rgb(59,255,231)" }}>
                             <h2 style={{ color: "rgb(59,255,231)", marginBottom: "20px" }}>Total: {calculateTotal()}€</h2>
-                            <Link to="/checkout" style={{ textDecoration: "none" }}>
-                                <button
-                                    className="btn"
-                                    style={{
-                                        backgroundColor: "rgb(59,255,231)",
-                                        color: "black",
-                                        padding: "12px 30px",
-                                        fontSize: "1.1rem",
-                                        fontWeight: "bold",
-                                        border: "none",
-                                        borderRadius: "5px",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    Proceder al Pago
-                                </button>
-                            </Link>
+                            {//<Link to="/checkout" style={{ textDecoration: "none" }}>
+                            }
+                            <button
+                                className="btn"
+                                style={{
+                                    backgroundColor: "rgb(59,255,231)",
+                                    color: "black",
+                                    padding: "12px 30px",
+                                    fontSize: "1.1rem",
+                                    fontWeight: "bold",
+                                    border: "none",
+                                    borderRadius: "5px",
+                                    cursor: "pointer"
+                                }}
+                                onClick={handleCheckout}
+                            >
+                                Proceder al Pago
+                            </button>
+                            {//</Link>
+                            }
                         </div>
                     </>
                 )}
