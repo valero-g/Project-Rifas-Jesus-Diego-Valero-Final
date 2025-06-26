@@ -15,9 +15,12 @@ import { AboutUs } from "./pages/AboutUs";
 import { LegalBases } from "./pages/LegalBases";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { CartPage } from "./pages/CartPage";
-import { Profile } from "./pages/Profile"; 
+import { Profile } from "./pages/Profile";
 import { SelectTicket } from "./pages/SelectTicket";
 import { MyRifas } from "./pages/MyRifas";
+import { Success } from "./pages/Success";
+import { Cancel } from "./pages/Cancel";
+
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,6 +38,8 @@ export const router = createBrowserRouter(
       <Route path="/seleccion-boletos/:id" element={<SelectTicket />} />
       <Route path="/myrifas" element={<MyRifas />} />
       <Route path="/myrifas/:id" element={<MyRifas />} />
+      <Route path="/success" element={<Success />} />
+      <Route path="/cancel" element={<Cancel />} />
     </Route>
   )
 );
