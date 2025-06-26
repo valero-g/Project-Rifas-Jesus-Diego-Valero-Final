@@ -38,7 +38,7 @@ export const CartPage = () => {
         });
         setCartItems(updatedCartItems);
         console.log(updatedCartItems);
-    }, [])
+    }, [store.carrito])
 
     const updatedCartItems = cartItems.map(item => ({
         ...item,

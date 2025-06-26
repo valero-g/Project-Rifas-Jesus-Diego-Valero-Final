@@ -784,10 +784,6 @@ def delete_boleto_by_userid(usuario_id):
     except Exception as e:
         print("Error: ", e)
         return {"message": "Error borrando boletos"}, 500
-<<<<<<< Diego
-
-=======
->>>>>>> QA
 
 
 # SPRINT #3 Endpoints de Detalle compra

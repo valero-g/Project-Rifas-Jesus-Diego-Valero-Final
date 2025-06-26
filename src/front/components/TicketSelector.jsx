@@ -109,7 +109,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         return (
                             <div
                                 key={n}
-                                onClick={() => onToggle(n)}
+                                onClick={reservado ? ()=> console.log("Click en número ya reservado!") :() => onToggle(n)}
                                 style={{
                                     width: '50px',
                                     height: '50px',
@@ -310,14 +310,16 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
             const data = await response.json();
             console.log("✅ Boletos guardados correctamente:", data);
             alert("Boletos agregados correctamente");
-
-            dispatch({
-                type: 'add_number_to_cart',
-                payload: {
-                    rifa_id: rifaId,
-                    numero: selectedArray,
-                }
-            });
+            // guardamos cada número en el carrito
+            console.log("selectedArray:", selectedArray);
+            selectedArray.map(selected => dispatch({type:'add_number_to_cart', payload:{rifa_id:rifaId, numero:selected}}));
+            //dispatch({
+            //    type: 'add_number_to_cart',
+            //    payload: {
+            //        rifa_id: rifaId,
+            //        numero: selectedArray,
+            //    }
+            //});
 
             setSelectedTickets(new Set());
 
