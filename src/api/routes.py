@@ -485,7 +485,7 @@ def add_boleto():
             return {"message": "Petición errónea. Body incorrecto"}, 400
         if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
             return {"message": "Petición errónea. Body incorrecto"}, 400
-        if int(current_id) != request_body["usuario_id"]:
+        if int(current_id) != int(request_body["usuario_id"]):
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
 
         # Validacion de rifa
@@ -542,7 +542,6 @@ def add_boleto():
 
     except Exception as e:
         print("Error: ", e)
-        traceback.print_exc()
         return {"message": "Error reservando boleto"}, 500
 
 
