@@ -65,6 +65,7 @@ export const Layout = () => {
             if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
             const boletosUsuario = await response.json();
             // añadimos los números del usuario cuya compra NO esté confrimada al carrito
+            console.log(boletosUsuario)
             for (let boleto of boletosUsuario){
                 if (boleto.confirmado == false){
                     dispatch({type: 'add_number_to_cart', payload:{rifa_id: boleto.rifa_id, numero: boleto.numero}});

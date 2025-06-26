@@ -1,20 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
-export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
+export default function TicketSelector({ maxNumber, precio, onSelectTickets, rifaId }) {
 
-    const { store } = useGlobalReducer();
+    const { store, dispatch } = useGlobalReducer();
     const navigate = useNavigate();
 
-    // IMPORTANTE: Necesitamos el ID de la rifa para filtrar correctamente
-    // Si este componente no lo recibe como prop, hacelo en el padre.
-    const rifaId = store?.rifaSeleccionada?.id || null;
-
-    const numerosEnCarrito = store.carrito
-        .filter(item => item.rifa_id === rifaId)
-        .flatMap(item => item.numeros); // todos los números ocupados en esta rifa
-
+    useEffect(() => {
+        console.log("Carrito actualizado (useEffect):", store.carrito);
+    }, [store.carrito]);
 
     const groupSize = 10;
     const grupos = [];
@@ -26,7 +21,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
     const [selectedTickets, setSelectedTickets] = useState(new Set());
 
     const toggleTicket = (n) => {
-        if (numerosEnCarrito.includes(n)) return; // número ya reservado, ignorar
 
         const newSet = new Set(selectedTickets);
 
@@ -39,15 +33,15 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
             }
             newSet.add(n);
         }
-
+        console.log("Boletos seleccionados actualmente:", Array.from(newSet));
         setSelectedTickets(newSet);
     };
-
 
 
     const removeTicket = (n) => {
         const newSet = new Set(selectedTickets);
         newSet.delete(n);
+        console.log("Boleto eliminado:", n, " - Boletos actuales:", Array.from(newSet));
         setSelectedTickets(newSet);
     };
 
@@ -88,7 +82,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
     );
 
 
-    const BoletosDisponibles = ({ grupo, seleccionados, onToggle }) => {
+    const BoletosDisponibles = ({ grupo, seleccionados, boletosReservados, onToggle }) => {
         const boletos = [];
 
         const start = grupo ? grupo.start : 1;
@@ -109,32 +103,20 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     marginBottom: "15px"
                 }}>
                     {boletos.map((n) => {
-                        const reservado = numerosEnCarrito.includes(n);
+                        const reservado = boletosReservados.has(n);
                         const seleccionado = seleccionados.has(n);
 
                         return (
                             <div
                                 key={n}
-                                onClick={() => !reservado && onToggle(n)}
+                                onClick={() => onToggle(n)}
                                 style={{
                                     width: '50px',
                                     height: '50px',
                                     borderRadius: '50%',
-                                    backgroundColor: reservado
-                                        ? '#ffcccc'  // rojo claro
-                                        : seleccionado
-                                            ? '#0A131F'  // azul oscuro
-                                            : 'none',
-                                    color: reservado
-                                        ? '#cc0000' // rojo texto
-                                        : seleccionado
-                                            ? '#3BFFE7'
-                                            : '#0A131F',
-                                    border: reservado
-                                        ? '2px solid #cc0000'
-                                        : seleccionado
-                                            ? '0'
-                                            : '2px solid #3BFFE7',
+                                    backgroundColor: reservado ? 'red' : seleccionado ? '#0A131F' : 'none',
+                                    color: reservado ? '#FFA07A' : seleccionado ? '#3BFFE7' : '#0A131F',
+                                    border: reservado ? '2px solid #FFA07A' : seleccionado ? '0' : '2px solid #3BFFE7',
                                     cursor: reservado ? 'not-allowed' : 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -283,12 +265,101 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
         const newSet = new Set(selectedTickets);
         newSet.add(randomTicket);
 
+        console.log("Boleto aleatorio añadido:", randomTicket, " - Nuevos seleccionados:", Array.from(newSet)); // ✅
         setSelectedTickets(newSet);
     };
 
 
     const total = selectedTickets.size * precio
     const selectedArray = Array.from(selectedTickets);
+
+    if (!selectedTickets || selectedTickets.length === 0) {
+        alert("Debes seleccionar al menos un boleto");
+        return;
+    }
+
+    const AddToCart = async () => {
+        const token = sessionStorage.getItem("token");
+
+        console.log("🔐 Token:", token);
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    usuario_id: store.usuario?.id,
+                    rifa_id: rifaId,
+                    numero: {
+                        numeros: selectedArray,
+                    },
+                    confirmado: false
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("❌ Error al guardar boletos:", errorData);
+                alert(`Error: ${errorData.message || "Error desconocido"}`);
+                return;
+            }
+
+            const data = await response.json();
+            console.log("✅ Boletos guardados correctamente:", data);
+            alert("Boletos agregados correctamente");
+
+            dispatch({
+                type: 'add_number_to_cart',
+                payload: {
+                    rifa_id: rifaId,
+                    numero: selectedArray,
+                }
+            });
+
+            setSelectedTickets(new Set());
+
+        } catch (err) {
+            console.error("🚨 Error inesperado en AddToCart:", err);
+            alert("Ocurrió un error inesperado al agregar boletos");
+        }
+    };
+
+
+
+    const [boletosReservados, setBoletosReservados] = useState(new Set());
+
+    useEffect(() => {
+        const getBoletosReservados = async () => {
+            try {
+                const token = sessionStorage.getItem("token"); // o de donde tengas el token
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error en respuesta:", errorData);
+                    return;
+                }
+                const data = await response.json();
+                console.log("Respuesta completa de boletos reservados:", data);
+
+                setBoletosReservados(new Set(data.Numeros_ocupados || []));
+                console.log("Boletos reservados set:", new Set(data.numero || data.numeros || []));
+            } catch (error) {
+                console.error("Error al cargar boletos reservados:", error);
+            }
+        };
+        if (rifaId) {
+            getBoletosReservados();
+        }
+    }, [rifaId]);
+
+
 
 
     const [showPopup, setShowPopup] = useState(false);
@@ -323,8 +394,10 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                 >
                     <p style={{ color: "white" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
                     <button
-                        onClick={() => {setShowPopup(false);
-                            navigate("/")}}
+                        onClick={() => {
+                            setShowPopup(false);
+                            navigate("/")
+                        }}
                         style={{
                             marginTop: "10px",
                             padding: "8px 16px",
@@ -348,10 +421,15 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
         setShowPopup(true);
     };
 
-    const AddCartAction = () => {
-        onSelectTickets(selectedArray);
-        infoClick()
-    };
+    const CartButtonAction = () => {
+        infoClick();
+        AddToCart()
+    }
+
+    const GoCartButtonAction = () =>{
+        AddToCart();
+        navigate('/checkout')
+    }
 
 
     return (
@@ -382,6 +460,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                 <BoletosDisponibles
                     grupo={grupos[selectedGroupIndex]}
                     seleccionados={selectedTickets}
+                    boletosReservados={boletosReservados}
                     onToggle={toggleTicket}
                 />
             </div>
@@ -436,7 +515,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     }}>
                     Al azar
                 </button>
-                <button onClick={AddCartAction}
+                <button onClick={CartButtonAction}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',
@@ -452,9 +531,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets }) {
                     }}>
                     Añadir al carrito
                 </button>
-                <button onClick={() => {onSelectTickets(selectedArray);
-                    navigate("/checkout")
-                }}
+                <button onClick={GoCartButtonAction}
                     style={{
                         borderRadius: '15px',
                         padding: '16px 32px',

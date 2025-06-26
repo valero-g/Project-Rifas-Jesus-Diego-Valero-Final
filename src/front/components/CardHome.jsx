@@ -10,6 +10,8 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
 
     const handleClick = () => {
         if (store.isLogged) {
+            console.log( id)
+            console.log()
             navigate(`/seleccion-boletos/${id}`)
         } else {
             navigate("/Login");
