@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
@@ -19,10 +19,15 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
     const [selectedGroupIndex, setSelectedGroupIndex] = useState(null);
     const [selectedTickets, setSelectedTickets] = useState(new Set());
+    const [boletosReservados, setBoletosReservados] = useState(new Set());
 
     const toggleTicket = (n) => {
-
         const newSet = new Set(selectedTickets);
+
+        if (boletosReservados.has(n)) {
+            console.log("Este boleto ya está reservado y no puede ser seleccionado.");
+            return;
+        }
 
         if (newSet.has(n)) {
             newSet.delete(n);
@@ -147,8 +152,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                 borderRadius: "5px",
                 width: "40%",
                 height: "175px",
-                //marginLeft: "46px",
-                //marginTop: "20px",
                 padding: "10px",
                 textAlign: "center"
             }}>
@@ -163,7 +166,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                     style={{
                                         backgroundColor: '#0A131F',
                                         color: '#3BFFE7',
-                                        //border:"1px solid #0A131F",
                                         padding: '6px 10px',
                                         borderRadius: '20px',
                                         marginBottom: '6px',
@@ -246,9 +248,8 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
         const availableTickets = [];
 
-        // Crea lista de números aún no seleccionados
         for (let i = 1; i <= maxNumber; i++) {
-            if (!selectedTickets.has(i)) {
+            if (!selectedTickets.has(i) && !boletosReservados.has(i)) {
                 availableTickets.push(i);
             }
         }
@@ -258,14 +259,13 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
             return;
         }
 
-        // Elige uno al azar entre los disponibles
         const randomIndex = Math.floor(Math.random() * availableTickets.length);
         const randomTicket = availableTickets[randomIndex];
 
         const newSet = new Set(selectedTickets);
         newSet.add(randomTicket);
 
-        console.log("Boleto aleatorio añadido:", randomTicket, " - Nuevos seleccionados:", Array.from(newSet)); // ✅
+        console.log("Boleto aleatorio añadido:", randomTicket, " - Nuevos seleccionados:", Array.from(newSet));
         setSelectedTickets(newSet);
     };
 
@@ -273,12 +273,38 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
     const total = selectedTickets.size * precio
     const selectedArray = Array.from(selectedTickets);
 
-    if (!selectedTickets || selectedTickets.length === 0) {
-        alert("Debes seleccionar al menos un boleto");
-        return;
-    }
+    const getBoletosReservados = useCallback(async () => {
+        try {
+            const token = sessionStorage.getItem("token");
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error en respuesta:", errorData);
+                return;
+            }
+            const data = await response.json();
+            console.log("Respuesta completa de boletos reservados:", data);
+            setBoletosReservados(new Set(data.Numeros_ocupados || []));
+        } catch (error) {
+            console.error("Error al cargar boletos reservados:", error);
+        }
+    }, [rifaId]);
+
+    useEffect(() => {
+        if (rifaId) {
+            getBoletosReservados();
+        }
+    }, [rifaId, getBoletosReservados]);
 
     const AddToCart = async () => {
+        if (selectedTickets.size === 0) {
+            alert("Debes seleccionar al menos un boleto para añadir al carrito.");
+            return;
+        }
         const token = sessionStorage.getItem("token");
 
         console.log("🔐 Token:", token);
@@ -309,17 +335,9 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
             const data = await response.json();
             console.log("✅ Boletos guardados correctamente:", data);
-            alert("Boletos agregados correctamente");
-            // guardamos cada número en el carrito
-            console.log("selectedArray:", selectedArray);
             selectedArray.map(selected => dispatch({type:'add_number_to_cart', payload:{rifa_id:rifaId, numero:selected}}));
-            //dispatch({
-            //    type: 'add_number_to_cart',
-            //    payload: {
-            //        rifa_id: rifaId,
-            //        numero: selectedArray,
-            //    }
-            //});
+            
+            await getBoletosReservados(); 
 
             setSelectedTickets(new Set());
 
@@ -328,40 +346,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
             alert("Ocurrió un error inesperado al agregar boletos");
         }
     };
-
-
-
-    const [boletosReservados, setBoletosReservados] = useState(new Set());
-
-    useEffect(() => {
-        const getBoletosReservados = async () => {
-            try {
-                const token = sessionStorage.getItem("token"); // o de donde tengas el token
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Error en respuesta:", errorData);
-                    return;
-                }
-                const data = await response.json();
-                console.log("Respuesta completa de boletos reservados:", data);
-
-                setBoletosReservados(new Set(data.Numeros_ocupados || []));
-                console.log("Boletos reservados set:", new Set(data.numero || data.numeros || []));
-            } catch (error) {
-                console.error("Error al cargar boletos reservados:", error);
-            }
-        };
-        if (rifaId) {
-            getBoletosReservados();
-        }
-    }, [rifaId]);
-
-
 
 
     const [showPopup, setShowPopup] = useState(false);
@@ -389,29 +373,88 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         padding: "20px",
                         borderRadius: "12px",
                         border: "1px solid #3BFFE7",
-                        width: "300px",
+                        width: "350px",
                         textAlign: "center",
-                        boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
+                        boxShadow: "0 5px 20px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "15px"
                     }}
                 >
-                    <p style={{ color: "white" }}>{popupContent}</p> {/* Color negro para el texto del pop-up */}
-                    <button
-                        onClick={() => {
-                            setShowPopup(false);
-                            navigate("/")
-                        }}
-                        style={{
-                            marginTop: "10px",
-                            padding: "8px 16px",
-                            backgroundColor: "#3BFFE7",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                        }}
-                    >
-                        Volver
-                    </button>
+                    <p style={{ color: "white", marginBottom: "0" }}>{popupContent}</p>
+                    <div style={{
+                        display: "flex",
+                        gap: "10px",
+                        justifyContent: "center",
+                        width: "100%"
+                    }}>
+                        <button
+                            onClick={() => {
+                                setShowPopup(false);
+                                navigate("/");
+                            }}
+                            style={{
+                                padding: "8px 16px",
+                                backgroundColor: "#0A131F", // Nuevo color de fondo
+                                color: "#3BFFE7", // Nuevo color de texto
+                                border: "1px solid #3BFFE7", // Borde para el dinamismo
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "bold",
+                                flex: 1,
+                                minWidth: "120px",
+                                transition: "background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease", // Transiciones para dinamismo
+                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                            }}
+                            // Estos estilos :hover se aplicarán a través de una hoja de estilo externa o CSS-in-JS si no puedes usar archivos .css
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#3BFFE7'; // Hover color de fondo
+                                e.currentTarget.style.color = '#0A131F'; // Hover color de texto
+                                e.currentTarget.style.transform = 'scale(1.03)'; // Pequeña escala
+                                e.currentTarget.style.boxShadow = '0 5px 12px rgba(0, 0, 0, 0.6)'; // Sombra más pronunciada
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#0A131F';
+                                e.currentTarget.style.color = '#3BFFE7';
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.4)';
+                            }}
+                        >
+                            Volver al inicio
+                        </button>
+                        <button
+                            onClick={() => setShowPopup(false)}
+                            style={{
+                                padding: "8px 16px",
+                                backgroundColor: "#0A131F", // Nuevo color de fondo
+                                color: "#3BFFE7", // Nuevo color de texto
+                                border: "1px solid #3BFFE7", // Borde para el dinamismo
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "bold",
+                                flex: 1,
+                                minWidth: "120px",
+                                transition: "background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease", // Transiciones para dinamismo
+                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                            }}
+                            // Estos estilos :hover se aplicarán a través de una hoja de estilo externa o CSS-in-JS si no puedes usar archivos .css
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#3BFFE7'; // Hover color de fondo
+                                e.currentTarget.style.color = '#0A131F'; // Hover color de texto
+                                e.currentTarget.style.transform = 'scale(1.03)'; // Pequeña escala
+                                e.currentTarget.style.boxShadow = '0 5px 12px rgba(0, 0, 0, 0.6)'; // Sombra más pronunciada
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#0A131F';
+                                e.currentTarget.style.color = '#3BFFE7';
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.4)';
+                            }}
+                        >
+                            Continuar comprando
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -423,20 +466,25 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         setShowPopup(true);
     };
 
-    const CartButtonAction = () => {
+    const CartButtonAction = async () => {
+        await AddToCart();
+        if (selectedTickets.size === 0) {
+            return;
+        }
         infoClick();
-        AddToCart()
     }
 
-    const GoCartButtonAction = () =>{
-        AddToCart();
-        navigate('/checkout')
+    const GoCartButtonAction = async () =>{
+        await AddToCart();
+        if (selectedTickets.size === 0) {
+            return;
+        }
+        navigate('/checkout');
     }
 
 
     return (
         <div style={{
-            //flexGrow: 1,
             boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
             borderRadius: "20px",
             width: "65%",
@@ -547,7 +595,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}>
-                    Ir al carrito
+                    Comprar 
                 </button>
             </div>
             {renderPopup()}
