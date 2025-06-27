@@ -1,3 +1,5 @@
+// src/front/routes.jsx
+
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -20,7 +22,7 @@ import { SelectTicket } from "./pages/SelectTicket";
 import { MyRifas } from "./pages/MyRifas";
 import { Success } from "./pages/Success";
 import { Cancel } from "./pages/Cancel";
-
+import RuletaPage from "./pages/RuletaPage"; 
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -40,6 +42,7 @@ export const router = createBrowserRouter(
       <Route path="/myrifas/:id" element={<MyRifas />} />
       <Route path="/success" element={<Success />} />
       <Route path="/cancel" element={<Cancel />} />
+      <Route path="/ruleta" element={<RuletaPage />} /> 
     </Route>
   )
 );
