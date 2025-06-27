@@ -14,10 +14,11 @@ from api.commands import setup_commands
 from api.extensions import mail
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from dotenv import load_dotenv
 import stripe
 
 # from models import Person
-
+load_dotenv()
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
