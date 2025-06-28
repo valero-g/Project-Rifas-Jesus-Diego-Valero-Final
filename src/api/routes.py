@@ -657,6 +657,43 @@ def add_boleto():
         print("Error: ", e)
         return {"message": "Error reservando boleto"}, 500
 
+# PUT de boleto
+@api.route('/boleto', methods = ['PUT'])
+@jwt_required()
+def edit_boleto():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        request_body =  request.get_json(silent = True)
+
+        # Validación de body
+        if request_body == None:
+            return {"message" : "Petición errónea. Body vacio"}, 400
+        if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
+            print(request_body)
+            return {"message" : "Petición errónea. Body incorrecto"}, 400
+        # Validación de usuario
+        if int(current_id) != request_body["usuario_id"]:
+            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        if rifa == None:
+            return{"message": "La rifa no exsite"}, 400
+        # Validación de no existencia del boleto
+        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
+        if boleto == None:
+            return {"message":"El boleto no existe"}, 400
+        # Editamos boleto
+        boleto.confirmado = request_body["confirmado"]
+        db.session.commit()
+        return jsonify(boleto.serialize()), 200
+    except Exception as e:
+        print("Error: ",e)
+        return {"message":"Error modificando boleto"}, 500
 
 # DELETE de boleto
 @api.route('/boleto', methods=['DELETE'])
