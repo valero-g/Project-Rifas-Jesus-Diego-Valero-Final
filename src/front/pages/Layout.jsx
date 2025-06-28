@@ -18,8 +18,8 @@ export const Layout = () => {
         }
 
     }, []);
+    
 
-    useEffect(()=> {console.log(store)}, [store]);
 
     const getUser = async () => {
         const token = sessionStorage.getItem("token");
@@ -65,9 +65,10 @@ export const Layout = () => {
             if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
             const boletosUsuario = await response.json();
             // añadimos los números del usuario cuya compra NO esté confrimada al carrito
-            console.log(boletosUsuario)
+            //console.log("Boletos del usuario:", boletosUsuario)
             for (let boleto of boletosUsuario){
                 if (boleto.confirmado == false){
+                    //console.log("Boleto a añadir a carrito", boleto);
                     dispatch({type: 'add_number_to_cart', payload:{rifa_id: boleto.rifa_id, numero: boleto.numero}});
                 } 
             }
