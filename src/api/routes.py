@@ -591,73 +591,113 @@ def add_boleto():
         # Validacion de user
         if (user == None):
             return {"message": "Error en la autentificación de usuario"}, 401
-        request_body =  request.get_json(silent = True)
+        request_body = request.get_json(silent=True)
 
         # Validación de body
         if request_body == None:
             return {"message": "Petición errónea. Body incorrecto"}, 400
         if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
-             return {"message" : "Petición errónea. Body incorrecto"}, 400
-        if int(current_id) != request_body["usuario_id"]:
+            return {"message": "Petición errónea. Body incorrecto"}, 400
+        if int(current_id) != int(request_body["usuario_id"]):
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
 
         # Validacion de rifa
         rifa = db.session.execute(select(Rifas).where(
             Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
         if rifa == None:
-            return{"message": "La rifa no exsite"}, 400
-        # Validación de número
-        if request_body["numero"]> rifa.numero_max_boletos:
-            return {"message": "El número es mayor que el número máximo de boletos de la rifa"}, 400
-        # Validación de no existencia del boleto
-        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"]))).scalar_one_or_none()
-        if boleto != None:
-            return {"message":"El boleto ya existe"}, 404
-        # Añadimos boleto
-        boleto = Boleto(numero = request_body["numero"], usuario_id = request_body["usuario_id"],rifa_id = request_body["rifa_id"],confirmado = request_body["confirmado"] )
-        db.session.add(boleto)
-        db.session.commit()
-        return jsonify(boleto.serialize()), 200
+            return {"message": "La rifa no existe"}, 400
+
+        numeros = []
+        # añadido nuevo
+        if isinstance(request_body["numero"], dict) and "numeros" in request_body["numero"]:
+            numeros = request_body["numero"]["numeros"]  # añadido nuevo
+        else:  # añadido nuevo
+            numeros = [request_body["numero"]]  # añadido nuevo
+
+        boletos_creados = []  # añadido nuevo
+        for numero in numeros:  # añadido nuevo
+            # Validación de número
+            if numero > rifa.numero_max_boletos:  # añadido nuevo
+                # añadido nuevo
+                return {"message": f"El número {numero} es mayor que el número máximo de boletos de la rifa"}, 400
+
+            # Validación de no existencia del boleto (considerando la rifa)  # añadido nuevo 2
+            boleto_existente = db.session.execute(
+                select(Boleto).where(
+                    Boleto.numero == numero,
+                    Boleto.rifa_id == request_body["rifa_id"]
+                )
+            ).scalar_one_or_none()  # añadido nuevo 2
+
+            if boleto_existente:  # añadido nuevo 2
+                # añadido nuevo 2
+                if (boleto_existente.usuario_id == request_body["usuario_id"] and boleto_existente.confirmado == False):
+                    continue  # el usuario ya tiene este boleto no confirmado, no se crea de nuevo  # añadido nuevo 2
+                else:  # añadido nuevo 2
+                    # añadido nuevo 2
+                    return {"message": f"El boleto número {numero} ya está ocupado"}, 404
+
+            # Añadimos boleto
+            boleto = Boleto(
+                numero=numero,
+                usuario_id=request_body["usuario_id"],
+                rifa_id=request_body["rifa_id"],
+                confirmado=request_body["confirmado"]
+            )  # modificado nuevo
+            db.session.add(boleto)  # añadido nuevo
+            boletos_creados.append(boleto)  # añadido nuevo
+
+        db.session.commit()  # añadido nuevo
+
+        # Si quieres devolver todos los boletos creados serializados
+        # añadido nuevo
+        return jsonify([boleto.serialize() for boleto in boletos_creados]), 200
+
     except Exception as e:
-        print("Error: ",e)
-        return {"message":"Error reservando boleto"}, 500
+        print("Error: ", e)
+        return {"message": "Error reservando boleto"}, 500
 
 # PUT de boleto
-@api.route('/boleto', methods = ['PUT'])
+
+
+@api.route('/boleto', methods=['PUT'])
 @jwt_required()
 def edit_boleto():
     try:
         # Accede a la identidad del usuario actual con get_jwt_identity
         current_id = get_jwt_identity()
-        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        user = db.session.execute(select(Usuario).where(
+            Usuario.id == current_id)).scalar_one_or_none()
         # Validacion de user
         if (user == None):
             return {"message": "Error en la autentificación de usuario"}, 401
-        request_body =  request.get_json(silent = True)
+        request_body = request.get_json(silent=True)
 
         # Validación de body
         if request_body == None:
-            return {"message" : "Petición errónea. Body incorrecto"}, 400
+            return {"message": "Petición errónea. Body incorrecto"}, 400
         if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
-             return {"message" : "Petición errónea. Body incorrecto"}, 400
+            return {"message": "Petición errónea. Body incorrecto"}, 400
         # Validación de usuario
         if int(current_id) != request_body["usuario_id"]:
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
         # Validacion de rifa
-        rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
+        rifa = db.session.execute(select(Rifas).where(
+            Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
         if rifa == None:
-            return{"message": "La rifa no exsite"}, 400
+            return {"message": "La rifa no exsite"}, 400
         # Validación de no existencia del boleto
-        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
+        boleto = db.session.execute(select(Boleto).where(and_(
+            Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
         if boleto == None:
-            return {"message":"El boleto no existe"}, 400
+            return {"message": "El boleto no existe"}, 400
         # Editamos boleto
         boleto.confirmado = request_body["confirmado"]
         db.session.commit()
         return jsonify(boleto.serialize()), 200
     except Exception as e:
-        print("Error: ",e)
-        return {"message":"Error modificando boleto"}, 500
+        print("Error: ", e)
+        return {"message": "Error modificando boleto"}, 500
 
 
 # DELETE de boleto
@@ -738,8 +778,8 @@ def delete_boleto_by_userid(usuario_id):
         return jsonify(boletos_usuario), 200
 
     except Exception as e:
-        print("Error: ",e)
-        return {"message":"Error borrando boletos"}, 500
+        print("Error: ", e)
+        return {"message": "Error borrando boletos"}, 500
 
 
 # SPRINT #3 Endpoints de Detalle compra
