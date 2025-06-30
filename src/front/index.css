@@ -106,3 +106,80 @@
   background-color: rgba(59, 255, 231, 0.15);
   box-shadow: 0 0 6px rgba(59, 255, 231, 0.3);
 }
+
+/* index.css o App.css */
+
+/* Estilos para el contenedor de la ruleta */
+.roulette-container {
+  box-shadow: 0 0 30px rgba(59, 255, 231, 0.7),
+    0 0 60px rgba(59, 255, 231, 0.4);
+  animation: pulse-neon 2s infinite alternate ease-in-out; /* Animación de brillo pulsante */
+}
+
+/* Keyframes para la animación de brillo pulsante */
+@keyframes pulse-neon {
+  0% {
+    box-shadow: 0 0 30px rgba(59, 255, 231, 0.7),
+      0 0 60px rgba(59, 255, 231, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 40px rgba(59, 255, 231, 0.9),
+      0 0 80px rgba(59, 255, 231, 0.6);
+  }
+}
+
+/* Efecto de desenfoque cuando la ruleta está girando */
+.spinning-blur {
+  filter: blur(4px); /* Suave desenfoque de movimiento */
+  transition: filter 0.5s ease-out; /* Transición suave para el blur */
+}
+
+/* Estilos y efectos para el botón de giro */
+.spin-button:hover {
+  background-color: #6cffff !important; /* Un azul neón ligeramente más claro al pasar el ratón */
+  transform: scale(1.05); /* Pequeño efecto de escala */
+  box-shadow: 0 0 30px rgba(59, 255, 231, 0.8) !important;
+  color: black !important;
+}
+
+.spin-button:active {
+  transform: scale(0.98); /* Efecto de "clic" */
+  box-shadow: 0 0 10px rgba(59, 255, 231, 0.4) !important;
+}
+
+/* Animación del segmento ganador */
+.winner-segment-glow path {
+  /* Aplica un brillo al path del segmento */
+  filter: drop-shadow(0 0 10px #3BFFE7) drop-shadow(0 0 20px #3BFFE7);
+  transition: filter 0.3s ease-in-out;
+}
+
+/* Animación de brillo para el texto del ganador */
+@keyframes winner-text-glow {
+    0% {
+        text-shadow: 0 0 5px #3BFFE7;
+    }
+    100% {
+        text-shadow: 0 0 20px #3BFFE7, 0 0 30px #3BFFE7;
+    }
+}
+
+/* Efecto para el puntero cuando "tickea" */
+.pointer-active {
+    transform: translateX(-50%) translateY(-5px); /* Se mueve un poco hacia arriba */
+    transition: transform 0.05s ease-out;
+}
+
+/* index.css o App.css */
+
+/* ... (código CSS de la ruleta que ya tenías) ... */
+
+/* Animación de brillo para el título de la página */
+@keyframes title-glow {
+    0% {
+        text-shadow: 0 0 10px #3BFFE7, 0 0 20px #3BFFE7;
+    }
+    100% {
+        text-shadow: 0 0 20px #3BFFE7, 0 0 40px #3BFFE7, 0 0 60px rgba(59, 255, 231, 0.5);
+    }
+}
