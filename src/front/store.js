@@ -46,7 +46,7 @@ export default function storeReducer(store, action = {}) {
             ...store,
             carrito: store.carrito.map(item =>
               item.rifa_id === action.payload.rifa_id
-                ? (action.payload.numer in item.numeros ? item :{ ...item, numeros: [...item.numeros, action.payload.numero] })
+                ? ((item.numeros.includes(action.payload.numero)) ? item :{ ...item, numeros: [...item.numeros, action.payload.numero] })
                 : item
             )
           };

@@ -65,8 +65,8 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         key={idx}
                         onClick={() => onSelect(idx)}
                         style={{
-                            width: '60px',
-                            height: '60px',
+                            width: '57px',
+                            height: '57px',
                             borderRadius: '50%',
                             backgroundColor: idx === selectedGroupIndex ? '#0A131F' : 'none',
                             color: idx === selectedGroupIndex ? '#3BFFE7' : '#0A131F',
@@ -114,10 +114,10 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         return (
                             <div
                                 key={n}
-                                onClick={reservado ? ()=> console.log("Click en número ya reservado!") :() => onToggle(n)}
+                                onClick={reservado ? () => console.log("Click en número ya reservado!") : () => onToggle(n)}
                                 style={{
-                                    width: '50px',
-                                    height: '50px',
+                                    width: '48px',
+                                    height: '48px',
                                     borderRadius: '50%',
                                     backgroundColor: reservado ? 'red' : seleccionado ? '#0A131F' : 'none',
                                     color: reservado ? '#FFA07A' : seleccionado ? '#3BFFE7' : '#0A131F',
@@ -300,6 +300,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         }
     }, [rifaId, getBoletosReservados]);
 
+
     const AddToCart = async () => {
         if (selectedTickets.size === 0) {
             alert("Debes seleccionar al menos un boleto para añadir al carrito.");
@@ -335,10 +336,9 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
             const data = await response.json();
             console.log("✅ Boletos guardados correctamente:", data);
-            selectedArray.map(selected => dispatch({type:'add_number_to_cart', payload:{rifa_id:rifaId, numero:selected}}));
-            
-            await getBoletosReservados(); 
+            selectedArray.map(selected => dispatch({ type: 'add_number_to_cart', payload: { rifa_id: rifaId, numero: selected } }));
 
+            await getBoletosReservados();
             setSelectedTickets(new Set());
 
         } catch (err) {
@@ -346,7 +346,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
             alert("Ocurrió un error inesperado al agregar boletos");
         }
     };
-
 
     const [showPopup, setShowPopup] = useState(false);
     const [popupContent, setPopupContent] = useState("");
@@ -356,7 +355,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         if (!showPopup) return null;
 
         return (
-
             <div
                 style={{
                     position: "fixed",
@@ -460,7 +458,6 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         );
     }
 
-
     const infoClick = () => {
         setPopupContent("Boletos añadidos al carrito correctamente");
         setShowPopup(true);
@@ -474,7 +471,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         infoClick();
     }
 
-    const GoCartButtonAction = async () =>{
+    const GoCartButtonAction = async () => {
         await AddToCart();
         if (selectedTickets.size === 0) {
             return;
@@ -482,13 +479,13 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         navigate('/checkout');
     }
 
-
     return (
         <div style={{
             boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
             borderRadius: "20px",
             width: "65%",
-            height: "90%"
+            height: "90%",
+            backgroundColor: "#fff"
         }}>
             <h2 style={{ marginTop: '10px', marginLeft: '46px' }}>Selección de boletos</h2>
             <h6 style={{ marginTop: '10px', marginLeft: '46px' }}>¡Elige tus números y prueba suerte!</h6>
@@ -595,7 +592,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}>
-                    Comprar 
+                    Comprar
                 </button>
             </div>
             {renderPopup()}
