@@ -1,21 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const MyRifas = () => {
   const { store } = useGlobalReducer();
+  const usuarioId = store.usuario?.id;
+  const [boletos, setBoletos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const boletos = store.carrito.flatMap(item =>
-    item.numeros.map(numero => ({
-      rifa_id: item.rifa_id,
-      numero,
-      confirmado: true
-    }))
-  );
+  useEffect(() => {
+    if (!usuarioId) return;
 
-  const getNombreRifa = (id) => {
-    const rifa = store.rifas.find(r => r.id === id);
-    return rifa ? rifa.nombre_rifa : `Rifa #${id}`;
-  };
+    const fetchBoletosUsuario = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = sessionStorage.getItem("token");
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/boletos-usuario/${usuarioId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Error al obtener boletos");
+        }
+        const data = await res.json();
+        const boletosConfirmados = data.filter((b) => b.confirmado === true);
+        setBoletos(boletosConfirmados);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBoletosUsuario();
+  }, [usuarioId]);
 
   const boletosPorRifa = boletos.reduce((acc, boleto) => {
     if (!acc[boleto.rifa_id]) acc[boleto.rifa_id] = [];
@@ -23,135 +48,101 @@ export const MyRifas = () => {
     return acc;
   }, {});
 
-  Object.values(boletosPorRifa).forEach(boletosArray => {
-    boletosArray.sort((a, b) => a.numero - b.numero);
-  });
+  Object.values(boletosPorRifa).forEach((arr) =>
+    arr.sort((a, b) => a.numero - b.numero)
+  );
+
+  const getNombreRifa = (id) => {
+    const rifa = store.rifas.find((r) => r.id === id);
+    return rifa ? rifa.nombre_rifa : `Rifa #${id}`;
+  };
 
   return (
     <div
       style={{
-        backgroundColor: "#f5f7fa",
+        backgroundColor: "white",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
-        alignItems: "flex-start",
+        alignItems: "center",
         padding: "40px 20px",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
-      role="main"
-      aria-labelledby="titulo-mis-rifas"
     >
       <div
         style={{
-          backgroundColor: "#0a131f",
+          backgroundColor: "rgb(10,19,31)",
           color: "white",
-          padding: "40px 50px",
-          borderRadius: "20px",
+          padding: "40px",
+          borderRadius: "12px",
           maxWidth: "800px",
           width: "100%",
-          boxShadow: "0 10px 30px rgba(10, 19, 31, 0.7)",
-          minHeight: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          boxShadow: "0 0 15px rgba(0,0,0,0.2)",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         }}
       >
-        <h2
-          id="titulo-mis-rifas"
+        <h1
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "12px",
-            fontWeight: "900",
-            fontSize: "2.2rem",
-            marginBottom: "40px",
-            color: "rgb(59, 255, 231)",
-            textShadow: "0 0 4px rgb(59, 255, 231, 0.7)",
-            userSelect: "none",
+            color: "rgb(59,255,231)",
+            marginBottom: "30px",
+            textAlign: "center",
           }}
         >
-          <span style={{ fontSize: "2.4rem" }} role="img" aria-label="boleto">🎟️</span> Mis boletos
-        </h2>
+          🎟️ Mis Boletos
+        </h1>
 
-        {boletos.length === 0 && (
-          <p style={{ fontSize: "1.2rem", lineHeight: "1.8", color: "#ccc", textAlign: "center" }}>
-            No tienes boletos aún.
+        {loading && <p>Cargando boletos confirmados...</p>}
+        {error && <p style={{ color: "red" }}>Error: {error}</p>}
+        {!loading && !error && boletos.length === 0 && (
+          <p style={{ fontSize: "1.1rem", lineHeight: "1.8", textAlign: "center" }}>
+            No tienes boletos confirmados todavía.
           </p>
         )}
 
-        {boletos.length > 0 && (
-          <div style={{ width: "100%" }}>
-            {Object.entries(boletosPorRifa).map(([rifa_id, boletosArray]) => (
-              <section key={rifa_id} style={{ marginBottom: "50px" }}>
-                <h3
-                  style={{
-                    color: "rgb(59,255,231)",
-                    marginBottom: "20px",
-                    borderBottom: "3px solid rgb(59,255,231)",
-                    paddingBottom: "8px",
-                    fontWeight: "700",
-                    fontSize: "1.7rem",
-                    userSelect: "none",
-                    textShadow: "0 0 6px rgb(59,255,231)",
-                  }}
-                >
-                  {getNombreRifa(Number(rifa_id))}
-                </h3>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "16px",
-                    justifyContent: "flex-start",
-                  }}
-                  aria-label={`Boletos de la rifa ${getNombreRifa(Number(rifa_id))}`}
-                >
-                  {boletosArray.map((boleto, idx) => (
-                    <div
-                      key={`${boleto.rifa_id}-${boleto.numero}-${idx}`}
-                      role="listitem"
-                      aria-label={`Boleto número ${boleto.numero}. Estado: ${boleto.confirmado ? "Confirmado" : "No confirmado"}`}
-                      style={{
-                        minWidth: "60px",
-                        height: "60px",
-                        backgroundColor: boleto.confirmado ? "rgb(59,255,231)" : "tomato",
-                        color: "rgb(10,19,31)",
-                        fontWeight: "bold",
-                        fontSize: "1.4rem",
-                        borderRadius: "12px",
-                        boxShadow: boleto.confirmado
-                          ? "0 4px 15px rgb(59,255,231)"
-                          : "0 4px 15px tomato",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        cursor: "default",
-                        userSelect: "none",
-                        transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.transform = "scale(1.2)";
-                        e.currentTarget.style.boxShadow = boleto.confirmado
-                          ? "0 8px 25px rgb(59,255,231)"
-                          : "0 8px 25px tomato";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.transform = "scale(1)";
-                        e.currentTarget.style.boxShadow = boleto.confirmado
-                          ? "0 4px 15px rgb(59,255,231)"
-                          : "0 4px 15px tomato";
-                      }}
-                    >
-                      {boleto.numero}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          Object.entries(boletosPorRifa).map(([rifa_id, boletosArray]) => (
+            <div
+              key={rifa_id}
+              style={{
+                marginBottom: "30px",
+                padding: "20px",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                borderRadius: "8px",
+              }}
+            >
+              <h2
+                style={{
+                  color: "rgb(59,255,231)",
+                  fontSize: "1.3rem",
+                  marginBottom: "15px",
+                }}
+              >
+                🎯 {getNombreRifa(Number(rifa_id))}
+              </h2>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                }}
+              >
+                {boletosArray.map((boleto) => (
+                  <span
+                    key={`${boleto.rifa_id}-${boleto.numero}`}
+                    style={{
+                      backgroundColor: "rgb(59,255,231)",
+                      color: "black",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    #{boleto.numero}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );
