@@ -50,7 +50,7 @@ const RuletaPage = () => {
           animation: 'title-glow-dark 2s infinite alternate ease-in-out',
         }}
       >
-        ¡Bienvenido al Sorteo!
+        Bienvenido al Sorteo
       </h1>
       <Ruleta opciones={participantes} />
     </div>
