@@ -119,7 +119,7 @@ RESPUESTA POSITIVA:
 ]  
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos comprados en la rifa"}, 500  
 
-### /boleto/boleto/<int:rifa_id>/<int:num_boleto>  
+### /boleto/<int:rifa_id>/<int:num_boleto>  
 DESCRIPCION: Devuelve de la rifa y número indicado, incluyendo datos del usuario  
 TIPO: GET  
 REQUIERE TOKEN: SI   
