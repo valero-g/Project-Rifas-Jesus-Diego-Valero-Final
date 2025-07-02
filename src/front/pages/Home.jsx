@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CardHome from "../components/CardHome.jsx";
-import fondo from "../assets/img/fondo.png"; // Importa tu imagen de fondo
+import fondo from "../assets/img/fondo.png";
+import RifaCerradaCard from '../components/RifaCerradaCard.jsx';
 
 function BannerCarousel() {
     const banners = [
@@ -103,7 +104,7 @@ export const Home = () => {
                         backgroundColor: "#0A131F",
                         padding: "20px",
                         borderRadius: "12px",
-                        border:"1px solid #3BFFE7",
+                        border: "1px solid #3BFFE7",
                         width: "300px",
                         textAlign: "center",
                         boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
@@ -129,7 +130,6 @@ export const Home = () => {
         );
     }
 
-
     useEffect(() => {
         getRifas();
     }, []);
@@ -142,12 +142,13 @@ export const Home = () => {
             if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
             const data = await response.json();
             setRifas(data);
-            dispatch({type:'dump_rifas', payload:data })
+            dispatch({ type: 'dump_rifas', payload: data })
             console.log("prueba de rifas", data)
         } catch (error) {
             console.error("Error al obtener las rifas:", error);
         }
     }
+
 
     return (
         <div
@@ -164,6 +165,13 @@ export const Home = () => {
             }}
         >
             <BannerCarousel />
+            <div className="d-flex justify-content-center w-100">
+                {rifas.some((rifa) => rifa.status_sorteo === "finalizado") && (
+                    <div style={{ flex: "0 0 auto", width: "100%", marginTop: "10px" }}>
+                        <RifaCerradaCard/>
+                    </div>
+                )}
+            </div>
 
             <div
                 className="text-center py-5"
@@ -221,10 +229,9 @@ export const Home = () => {
                 className="container"
                 style={{
                     maxWidth: "1000px",
-                    marginTop: "2rem",
                 }}
             >
-                <div className="d-flex flex-wrap justify-content-center gap-4">
+                <div className="d-flex flex-wrap justify-content-center gap-4 pb-5">
                     {rifas.map((rifa) => (
                         <div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
                             <CardHome
@@ -233,6 +240,7 @@ export const Home = () => {
                                 fecha={rifa.fecha_de_sorteo}
                                 url={rifa.url_premio}
                                 dispatch={dispatch}
+                                status={rifa.status_sorteo}
                                 onInfoClick={() => {
                                     setPopupContent(`${rifa.premio_rifa}`);
                                     setShowPopup(true);
