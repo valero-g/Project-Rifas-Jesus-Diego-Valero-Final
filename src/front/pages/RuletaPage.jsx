@@ -1,60 +1,139 @@
-// src/front/pages/RuletaPage.jsx
-import React from 'react';
-import Ruleta from '../components/Ruleta.jsx';
-import "../index.css";
+import React, { useState, useEffect } from "react";
+import { Wheel } from "react-custom-roulette";
 
-// Paleta de colores para consistencia
-const PALETA = {
-  azulNeon: "#3BFFE7",
-  azulOscuro: "#0A131F",
-  blanco: "#FFFFFF",
-  negro: "#000000",
-};
+const data = [
+  { option: "Premio 1" },
+  { option: "Premio 2" },
+  { option: "Premio 3" },
+  { option: "Premio 4" },
+  { option: "Premio 5" },
+  { option: "Premio 6" },
+];
 
-const RuletaPage = () => {
-  const participantes = ["Luis", "María", "Carlos", "Ana", "Pedro", "Julia", "Sofía", "Diego"];
+// Paleta
+const colors = ["#3BFFE7", "#0A131F"];
+
+export default function RuletaClásica() {
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(0);
+  const [result, setResult] = useState(null);
+
+  const handleSpinClick = () => {
+    const newPrizeNumber = Math.floor(Math.random() * data.length);
+    setPrizeNumber(newPrizeNumber);
+    setMustSpin(true);
+    setResult(null);
+  };
+
+  // Gira la ruleta automáticamente al cargar
+  useEffect(() => {
+    handleSpinClick();
+  }, []);
 
   return (
-    <div
-      style={{
-        backgroundImage: 'url("assets/img/fondo.png")', // Asegúrate de que esta ruta sea correcta
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo blanco semi-transparente
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start', // *** CAMBIO CLAVE AQUÍ: Alinea el contenido al inicio verticalmente ***
-        padding: '20px',
-        paddingTop: '80px', // *** CAMBIO AQUÍ: Añade un padding en la parte superior para empujar el título hacia abajo un poco ***
-        boxSizing: 'border-box',
-        fontFamily: 'Arial, sans-serif',
-        color: PALETA.negro,
-      }}
-    >
-      <h1
+    <>
+      <style>{`
+        @keyframes glowPulse {
+          0%, 100% {
+            text-shadow: 0 0 10px #3BFFE7, 0 0 20px #3BFFE7, 0 0 30px #3BFFE7;
+          }
+          50% {
+            text-shadow: 0 0 20px #3BFFE7, 0 0 40px #3BFFE7, 0 0 60px #3BFFE7;
+          }
+        }
+        @keyframes neonTextBlink {
+          0%, 100% {
+            text-shadow:
+              0 0 5px #3BFFE7,
+              0 0 10px #3BFFE7,
+              0 0 20px #3BFFE7,
+              0 0 40px #3BFFE7;
+            opacity: 1;
+          }
+          50% {
+            text-shadow:
+              0 0 10px #3BFFE7,
+              0 0 15px #3BFFE7,
+              0 0 25px #3BFFE7,
+              0 0 50px #3BFFE7;
+            opacity: 0.85;
+          }
+        }
+      `}</style>
+
+      <div
         style={{
-          color: PALETA.azulOscuro,
-          fontSize: '3em',
-          textShadow: `
-            0 0 5px ${PALETA.blanco},
-            0 0 10px ${PALETA.blanco},
-            0 0 15px ${PALETA.blanco},
-            0 0 20px rgba(0, 0, 0, 0.5)
-          `,
-          marginBottom: '40px', // Mantiene el espacio entre el título y la ruleta
-          fontWeight: 'bold',
-          letterSpacing: '2px',
-          animation: 'title-glow-dark 2s infinite alternate ease-in-out',
+          height: "100vh",
+          backgroundColor: "#FFFFFF",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+          boxSizing: "border-box",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         }}
       >
-        Bienvenido al Sorteo
-      </h1>
-      <Ruleta opciones={participantes} />
-    </div>
-  );
-};
+        <Wheel
+          mustStartSpinning={mustSpin}
+          prizeNumber={prizeNumber}
+          data={data}
+          backgroundColors={colors.map((c, i) =>
+            i === 0
+              ? "linear-gradient(145deg, #3BFFE7 0%, #1AD7C9 100%)"
+              : "linear-gradient(145deg, #0A131F 0%, #222C3B 100%)"
+          )}
+          textColors={["#FFFFFF"]}
+          onStopSpinning={() => {
+            setMustSpin(false);
+            setResult(data[prizeNumber].option);
+          }}
+          outerBorderColor="#3BFFE7"
+          outerBorderWidth={8}
+          innerBorderColor="#FFFFFF"
+          innerBorderWidth={4}
+          radiusLineColor="#3BFFE7"
+          radiusLineWidth={3}
+          fontSize={22}
+          fontWeight="600"
+          spinDuration={1.1}
+          style={{
+            filter: "drop-shadow(0 0 8px #3BFFE7)",
+            borderRadius: "50%",
+            
+            animation: mustSpin ? "none" : "glowPulse 3s ease-in-out infinite",
+          }}
+        />
 
-export default RuletaPage;
+
+
+        {result && (
+          <div
+            style={{
+              marginTop: 35,
+              fontSize: 36,
+              fontWeight: "900",
+              color: "#000000",
+              textAlign: "center",
+              textShadow:
+                "0 0 8px #3BFFE7, 0 0 16px #3BFFE7, 0 0 24px #3BFFE7, 0 0 32px #0A131F",
+              animation: "glowPulse 3s ease-in-out infinite",
+              padding: "10px 20px",
+              borderRadius: 20,
+              background:
+                "linear-gradient(90deg, rgba(59,255,231,0.3), rgba(10,19,31,0.1))",
+              boxShadow:
+                "0 0 12px rgba(59,255,231,0.6), 0 0 24px rgba(59,255,231,0.4), 0 0 36px rgba(10,19,31,0.5)",
+              userSelect: "none",
+              maxWidth: "80vw",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            ¡Ganaste: {result}!
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
