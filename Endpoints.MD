@@ -100,6 +100,42 @@ BODY:  N/A
 RESPUESTA POSITIVA: {"Rifa_id": rifa_id, "Numeros_ocupados": lista_numeros_ocupados}, 200 
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 /   {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos ocupados"}, 500  
 
+### /boletos-comprados/<int:rifa_id>
+DESCRIPCION: Devuelve un vector con los usuarios que han comprado boletos, y un subvector con los números comprados por ese usuario  
+TIPO: GET  
+REQUIERE TOKEN: SI   
+BODY:  N/A  
+
+RESPUESTA POSITIVA:  
+[  
+    {  
+        "boletos": [  
+            305,  
+            306  
+        ],  
+        "usuario": "Ramonchu",  
+        "usuario_id": 23  
+    }  
+]  
+RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos comprados en la rifa"}, 500  
+
+### /boleto/boleto/<int:rifa_id>/<int:num_boleto>  
+DESCRIPCION: Devuelve de la rifa y número indicado, incluyendo datos del usuario  
+TIPO: GET  
+REQUIERE TOKEN: SI   
+BODY:  N/A  
+
+RESPUESTA POSITIVA:  
+{  
+    "numero": 4,  
+    "rifa_id": 6,  
+    "usuario": "Ramonchu",  
+    "usuario_id": 23  
+}  
+RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message": "La rifa no existe"}, 400 / {"message": "Boleto no encontrado"}, 404 / {"message": "Error recuperando los boletos comprados en la rifa"}, 500  
+
+
+
 ### /boletos-usuario/<int:usuario_id>
 DESCRIPCION: Devuelve un vector con los números reservados o comprados de un usuario  
 TIPO: GET  
