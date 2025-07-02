@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import {jwtDecode} from 'jwt-decode';
+import { useSearchParams } from "react-router-dom";
 
 
 export const Success = () => {
-    
+    const [searchParams] = useSearchParams();
+    const numPedido = searchParams.get("num_pedido");
     const { store, dispatch } = useGlobalReducer();
     const delay = ms => new Promise(res => setTimeout(res, ms));
     useEffect( ()=>{
@@ -16,20 +18,16 @@ export const Success = () => {
             return;
          }
 
-        
+        // confirmamos los boletos de la rifa
         for (let rifa of store.carrito){
             console.log ("Rifa:", rifa);
-            for (let numero of rifa.numeros){
-                //console.log ("Numero:", numero);
-                // espacio reservado para rellenar la tabla de detalle de compra
-                confirmaBoletos(rifa.rifa_id, numero);
-            }
+            confirmaBoletos(rifa.rifa_id, rifa.numeros, numPedido)
         }
-    }, [store.carrito]);
+    }, [store.carrito_cargado]);
 
 
 
-        const confirmaBoletos = async (rifaId, numero) => {
+        const confirmaBoletos = async (rifaId, numeros, pedido) => {
             let usuarioId = 0;
             const token = sessionStorage.getItem("token");
             if (token) {
@@ -48,28 +46,61 @@ export const Success = () => {
                     body: JSON.stringify({
                         usuario_id: parseInt(usuarioId),
                         rifa_id: rifaId,
-                        numero: numero,
-                        confirmado: true
+                        numeros: numeros,
+                        confirmado: true,
+                        num_pedido: pedido
                     })
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error(`❌ Error al confirmar boleto ${numero}:`, errorData);
-                    alert(`❌ Error al confirmar boleto ${numero}.` +  `Error: ${errorData.message} || "Error desconocido"}`);
+                    console.error(`❌ Error al confirmar los boletos ${numeros} de la rifa ${rifaId}`, errorData);
+                    alert(`❌ Error al confirmar boletos ${numeros} de la rifa ${rifaId}.` +  `Error: ${errorData.message} || "Error desconocido"}`);
                     return;
                 }
 
                 const data = await response.json();
-                console.log("✅ Boleto confirmado correctamente:", data);
-                dispatch({type:'delete_number_from_cart', payload:{rifa_id:rifaId, numero:numero}});
-
+                console.log("✅ Boletos confirmado correctamente:", data);
+                dispatch({type:'delete_rifa_from_cart', payload:{rifa_id:rifaId}});
+                confirmaDetalleCompra(pedido);
+                
             } catch (err) {
-                console.error(`🚨 Error inesperado al confirmar el boleto ${numero}:`, err);
-                alert(`🚨 Error inesperado al confirmar el boleto ${numero}:`, err);
+                console.error(`🚨 Error inesperado al confirmar los boletos ${numeros} de la rifa ${rifaId}:`, err);
+                alert(`🚨 Error inesperado al confirmar los boletos ${numeros} de la rifa ${rifaId}:`, err);
             }
         };
 
+        const confirmaDetalleCompra = async (pedido)=> {
+            try{
+                let usuarioId = 0;
+                const token = sessionStorage.getItem("token");
+                if (token) {
+                    const decoded = jwtDecode(token);
+                        usuarioId = decoded.sub;
+                        console.log(usuarioId);
+                }
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            num_pedido: pedido
+                        })
+                    });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error(`❌ Error al confirmar el detalle de compra del pedido ${pedido}`, errorData);
+                    return;
+                }
+                const data = await response.json();
+                console.log("✅ Detalle de compra confirmado correctamente:", data);
+            }catch (err) {
+                console.error(`🚨 Error inesperado al confirmar el detalle de compra del pedido ${pedido}:`, err);
+            }
+
+        }
 
     return (
         <div
@@ -106,7 +137,7 @@ export const Success = () => {
                     ✅ ¡Pago completado con éxito!
                 </h1>
                 <p style={{ fontSize: "1.1rem", lineHeight: "1.8", marginBottom: "20px" }}>
-                    Gracias por tu compra. Puedes ver tus rifas compradas desde tu perfil cuando quieras. ¡¡Suerte!!
+                    Gracias por tu compra. El número de pedido es {numPedido}. Puedes ver tus rifas compradas desde tu perfil cuando quieras. ¡¡Suerte!!
                 </p>
                 <Link
                     to="/"

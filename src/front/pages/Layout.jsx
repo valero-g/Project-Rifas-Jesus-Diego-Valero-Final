@@ -72,7 +72,7 @@ export const Layout = () => {
                     dispatch({type: 'add_number_to_cart', payload:{rifa_id: boleto.rifa_id, numero: boleto.numero}});
                 } 
             }
-
+            dispatch({type: 'set_loaded_cart'});
         }catch (error) {
 			console.error("No se pudo cargar los boletos en el carrito:", error);
 		}

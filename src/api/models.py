@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, ForeignKey, Date, Time, DECIMAL, DateTime, Table, Integer, UniqueConstraint, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,8 +14,8 @@ detallecompra_rifa = Table(
     db.metadata,
     Column('detalle_compra_id', ForeignKey('detalle_compra.id'), primary_key=True),
     Column('rifa_id', ForeignKey('rifas.id'), primary_key=True),
-    Column('cantidad', Integer, nullable=False),
-    Column('importe_total', DECIMAL(10, 2), nullable=False)
+    Column('cantidad', Integer, nullable=True),
+    Column('importe_total', DECIMAL(10, 2), nullable=True)
 )
 
 
@@ -83,10 +84,12 @@ class Boleto(db.Model):
     usuario_id: Mapped[int] = mapped_column(ForeignKey('usuario.id'), nullable=False)
     rifa_id: Mapped[int] = mapped_column(ForeignKey('rifas.id'), nullable=False)
     confirmado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) # False = en proceso // True = comprado
+    num_pedido: Mapped[str] = mapped_column(ForeignKey('detalle_compra.num_pedido'), nullable=True)
 
+    # relaciones
     usuario: Mapped["Usuario"] = relationship(back_populates='boletos', foreign_keys=[usuario_id])
     rifa: Mapped["Rifas"] = relationship(back_populates='boletos', foreign_keys=[rifa_id])
-
+    detalle_compra: Mapped["DetalleCompra"] = relationship("DetalleCompra", back_populates="boletos", foreign_keys=[num_pedido])
 
     def serialize(self):
         return {
@@ -94,7 +97,8 @@ class Boleto(db.Model):
             "numero": self.numero,
             "usuario_id": self.usuario_id,
             "rifa_id": self.rifa_id,
-            "confirmado": self.confirmado
+            "confirmado": self.confirmado,
+            "num_pedido": self.num_pedido
         }
 
 
@@ -130,7 +134,7 @@ class Rifas(db.Model):
     numero_max_boletos: Mapped[int] = mapped_column(nullable=False)
     numero_boletos_vendidos: Mapped[int] = mapped_column(nullable = True)
     status_sorteo: Mapped[str] = mapped_column(String(50), nullable=False)
-    boleto_ganador: Mapped[int | None] = mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
+    boleto_ganador: Mapped[int | None] = mapped_column(nullable=True) # mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
     stripe_product_id = db.Column(db.String, nullable=True)
     stripe_price_id = db.Column(db.String, nullable=True)
     vendedor: Mapped["Vendedor"] = relationship(back_populates='rifas')
@@ -166,20 +170,22 @@ class DetalleCompra(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('usuario.id'), nullable=False)
-    compra_id: Mapped[int] = mapped_column(ForeignKey('compra.id'), nullable=False)
+    compra_id: Mapped[int] = mapped_column(ForeignKey('compra.id'), nullable=True)
     vendedor_id: Mapped[int] = mapped_column(ForeignKey('vendedor.id'), nullable=False)
     stripe_session_id: Mapped[str | None] = mapped_column(String(100))
     status: Mapped[str | None] = mapped_column(String(50))
     cantidad: Mapped[int] = mapped_column(nullable = True)
     importe_total: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2), nullable = True)
+    fecha_compra: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    num_pedido: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    # Relaciones
     usuario: Mapped["Usuario"] = relationship(back_populates='detalle_compras')
     compra: Mapped["Compra"] = relationship(back_populates='detalle_compra')
     vendedor: Mapped["Vendedor"] = relationship(back_populates='detalle_compras')
+    rifas: Mapped[List["Rifas"]] = relationship(secondary=detallecompra_rifa,back_populates='detalle_compras')
 
-    rifas: Mapped[List["Rifas"]] = relationship(
-        secondary=detallecompra_rifa,
-        back_populates='detalle_compras'
-    )
+    boletos: Mapped[List["Boleto"]] = relationship(back_populates="detalle_compra", cascade="all, delete-orphan")
 
 
     def serialize(self):
@@ -189,7 +195,9 @@ class DetalleCompra(db.Model):
             "compra_id": self.compra_id,
             "vendedor_id": self.vendedor_id,
             "stripe_session_id": self.stripe_session_id,
-            "status": self.status
+            "status": self.status,
+            "fecha_compra": self.fecha_compra.isoformat(),
+            "pedido": self.num_pedido
         }
 
 

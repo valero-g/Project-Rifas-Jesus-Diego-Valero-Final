@@ -5,7 +5,8 @@ export const initialStore=()=>{
     isLogged: sessionStorage.getItem("isLogged") === "true",
     usuario:{},
     rifas: [],
-    carrito:[]
+    carrito:[],
+    carrito_cargado: false
   }
 }
 
@@ -76,6 +77,14 @@ export default function storeReducer(store, action = {}) {
           ...store,
           carrito: store.carrito.filter(item => item.rifa_id != action.payload.rifa_id)
         }
+      }
+    
+      case 'set_loaded_cart':{
+        return{
+          ...store,
+          carrito_cargado:true
+        }
+
       }
 
     default: 
