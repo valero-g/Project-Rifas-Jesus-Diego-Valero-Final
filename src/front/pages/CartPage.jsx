@@ -135,7 +135,7 @@ export const CartPage = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ items: checkoutCart })
+                body: JSON.stringify({usuario_id: store.usuario.id,  items: checkoutCart })
             });
 
             const data = await res.json();

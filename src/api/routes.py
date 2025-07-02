@@ -1,6 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+import random
 import traceback
 from flask import Flask, request, jsonify, url_for, Blueprint
 from jwt import ExpiredSignatureError, InvalidTokenError
@@ -99,6 +100,16 @@ def get_rifas():
         # Validacion
         if all_rifas == None:
             return {"message": "No se encuentran rifas"}, 404
+        # Comprobación de si hay premio
+        for rifa in all_rifas:
+            if rifa.numero_boletos_vendidos == rifa.numero_max_boletos and rifa.boleto_ganador == None:
+                print (rifa.boletos)
+                boleto_premiado = random.choice(rifa.boletos)
+                rifa.boleto_ganador = boleto_premiado
+                rifa.status_sorteo = "finalizado"
+                db.session.commit()
+
+        all_rifas = db.session.execute(select(Rifas)).scalars().all()
         # Respuesta
         all_rifas = list(map(lambda x: x.serialize(), all_rifas))
         return jsonify(all_rifas), 200
@@ -116,12 +127,22 @@ def get_rifa(rifa_id):
         # Validacion
         if rifa == None:
             return {"message": "No se encuentra rifa"}, 404
+        # Comprobación de si hay premio
+        if rifa.numero_boletos_vendidos == rifa.numero_max_boletos and rifa.boleto_ganador == None:
+            print (rifa.boletos)
+            boleto_premiado = random.choice(rifa.boletos)
+            rifa.boleto_ganador = boleto_premiado
+            rifa.status_sorteo = "finalizado"
+            db.session.commit()
+
         # Respuesta
+        print (rifa.serialize())
         return jsonify(rifa.serialize()), 200
 
     except Exception as e:
         print("Error:", e)
         return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
+
 
 
 @api.route('/rifa/<int:rifa_id>', methods=['PUT'])
@@ -399,8 +420,6 @@ def update_password():
         return {"message": "Error actualizando usuario"}, 500
 
 # Login Endpoint
-
-
 @api.route("/login", methods=['POST'])
 def login():
     try:
@@ -642,7 +661,8 @@ def add_boleto():
                 numero=numero,
                 usuario_id=request_body["usuario_id"],
                 rifa_id=request_body["rifa_id"],
-                confirmado=request_body["confirmado"]
+                confirmado=request_body["confirmado"],
+                num_pedido = None
             )  # modificado nuevo
             db.session.add(boleto)  # añadido nuevo
             boletos_creados.append(boleto)  # añadido nuevo
@@ -668,29 +688,50 @@ def edit_boleto():
         # Validacion de user
         if (user == None):
             return {"message": "Error en la autentificación de usuario"}, 401
-        request_body =  request.get_json(silent = True)
-
+        request_body=  request.get_json(silent = True)
+        response = []
         # Validación de body
         if request_body == None:
             return {"message" : "Petición errónea. Body vacio"}, 400
-        if "numero" not in request_body.keys() or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
+        if ("numero" not in request_body.keys() and "numeros" not in request_body.keys()) or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
             print(request_body)
             return {"message" : "Petición errónea. Body incorrecto"}, 400
-        # Validación de usuario
+         # Validación de usuario
         if int(current_id) != request_body["usuario_id"]:
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
         # Validacion de rifa
         rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
         if rifa == None:
             return{"message": "La rifa no exsite"}, 400
-        # Validación de no existencia del boleto
-        boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
-        if boleto == None:
-            return {"message":"El boleto no existe"}, 400
-        # Editamos boleto
-        boleto.confirmado = request_body["confirmado"]
-        db.session.commit()
-        return jsonify(boleto.serialize()), 200
+        if "numero" in request_body.keys():
+            # Validación de no existencia del boleto
+            boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == request_body["numero"], Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
+            if boleto == None:
+                return {"message":"El boleto no existe"}, 400
+            # Editamos boleto
+            boleto.confirmado = request_body["confirmado"]
+            # Añadimos número de pedido
+            if "num_pedido" in request_body.keys():
+                boleto.num_pedido = request_body["num_pedido"]
+            # Sumamos numero rifa vendido
+            rifa.numero_boletos_vendidos = rifa.numero_boletos_vendidos +1
+            db.session.commit()
+            return jsonify(boleto.serialize())
+        elif "numeros" in request_body.keys():
+            for numero in request_body["numeros"]:
+                boleto = db.session.execute(select(Boleto).where(and_(Boleto.numero == numero, Boleto.rifa_id == request_body["rifa_id"], Boleto.usuario_id == request_body["usuario_id"]))).scalar_one_or_none()
+                if boleto == None:
+                    return {"message":"El boleto no existe"}, 400
+                # Editamos boleto
+                boleto.confirmado = request_body["confirmado"]
+                # Añadimos número de pedido
+                if "num_pedido" in request_body.keys():
+                    boleto.num_pedido = request_body["num_pedido"]
+                # Sumamos numero rifa vendido
+                rifa.numero_boletos_vendidos = rifa.numero_boletos_vendidos +1
+                db.session.commit()
+                response.append(boleto.serialize())
+            return jsonify(response), 200
     except Exception as e:
         print("Error: ",e)
         return {"message":"Error modificando boleto"}, 500
