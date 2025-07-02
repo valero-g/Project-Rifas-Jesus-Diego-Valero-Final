@@ -1,149 +1,128 @@
+// src/front/pages/RuletaPage.jsx
 import React, { useEffect, useState } from "react";
-import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { useParams } from "react-router-dom";
+import { Wheel } from "react-custom-roulette";
+import fondo from "../assets/img/fondo.png";
 
-export const MyRifas = () => {
-  const { store } = useGlobalReducer();
-  const usuarioId = store.usuario?.id;
-  const [boletos, setBoletos] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function RuletaPage() {
+  const { rifaId } = useParams();
+  const [rifa, setRifa] = useState(null);
+  const [data, setData] = useState([]);
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!usuarioId) return;
-
-    const fetchBoletosUsuario = async () => {
+    async function fetchRifa() {
       setLoading(true);
       setError(null);
       try {
         const token = sessionStorage.getItem("token");
         const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/boletos-usuario/${usuarioId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/rifa/${rifaId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
             },
           }
         );
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || "Error al obtener boletos");
+          throw new Error(`Error al obtener rifa: ${res.statusText}`);
         }
-        const data = await res.json();
-        const boletosConfirmados = data.filter((b) => b.confirmado === true);
-        setBoletos(boletosConfirmados);
+        const rifaData = await res.json();
+        setRifa(rifaData);
+
+        // Mapeamos los boletos a opciones para la ruleta
+        const wheelData = rifaData.boletos.map((boleto) => ({
+          option: boleto.numero.toString(),
+        }));
+        setData(wheelData);
+
+        // Buscamos índice ganador
+        const winnerIndex = wheelData.findIndex(
+          (item) => item.option === rifaData.boleto_ganador?.toString()
+        );
+
+        setPrizeNumber(winnerIndex !== -1 ? winnerIndex : null);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchBoletosUsuario();
-  }, [usuarioId]);
+    if (rifaId) {
+      fetchRifa();
+    }
+  }, [rifaId]);
 
-  const boletosPorRifa = boletos.reduce((acc, boleto) => {
-    if (!acc[boleto.rifa_id]) acc[boleto.rifa_id] = [];
-    acc[boleto.rifa_id].push(boleto);
-    return acc;
-  }, {});
-
-  Object.values(boletosPorRifa).forEach((arr) =>
-    arr.sort((a, b) => a.numero - b.numero)
-  );
-
-  const getNombreRifa = (id) => {
-    const rifa = store.rifas.find((r) => r.id === id);
-    return rifa ? rifa.nombre_rifa : `Rifa #${id}`;
+  const handleSpinClick = () => {
+    if (prizeNumber !== null) {
+      setMustSpin(true);
+    }
   };
 
   return (
     <div
       style={{
-        backgroundColor: "white",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "40px 20px",
+        backgroundImage: `url(${fondo})`,
+        backgroundSize: "cover",
+        height: "100vh",
+        padding: "2rem",
+        color: "#fff",
+        textAlign: "center",
       }}
     >
-      <div
-        style={{
-          backgroundColor: "rgb(10,19,31)",
-          color: "white",
-          padding: "40px",
-          borderRadius: "12px",
-          maxWidth: "800px",
-          width: "100%",
-          boxShadow: "0 0 15px rgba(0,0,0,0.2)",
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        }}
-      >
-        <h1
-          style={{
-            color: "rgb(59,255,231)",
-            marginBottom: "30px",
-            textAlign: "center",
-          }}
-        >
-          🎟️ Mis Boletos
-        </h1>
+      <h1>Ruleta de la Rifa #{rifaId}</h1>
 
-        {loading && <p>Cargando boletos confirmados...</p>}
-        {error && <p style={{ color: "red" }}>Error: {error}</p>}
-        {!loading && !error && boletos.length === 0 && (
-          <p style={{ fontSize: "1.1rem", lineHeight: "1.8", textAlign: "center" }}>
-            No tienes boletos confirmados todavía.
-          </p>
-        )}
+      {loading && <p>Cargando rifa...</p>}
 
-        {!loading &&
-          !error &&
-          Object.entries(boletosPorRifa).map(([rifa_id, boletosArray]) => (
-            <div
-              key={rifa_id}
-              style={{
-                marginBottom: "30px",
-                padding: "20px",
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-              }}
-            >
-              <h2
-                style={{
-                  color: "rgb(59,255,231)",
-                  fontSize: "1.3rem",
-                  marginBottom: "15px",
-                }}
-              >
-                🎯 {getNombreRifa(Number(rifa_id))}
-              </h2>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                }}
-              >
-                {boletosArray.map((boleto) => (
-                  <span
-                    key={`${boleto.rifa_id}-${boleto.numero}`}
-                    style={{
-                      backgroundColor: "rgb(59,255,231)",
-                      color: "black",
-                      padding: "8px 12px",
-                      borderRadius: "6px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    #{boleto.numero}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {!loading && !error && data.length > 0 && (
+        <>
+          <Wheel
+            mustStartSpinning={mustSpin}
+            prizeNumber={prizeNumber}
+            data={data}
+            onStopSpinning={() => setMustSpin(false)}
+            backgroundColors={["#3e3e3e", "#df3428"]}
+            textColors={["#ffffff"]}
+            outerBorderColor="#000"
+            outerBorderWidth={5}
+            innerBorderColor="#000"
+            innerBorderWidth={5}
+            radiusLineColor="#fff"
+            radiusLineWidth={2}
+            fontSize={20}
+            spinDuration={0.8}
+          />
+          <button
+            onClick={handleSpinClick}
+            disabled={mustSpin || prizeNumber === null}
+            style={{
+              marginTop: "1.5rem",
+              padding: "0.75rem 1.5rem",
+              fontSize: "1.2rem",
+              cursor: mustSpin || prizeNumber === null ? "not-allowed" : "pointer",
+              backgroundColor: mustSpin || prizeNumber === null ? "#555" : "#df3428",
+              border: "none",
+              color: "#fff",
+              borderRadius: "5px",
+            }}
+          >
+            Girar Ruleta
+          </button>
+          {!mustSpin && rifa?.boleto_ganador && (
+            <p style={{ marginTop: "1rem", fontSize: "1.3rem" }}>
+              🎉 ¡Ganador: Boleto #{rifa.boleto_ganador}!
+            </p>
+          )}
+        </>
+      )}
+
+      {!loading && !error && data.length === 0 && <p>No hay boletos para esta rifa.</p>}
     </div>
   );
-};
+}
