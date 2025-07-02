@@ -14,8 +14,8 @@ detallecompra_rifa = Table(
     db.metadata,
     Column('detalle_compra_id', ForeignKey('detalle_compra.id'), primary_key=True),
     Column('rifa_id', ForeignKey('rifas.id'), primary_key=True),
-    Column('cantidad', Integer, nullable=False),
-    Column('importe_total', DECIMAL(10, 2), nullable=False)
+    Column('cantidad', Integer, nullable=True),
+    Column('importe_total', DECIMAL(10, 2), nullable=True)
 )
 
 
@@ -134,7 +134,7 @@ class Rifas(db.Model):
     numero_max_boletos: Mapped[int] = mapped_column(nullable=False)
     numero_boletos_vendidos: Mapped[int] = mapped_column(nullable = True)
     status_sorteo: Mapped[str] = mapped_column(String(50), nullable=False)
-    boleto_ganador: Mapped[int | None] = mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
+    boleto_ganador: Mapped[int | None] = mapped_column(nullable=True) # mapped_column(ForeignKey('boleto.id', use_alter=True, name='fk_rifas_boleto_ganador'), nullable=True)
     stripe_product_id = db.Column(db.String, nullable=True)
     stripe_price_id = db.Column(db.String, nullable=True)
     vendedor: Mapped["Vendedor"] = relationship(back_populates='rifas')
@@ -170,7 +170,7 @@ class DetalleCompra(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('usuario.id'), nullable=False)
-    compra_id: Mapped[int] = mapped_column(ForeignKey('compra.id'), nullable=False)
+    compra_id: Mapped[int] = mapped_column(ForeignKey('compra.id'), nullable=True)
     vendedor_id: Mapped[int] = mapped_column(ForeignKey('vendedor.id'), nullable=False)
     stripe_session_id: Mapped[str | None] = mapped_column(String(100))
     status: Mapped[str | None] = mapped_column(String(50))
@@ -197,7 +197,7 @@ class DetalleCompra(db.Model):
             "stripe_session_id": self.stripe_session_id,
             "status": self.status,
             "fecha_compra": self.fecha_compra.isoformat(),
-            "pedido": self.pedido
+            "pedido": self.num_pedido
         }
 
 

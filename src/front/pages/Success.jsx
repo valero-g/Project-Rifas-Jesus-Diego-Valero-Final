@@ -62,6 +62,7 @@ export const Success = () => {
                 const data = await response.json();
                 console.log("✅ Boletos confirmado correctamente:", data);
                 dispatch({type:'delete_rifa_from_cart', payload:{rifa_id:rifaId}});
+                confirmaDetalleCompra(pedido);
                 
             } catch (err) {
                 console.error(`🚨 Error inesperado al confirmar los boletos ${numeros} de la rifa ${rifaId}:`, err);
@@ -69,6 +70,37 @@ export const Success = () => {
             }
         };
 
+        const confirmaDetalleCompra = async (pedido)=> {
+            try{
+                let usuarioId = 0;
+                const token = sessionStorage.getItem("token");
+                if (token) {
+                    const decoded = jwtDecode(token);
+                        usuarioId = decoded.sub;
+                        console.log(usuarioId);
+                }
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            num_pedido: pedido
+                        })
+                    });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error(`❌ Error al confirmar el detalle de compra del pedido ${pedido}`, errorData);
+                    return;
+                }
+                const data = await response.json();
+                console.log("✅ Detalle de compra confirmado correctamente:", data);
+            }catch (err) {
+                console.error(`🚨 Error inesperado al confirmar el detalle de compra del pedido ${pedido}:`, err);
+            }
+
+        }
 
     return (
         <div

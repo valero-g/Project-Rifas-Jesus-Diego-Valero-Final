@@ -55,7 +55,7 @@ def create_checkout_session():
 
         # Añadimos el detalle de compra
         # Paso 1 creamos el detalle de compra
-        detalle_compra = DetalleCompra(user_id = usuario_id, vendedor_id = rifa.vendedor_id, stripe_session_id = session.id, status= "pendiente", num_pedido = pedido)
+        detalle_compra = DetalleCompra(user_id = usuario_id, vendedor_id = rifa.vendedor_id, stripe_session_id = session.id, status= "pendiente", num_pedido = pedido, cantidad = 0, importe_total = 0)
 
         # Paso 2 poblamos la tabla relacional entre detalle compra y rifas:
         sum_cantidad = 0
