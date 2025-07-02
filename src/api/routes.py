@@ -678,12 +678,17 @@ def add_boleto():
         return {"message": "Error reservando boleto"}, 500
 
 # PUT de boleto
+
+
+
+
 @api.route('/boleto', methods = ['PUT'])
 @jwt_required()
 def edit_boleto():
     try:
         # Accede a la identidad del usuario actual con get_jwt_identity
         current_id = get_jwt_identity()
+
         user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
         # Validacion de user
         if (user == None):
@@ -696,10 +701,12 @@ def edit_boleto():
         if ("numero" not in request_body.keys() and "numeros" not in request_body.keys()) or "usuario_id" not in request_body.keys() or "rifa_id" not in request_body.keys() or "confirmado" not in request_body.keys():
             print(request_body)
             return {"message" : "Petición errónea. Body incorrecto"}, 400
-         # Validación de usuario
+
+        # Validación de usuario
         if int(current_id) != request_body["usuario_id"]:
             return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
         # Validacion de rifa
+
         rifa = db.session.execute(select(Rifas).where(Rifas.id == request_body["rifa_id"])).scalar_one_or_none()
         if rifa == None:
             return{"message": "La rifa no exsite"}, 400
@@ -733,8 +740,10 @@ def edit_boleto():
                 response.append(boleto.serialize())
             return jsonify(response), 200
     except Exception as e:
+
         print("Error: ",e)
         return {"message":"Error modificando boleto"}, 500
+
 
 # DELETE de boleto
 @api.route('/boleto', methods=['DELETE'])
