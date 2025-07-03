@@ -136,7 +136,7 @@ export default function RuletaPage() {
               radiusLineWidth={3}
               fontSize={18}
               fontWeight="600"
-              spinDuration={5}
+              spinDuration={1}
               style={{
                 filter: "drop-shadow(0 0 8px #3BFFE7)",
                 borderRadius: "50%",

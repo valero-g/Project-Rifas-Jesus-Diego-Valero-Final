@@ -16,8 +16,9 @@ from flask_mail import Message
 from api.extensions import mail
 import os
 from datetime import timedelta
-from api.emails import send_email_verification, send_email_password_recovery, send_email_random_password, generar_clave
+from api.emails import send_email_verification, send_email_password_recovery, send_email_random_password, generar_clave, send_email_winner
 import stripe
+from collections import defaultdict
 
 
 api = Blueprint('api', __name__)
@@ -103,11 +104,13 @@ def get_rifas():
         # Comprobación de si hay premio
         for rifa in all_rifas:
             if rifa.numero_boletos_vendidos == rifa.numero_max_boletos and rifa.boleto_ganador == None:
-                print(rifa.boletos)
                 boleto_premiado = random.choice(rifa.boletos)
                 rifa.boleto_ganador = boleto_premiado.numero
                 rifa.status_sorteo = "finalizado"
                 db.session.commit()
+                usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
+                print(usuario_ganador)
+                send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         all_rifas = db.session.execute(select(Rifas)).scalars().all()
         # Respuesta
@@ -135,6 +138,8 @@ def get_rifa(rifa_id):
             rifa.boleto_ganador = boleto_premiado.numero
             rifa.status_sorteo = "finalizado"
             db.session.commit()
+            usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
+            send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         # Respuesta
         print(f"Rifa {rifa_id}:", rifa.serialize())
@@ -295,8 +300,6 @@ def add_usuario():
         return {"message": "No se pudo añadir usuario"}, 500
 
 # Email confirmation
-
-
 @api.route('/verify-email', methods=['GET'])
 def verify_email():
     token = request.args.get('token')
@@ -373,8 +376,6 @@ def update_user_by_id(usuario_id):
         return {"message": "Error actualizando usuario"}, 500
 
 # PUT de contraseña
-
-
 @api.route('/new-password', methods=['PUT'])
 @jwt_required()
 def update_password():
@@ -420,8 +421,6 @@ def update_password():
         return {"message": "Error actualizando usuario"}, 500
 
 # Login Endpoint
-
-
 @api.route("/login", methods=['POST'])
 def login():
     try:
@@ -479,8 +478,6 @@ def get_user_by_id():
         return {"message": "No se puede obtener el usuario"}, 500
 
 # POST de recuperar contraseña
-
-
 @api.route('/reset-password', methods=['POST'])
 def reset_password():
     try:
@@ -504,8 +501,6 @@ def reset_password():
         return {"message": "No se puede enviar mail para resetear password"}, 500
 
 # POST de generar contraseña random
-
-
 @api.route('/generate-password', methods=['POST'])
 def generate_new_password():
     try:
@@ -570,10 +565,85 @@ def get_boletos_ocupados(rifa_id):
     except Exception as e:
         print("Error", e)
         return {"message": "Error recuperando los boletos ocupados"}, 500
+    
+
+@api.route('/boletos-comprados/<int:rifa_id>', methods=['GET'])
+@jwt_required()
+def get_boletos_comprados(rifa_id):
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(
+            Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(
+            Rifas.id == rifa_id)).scalar_one_or_none()
+        if rifa == None:
+            return {"message": "La rifa no existe"}, 400
+        boletos = (db.session.query(Boleto).join(Usuario).filter(Boleto.rifa_id == rifa_id, Boleto.confirmado == True).all())
+
+        # 2. Agrupar por usuario_id
+        usuarios_dict = defaultdict(lambda: {"usuario_id": None, "usuario": "", "boletos": []})
+
+        for boleto in boletos:
+            print(boleto)
+            uid = boleto.usuario_id
+            usuarios_dict[uid]["usuario_id"] = uid
+            usuarios_dict[uid]["usuario"] = boleto.usuario.usuario  # Ajusta si el campo no es "nombre"
+            usuarios_dict[uid]["boletos"].append(boleto.numero)
+
+        # 3. Convertir a lista
+        resultado = list(usuarios_dict.values())
+        print(resultado)
+        return jsonify(resultado)
+
+    except Exception as e:
+        print("Error", e)
+        return {"message": "Error recuperando los boletos comprados en la rifa"}, 500
+
+@api.route('/boleto/<int:rifa_id>/<int:num_boleto>', methods=['GET'])
+@jwt_required()
+def get_boleto(rifa_id, num_boleto):
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(
+            Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        # Validacion de rifa
+        rifa = db.session.execute(select(Rifas).where(
+            Rifas.id == rifa_id)).scalar_one_or_none()
+        if rifa == None:
+            return {"message": "La rifa no existe"}, 400
+        boleto = (db.session.query(Boleto).join(Usuario).filter(Boleto.rifa_id == rifa_id, Boleto.numero == num_boleto).first())
+        
+
+        if boleto is None:
+            return {"message": "Boleto no encontrado"}, 404
+
+        resultado = {
+            "usuario_id": boleto.usuario_id,
+            "usuario": boleto.usuario.usuario,  # Ajusta si el campo se llama distinto
+            "numero": boleto.numero,
+            "rifa_id": boleto.rifa_id
+        }
+
+
+        # Devolver respuesta
+        print(resultado)
+        return jsonify(resultado)
+
+    except Exception as e:
+        print("Error", e)
+        return {"message": "Error recuperando los boletos comprados en la rifa"}, 500
+
 
 # GET de Boletos de usuario
-
-
 @api.route('/boletos-usuario/<int:usuario_id>', methods=['GET'])
 @jwt_required()
 def get_boletos_de_usuario(usuario_id):
