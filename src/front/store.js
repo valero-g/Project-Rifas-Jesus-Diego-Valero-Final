@@ -2,10 +2,11 @@ import { json } from "react-router-dom";
 
 export const initialStore=()=>{
   return{
-    isLogged: false,
+    isLogged: sessionStorage.getItem("isLogged") === "true",
     usuario:{},
     rifas: [],
-    carrito:[]
+    carrito:[],
+    carrito_cargado: false
   }
 }
 
@@ -46,7 +47,7 @@ export default function storeReducer(store, action = {}) {
             ...store,
             carrito: store.carrito.map(item =>
               item.rifa_id === action.payload.rifa_id
-                ? { ...item, numeros: [...item.numeros, action.payload.numero] }
+                ? ((item.numeros.includes(action.payload.numero)) ? item :{ ...item, numeros: [...item.numeros, action.payload.numero] })
                 : item
             )
           };
@@ -76,6 +77,14 @@ export default function storeReducer(store, action = {}) {
           ...store,
           carrito: store.carrito.filter(item => item.rifa_id != action.payload.rifa_id)
         }
+      }
+    
+      case 'set_loaded_cart':{
+        return{
+          ...store,
+          carrito_cargado:true
+        }
+
       }
 
     default: 

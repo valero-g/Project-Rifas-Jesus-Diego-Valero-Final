@@ -3,18 +3,30 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx"
 import React from 'react';
 
-const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
+const CardHome = ({ id, nombre, fecha, url, onInfoClick, status }) => {
 
     const navigate = useNavigate();
     const { store } = useGlobalReducer();
 
     const handleClick = () => {
         if (store.isLogged) {
+            console.log(id)
+            console.log()
             navigate(`/seleccion-boletos/${id}`)
         } else {
             navigate("/Login");
         }
     };
+
+    const handleClickSorteo = () => {
+        if (store.isLogged) {
+            console.log(id)
+            console.log()
+            navigate("/ruleta")
+        } else {
+            navigate("/Login");
+        }
+    }
 
     return (
         <div
@@ -30,6 +42,7 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
                 boxShadow: "0 15px 40px rgba(0, 0, 0, 0.7)", // sombra más fuerte desde el inicio
                 transition: "transform 0.4s ease, box-shadow 0.4s ease",
                 cursor: "pointer",
+                position: "relative"
             }}
             onMouseEnter={e => {
                 e.currentTarget.style.transform = "scale(1.06)";
@@ -40,6 +53,23 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
                 e.currentTarget.style.boxShadow = "0 15px 40px rgba(0, 0, 0, 0.7)";
             }}
         >
+            {status === "finalizado" && (
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        left: "10px",
+                        backgroundColor: "#FFD700",
+                        color: "#000",
+                        padding: "5px 10px",
+                        borderRadius: "10px",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                    }}
+                >
+                   <strong>Sorteo activo</strong>
+                </div>
+            )}
             <div style={{ width: "100%", height: "180px", overflow: "hidden" }}>
                 <img
                     src={url}
@@ -84,27 +114,55 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick }) => {
                     >
                         i
                     </button>
-                    <button
-                        onClick= {handleClick}
-                        style={{
-                            backgroundColor: "#3BFFE7",
-                            color: "#000000",
-                            border: "none",
-                            padding: "10px 20px",
-                            borderRadius: "10px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                            width: "70%",
-                            transition: "background 0.3s ease"
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2fd8c3"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3BFFE7"}
-                    >
-                        Comprar
-                    </button>
+                    {status === "finalizado" ? (
+                        <button
+                            onClick={handleClickSorteo}
+                            style={{
+                                background: "0",
+                                color: "#3BFFE7",
+                                border: "3px solid #3BFFE7",
+                                padding: "10px 20px",
+                                borderRadius: "10px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                width: "70%",
+                                transition: "background 0.3s ease"
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.backgroundColor = "#2fd8c3";
+                                e.currentTarget.style.border = "#2fd8c3";
+                                e.currentTarget.style.color = "#0A131F"
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.background = "0";
+                                e.currentTarget.style.border = "3px solid #3BFFE7";
+                                e.currentTarget.style.color = "#3BFFE7"
+                            }}
+                        >
+                            Ir al sorteo
+                        </button>
+                    ) : (
+                        < button
+                            onClick={handleClick}
+                            style={{
+                                backgroundColor: "#3BFFE7",
+                                color: "#000000",
+                                border: "none",
+                                padding: "10px 20px",
+                                borderRadius: "10px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                width: "70%",
+                                transition: "background 0.3s ease"
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2fd8c3"}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3BFFE7"}
+                        >
+                            Comprar
+                        </button>)}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

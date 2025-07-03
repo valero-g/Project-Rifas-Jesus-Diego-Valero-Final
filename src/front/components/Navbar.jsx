@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/img/4Boleeks.png";
 import "../index.css";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import ModalLogOut from '../components/ModalLogOut.jsx'
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -28,14 +29,67 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  const cartItems = [];
-  const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // Calcular total de números en el carrito
+  const totalCartItems = store.carrito.reduce((acc, item) => {
+    // item.numeros puede ser string "1,2,3" o array
+    const numerosArray = Array.isArray(item.numeros)
+      ? item.numeros
+      : item.numeros
+        ?.split(",")
+        .map((n) => n.trim())
+        .filter((n) => n !== "") || [];
+    return acc + numerosArray.length;
+  }, 0);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("token");
-    dispatch({ type: "logOut" });
-    navigate("/");
+
+  const [showModal, setShowModal] = useState(false);
+  const handleOpenModal = () => {
+    if (totalCartItems === 0) {
+      handleLogout(); 
+    } else {
+      setShowModal(true); 
+    }
   };
+  const handleCancelLogout = () => setShowModal(false);
+
+  const handleLogout = async () => {
+    if (totalCartItems === 0) {
+      sessionStorage.removeItem("token");
+      dispatch({ type: "logOut" });
+      sessionStorage.removeItem("isLogged");
+      navigate("/");
+      return;
+    }
+
+    setShowModal(false);
+    try {
+      const token = sessionStorage.getItem("token");
+      const UsuarioId = store.usuario?.id;
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos/${UsuarioId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ Error al cerrar sesión:", errorData.message || "Error desconocido");
+      } else {
+        console.log("✅ Sesión cerrada correctamente en el backend");
+      }
+
+    } catch (error) {
+      console.error("🚨 Error inesperado al cerrar sesión:", error);
+    } finally {
+      sessionStorage.removeItem("token");
+      dispatch({ type: "logOut" });
+      sessionStorage.removeItem("isLogged");
+      navigate("/");
+    }
+  };
+
 
   const buttonBaseStyle = {
     borderRadius: "30px",
@@ -196,19 +250,30 @@ export const Navbar = () => {
                   Te damos la bienvenida, <strong>{store.usuario.nombre}</strong>
                 </span>
               )}
-              <button
-                onClick={handleLogout}
-                className="btn"
-                style={
-                  hoveredBtn === "cerrarSesion"
-                    ? { ...buttonCerrarSesionStyle, ...buttonCerrarSesionHoverStyle }
-                    : buttonCerrarSesionStyle
-                }
-                onMouseEnter={() => setHoveredBtn("cerrarSesion")}
-                onMouseLeave={() => setHoveredBtn(null)}
-              >
-                Cerrar sesión
-              </button>
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <button
+                  onClick={handleOpenModal}
+                  className="btn"
+                  style={
+                    hoveredBtn === "cerrarSesion"
+                      ? { ...buttonCerrarSesionStyle, ...buttonCerrarSesionHoverStyle }
+                      : buttonCerrarSesionStyle
+                  }
+                  onMouseEnter={() => {
+                    setHoveredBtn("cerrarSesion");
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredBtn(null);
+                  }}
+                >
+                  Cerrar sesión
+                </button>
+                <ModalLogOut
+                  isOpen={showModal}
+                  onConfirm={handleLogout}
+                  onCancel={handleCancelLogout}
+                />
+              </div>
             </>
           )}
 
@@ -274,9 +339,15 @@ export const Navbar = () => {
           {store.isLogged && (
             <>
               <span style={groupTitleStyle}>Cuenta</span>
+
               <Link to="/profile" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
                 🏠 Perfil de usuario
               </Link>
+
+              <Link to="/myrifas" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+                🎟️ Mis boletos
+              </Link>
+
               <hr style={dividerStyle} />
             </>
           )}
@@ -286,7 +357,7 @@ export const Navbar = () => {
             🎯 Últimos resultados
           </Link>
           <Link to="/sorteos-activos" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-             🎁  Sorteos activos
+            🎁  Sorteos activos
           </Link>
           <hr style={dividerStyle} />
 

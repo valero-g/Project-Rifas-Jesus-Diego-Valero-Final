@@ -20,26 +20,6 @@ export const SelectTicket = () => {
     };
 
 
-    const addTicketsToCart = (selectedNumbers) => {
-        console.log("Números a añadir al carrito:", selectedNumbers);
-        selectedNumbers.forEach(numero => {
-            dispatch({
-                type: 'add_number_to_cart',
-                payload: { rifa_id: rifa.id, numero }
-            });
-        });
-    };
-
-
-
-    
-
-    useEffect(() => {
-        console.log("Carrito actualizado:", store.carrito);
-    }, [store.carrito]);
-
-
-
     useEffect(() => {
         getRifa()
     }, [id]);
@@ -63,38 +43,59 @@ export const SelectTicket = () => {
         return <div style={{ color: "#000", padding: "2rem" }}><strong>Cargando rifa...</strong></div>;
     }
     return (
-        <div /*style={{
-            backgroundImage: `url(${fondo})`,
-            // Regresamos a 'cover' para que ocupe todo el espacio
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
-            backgroundAttachment: "fixed",
-            // Centramos la imagen para que lo más importante esté visible
-            backgroundPosition: "center center",
-            minHeight: "100vh",
-            color: "#FFFFFF",
-        }}*/>
-            <div style={{ marginLeft: "149px", marginTop: "15px" }}>
-                <p style={{ cursor: 'pointer' }} onClick={BackHome}> <i className="fas fa-arrow-left"></i> <strong>Volver</strong></p>
+        <div
+            style={{
+                backgroundImage: `url(${fondo})`,
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+                backgroundAttachment: "fixed",
+                backgroundPosition: "center center",
+                minHeight: "100vh",
+            }}
+        >
+            <div style={{ marginLeft: "159px", paddingTop: "15px" }}>
+                <p style={{ cursor: 'pointer' }} onClick={BackHome}>
+                    <i className="fas fa-arrow-left"></i> <strong>Volver</strong>
+                </p>
             </div>
-            <h1 style={{ marginLeft: "149px", marginTop: "10px" }}>
+            <h1 style={{
+                marginLeft: "159px",
+                marginTop: "10px",
+                textShadow: `
+                    0 0 1.5px #3BFFE7,
+                    0 0 3px #3BFFE7,
+                    0 0 4px #3BFFE7
+                    `
+            }}>
                 {rifa.nombre_rifa}
             </h1>
             <div className="Container vh-100 d-flex justify-content-center">
-                <div className="d-flex justify-content-between align-items-center"
-                    style={{ width: "80%", height: "100%" }}>
-                    <div style={{
-                        boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
+                <div
+                    className="d-flex justify-content-between align-items-center"
+                    style={{
+                        width: "80%",
+                        height: "100%",
                         borderRadius: "20px",
-                        width: "30%",
-                        height: "90%"
-                    }}>
-                        <div style={{
-                            height: "38%",
+                        padding: "1rem",
+                    }}
+                >
+                    <div
+                        style={{
+                            boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
                             borderRadius: "20px",
-                            marginBottom: "24px",
-                            overflow: "hidden"
-                        }}>
+                            width: "30%",
+                            height: "90%",
+                            backgroundColor: "#fff", // ← También agregamos aquí si hace falta
+                        }}
+                    >
+                        <div
+                            style={{
+                                height: "38%",
+                                borderRadius: "20px",
+                                marginBottom: "24px",
+                                overflow: "hidden",
+                            }}
+                        >
                             <img
                                 src={rifa.url_premio}
                                 alt="Premio"
@@ -106,43 +107,57 @@ export const SelectTicket = () => {
                             />
                         </div>
                         <div className="d-flex justify-content-center mb-5">
-                            <div style={{
-                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                                borderRadius: "5px",
-                                width: "52%",
-                                marginRight: "7px",
-                                padding: "4px",
-                                display: "flex",
-                                alignItems: "center"
-                            }}>
-                                <i className="fas fa-calendar-alt" style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}></i>
-                                <div style={{
-                                    width: "100%",
+                            <div
+                                style={{
+                                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                                    borderRadius: "5px",
+                                    width: "52%",
+                                    marginRight: "7px",
+                                    padding: "4px",
                                     display: "flex",
                                     alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
+                                }}
+                            >
+                                <i
+                                    className="fas fa-calendar-alt"
+                                    style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}
+                                ></i>
+                                <div
+                                    style={{
+                                        width: "100%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
                                     <p style={{ margin: "0", fontSize: "20px" }}>
                                         <strong>{rifa.fecha_de_sorteo}</strong>
                                     </p>
                                 </div>
                             </div>
-                            <div style={{
-                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                                borderRadius: "5px",
-                                width: "28%",
-                                marginLeft: "7px",
-                                padding: "4px",
-                                display: "flex",
-                                alignItems: "center"
-                            }}>
-                                <i className="fas fa-euro-sign" style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}></i>
-                                <div style={{
-                                    width: "100%",
+                            <div
+                                style={{
+                                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                                    borderRadius: "5px",
+                                    width: "28%",
+                                    marginLeft: "7px",
+                                    padding: "4px",
                                     display: "flex",
                                     alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
+                                }}
+                            >
+                                <i
+                                    className="fas fa-euro-sign"
+                                    style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}
+                                ></i>
+                                <div
+                                    style={{
+                                        width: "100%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
                                     <p style={{ margin: "0", fontSize: "20px" }}>
                                         <strong>{rifa.precio_boleto}</strong>
                                     </p>
@@ -158,13 +173,16 @@ export const SelectTicket = () => {
                             </p>
                         </div>
                     </div>
+
                     <TicketSelector
                         maxNumber={rifa?.numero_max_boletos || 100}
                         precio={rifa.precio_boleto}
-                        onSelectTickets={addTicketsToCart}
+                        onSelectTickets
+                        rifaId={rifa.id}
                     />
                 </div>
             </div>
         </div>
     );
+
 };
