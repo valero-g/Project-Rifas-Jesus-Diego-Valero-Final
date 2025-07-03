@@ -100,6 +100,42 @@ BODY:  N/A
 RESPUESTA POSITIVA: {"Rifa_id": rifa_id, "Numeros_ocupados": lista_numeros_ocupados}, 200 
 RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 /   {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos ocupados"}, 500  
 
+### /boletos-comprados/<int:rifa_id>
+DESCRIPCION: Devuelve un vector con los usuarios que han comprado boletos, y un subvector con los números comprados por ese usuario  
+TIPO: GET  
+REQUIERE TOKEN: SI   
+BODY:  N/A  
+
+RESPUESTA POSITIVA:  
+[  
+    {  
+        "boletos": [  
+            305,  
+            306  
+        ],  
+        "usuario": "Ramonchu",  
+        "usuario_id": 23  
+    }  
+]  
+RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message": "La rifa no existe"}, 400 / {"message": "Error recuperando los boletos comprados en la rifa"}, 500  
+
+### /boleto/<int:rifa_id>/<int:num_boleto>  
+DESCRIPCION: Devuelve de la rifa y número indicado, incluyendo datos del usuario  
+TIPO: GET  
+REQUIERE TOKEN: SI   
+BODY:  N/A  
+
+RESPUESTA POSITIVA:  
+{  
+    "numero": 4,  
+    "rifa_id": 6,  
+    "usuario": "Ramonchu",  
+    "usuario_id": 23  
+}  
+RESPUESTAS NEGATIVAS:  {"message": "Error en la autentificación de usuario"}, 401 / {"message": "La rifa no existe"}, 400 / {"message": "Boleto no encontrado"}, 404 / {"message": "Error recuperando los boletos comprados en la rifa"}, 500  
+
+
+
 ### /boletos-usuario/<int:usuario_id>
 DESCRIPCION: Devuelve un vector con los números reservados o comprados de un usuario  
 TIPO: GET  
@@ -179,9 +215,11 @@ BODY:
     "url_premio" : "https://www.laboulette.com/imgshop/pro-jamon-iberico-de-bellota-5j(6).jpg",  
     "numero_max_boletos" :100,  
     "status_sorteo" : "venta",  
-    "boleto_ganador" : null  
+    "boleto_ganador" : null,  
+    "numero_boletos_vendidos": 0  
 }  
-RESPUESTA POSITIVA: {"message": f"Rifa añadida a la tabla de rifas"}, 200 
+El endpoint creará y almacenará el Stripe Product ID y el Stripe Price Id.  
+RESPUESTA POSITIVA: {"message": f"Rifa añadida a la tabla de rifas"}, 200  
 RESPUESTAS NEGATIVAS:  {"message": "Request request_body is empty"}, 400 / {"message": "Wrong request request_body"}, 400 / {"message": "La rifa ya existe"}, 400 /  {"message": f"Error: No se puede añadir rifa a la tabla de rifas. Fallo interno"}, 500  
 
 ### /rifas    
@@ -201,4 +239,41 @@ BODY:
 N/A  
 RESPUESTA POSITIVA: jsonify(rifa.serialize()), 200  
 RESPUESTAS NEGATIVAS:  {"message": "No se encuentra rifa"}, 404 / {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500   
+
+### /rifa/<int:rifa_id>  
+DESCRIPCION: Modifica una rifa  
+TIPO: PUT  
+REQUIERE TOKEN: NO     
+BODY:  
+{  
+    "nombre_rifa": "Rifa del jamón",  
+    "vendedor_id" : 1,  
+    "fecha_de_sorteo" : "2025-06-23",  
+    "hora_de_sorteo" : "11:30:00",  
+    "precio_boleto" : 2.50,  
+    "premio_rifa" : "Jamón 5Jotas valorado en 500€",  
+    "url_premio" : "https://www.laboulette.com/imgshop/pro-jamon-iberico-de-bellota-5j(6).jpg",  
+    "numero_max_boletos" :100,  
+    "status_sorteo" : "venta",  
+    "boleto_ganador" : null,  
+    "numero_boletos_vendidos": 0  
+}  
+El endpoint modifica una rifa. Si no existe el stripe Product ID y PRice ID, lo creará automáticamente.   
+RESPUESTA POSITIVA: rifa.serialize(),200  (el serialize incluye los IDs de Stripe).  
+RESPUESTAS NEGATIVAS:  {{"message" : f" La rifa ID {rifa_id} no pudo ser encontrado. "}, 404 / {"message" : f"Request erroneo"}, 400 /  {"message": f"Error: No se puede modificar la rifa. Fallo interno"}, 500  
+
+
+### /rifa-status/<int:rifa_id>  
+DESCRIPCION: Modifica los parámetros de una rifa: boleto ganador, status de rifa y numero de boletos vendidos  
+TIPO: PUT  
+REQUIERE TOKEN: NO     
+BODY:  
+{  
+    "status_sorteo": "venta",  
+    "numero_boletos_vendidos":0,  
+    "boleto_ganador": null  
+}  
+El endpoint modifica los parámetros de uso de una rifa. Si no existe el stripe Product ID y PRice ID, lo creará automáticamente.   
+RESPUESTA POSITIVA: rifa.serialize(),200  (el serialize incluye los IDs de Stripe).  
+RESPUESTAS NEGATIVAS:  return {"message" : f" La rifa ID {rifa_id} no pudo ser encontrado. "}, 404  /  return {"message" : f"Request erroneo. El body debe contar status_sorteo, numero_boletos_vendidos y boleto_ganador"}, 400 /   {"message": f"Error: No se puede modificar la rifa. Fallo interno"}, 500  
 
