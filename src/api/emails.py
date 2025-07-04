@@ -47,7 +47,7 @@ def send_email_winner(sender_email, recipient_email, nombre_ganador, num_boleto_
                 </div>
 
                 <p style="font-size: 16px; margin-top: 25px;">
-                    ¡Estás de enhorabuena! Tu boleto número <strong>{num_boleto_ganador}</strong> ha resultado ganador en la rifa <strong>{nombre_rifa}</strong>.
+                    ¡Estás de enhorabuena! Tu boleto número <strong>{num_boleto_ganador}</strong> ha resultado ganador en <strong>{nombre_rifa}</strong>.
                 </p>
 
                 <p style="font-size: 16px;">
