@@ -110,7 +110,7 @@ def get_rifas():
                 db.session.commit()
                 usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
                 print(usuario_ganador)
-                send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
+                send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         all_rifas = db.session.execute(select(Rifas)).scalars().all()
         # Respuesta
@@ -139,7 +139,7 @@ def get_rifa(rifa_id):
             rifa.status_sorteo = "finalizado"
             db.session.commit()
             usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
-            send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
+            send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         # Respuesta
         print(f"Rifa {rifa_id}:", rifa.serialize())
@@ -292,7 +292,7 @@ def add_usuario():
         print(email_token)
 
         # Envio de correo para confirmación de email (PENDIENTE REVISAR SI VERIFICAMOS EMAIL)
-        # send_email_verification(sender_email = 'info4boleeks@gmail.com', recipient_email = new_user.email, token = email_token)
+        # send_email_verification(sender_email = os.getenv("MAIL_SENDER"), recipient_email = new_user.email, token = email_token)
         return {"message": "User created successfully, pending email confirmation"}, 200
     except Exception as e:
         print("Error :", e)
@@ -493,7 +493,7 @@ def reset_password():
             identity=str(user.id), expires_delta=expire_password)
         print(password_token)
         send_email_password_recovery(
-            sender_email='info4boleeks@gmail.com', recipient_email=user.email, token=password_token)
+            sender_email=os.getenv("MAIL_SENDER"), recipient_email=user.email, token=password_token)
         return {"message": "Email enviado para resetear contraseña"}, 200
 
     except Exception as e:
@@ -514,7 +514,7 @@ def generate_new_password():
         new_password = generar_clave(10)
         print("El nuevo password es: " + new_password)
         send_email_random_password(
-            sender_email='info4boleeks@gmail.com', recipient_email=user.email, password=new_password)
+            sender_email=os.getenv("MAIL_SENDER"), recipient_email=user.email, password=new_password)
 
         # actualización de database
         updated_user = db.session.get(Usuario, user.id)
@@ -1026,17 +1026,16 @@ def enviar_confirmacion():
         # Validación de body
         if data == None:
             return {"message": "Petición errónea. Body incorrecto"}, 400
-        if "num_pedido" not in data.keys() or "compras" not in data.keys() or "total" not in data.keys() or "nombre" not in data.keys() or "email" not in data.keys() or "user_id" not in data.keys():
+        if "num_pedido" not in data.keys() or "compras" not in data.keys() or "total" not in data.keys():
             return {"message": "Petición errónea. Body incorrecto"}, 400
-        if int(current_id) != data["user_id"]:
-            return {"message": "Petición incorrecta. Error en el id de usuario"}, 400
+
 
         # Recuperación de datos
-        email = data.get("email")
+        email = user.email
         num_pedido = data.get("num_pedido")
         compras = data.get("compras", [])
         total = data.get("total")
-        nombre_usuario = data.get("nombre")
+        nombre_usuario = user.nombre
 
         if not email or not compras:
             return jsonify({"message": "Faltan datos"}), 400
@@ -1103,7 +1102,7 @@ def enviar_confirmacion():
         </div>
         """
 
-        msg = Message(subject=f"Confirmación de compra  en 4Boleerks- Pedido {num_pedido}", recipients=[email],sender= "info4boleeks@gmail.com")
+        msg = Message(subject=f"Confirmación de compra  en 4Boleerks- Pedido {num_pedido}", recipients=[email],sender= os.getenv("MAIL_SENDER"))
         msg.html = html_body
         mail.send(msg)
 

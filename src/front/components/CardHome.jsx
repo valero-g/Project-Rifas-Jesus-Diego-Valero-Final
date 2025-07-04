@@ -139,7 +139,7 @@ const CardHome = ({ id, nombre, boletos, url, onInfoClick, status }) => {
                                 e.currentTarget.style.color = "#3BFFE7"
                             }}
                         >
-                            Ir al sorteo
+                            Ir a sorteos
                         </button>
                     ) : (
                         < button
