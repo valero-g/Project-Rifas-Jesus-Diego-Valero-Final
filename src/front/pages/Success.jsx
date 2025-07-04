@@ -17,7 +17,7 @@ export const Success = () => {
     useEffect(() => {
         //aseguramos que el carrito esté lleno
         console.log(store);
-        if (!store.carrito || store.carrito.length === 0 || store.usuario || !store.usuario.email) {
+        if (!store.carrito || store.carrito.length === 0) {
             console.log("⏳ Esperando a que se llene el carrito...");
             return;
         }
