@@ -5,6 +5,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { jwtDecode } from 'jwt-decode';
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
+import fondo from "../assets/img/fondo.png";
 
 
 export const Success = () => {
@@ -160,8 +161,15 @@ export const Success = () => {
     return (
         <div
             style={{
-                backgroundColor: "white",
-                minHeight: "70vh",
+                backgroundImage: `url(${fondo})`,
+                // Regresamos a 'cover' para que ocupe todo el espacio
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+                backgroundAttachment: "fixed",
+                // Centramos la imagen para que lo más importante esté visible
+                backgroundPosition: "center center",
+                color: "#FFFFFF",
+                minHeight: "100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",

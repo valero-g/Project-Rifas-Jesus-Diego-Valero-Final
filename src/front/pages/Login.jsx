@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import fondo from "../assets/img/fondo.png";
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -133,11 +134,18 @@ export const Login = () => {
     return (
         <div
             style={{
+                backgroundImage: `url(${fondo})`,
+                // Regresamos a 'cover' para que ocupe todo el espacio
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+                backgroundAttachment: "fixed",
+                // Centramos la imagen para que lo más importante esté visible
+                backgroundPosition: "center center",
+                color: "#FFFFFF",
                 minHeight: "80vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "white",
                 padding: "20px",
             }}
         >

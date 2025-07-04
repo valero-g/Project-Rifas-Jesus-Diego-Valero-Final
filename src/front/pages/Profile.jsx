@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import fondo from "../assets/img/fondo.png";
 
 export const Profile = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -318,10 +319,10 @@ export const Profile = () => {
                 Actualizar contraseña
               </button>
               <button style={styles.button} onClick={() => {
-                  setShowPasswordModal(false);
-                  setPasswordData({ actual: "", nueva: "", confirmarNueva: "" }); // Limpiar campos al cancelar
-                  setPasswordModalError(null); // Limpiar mensajes de error/éxito del modal
-                  setPasswordModalSuccess(null);
+                setShowPasswordModal(false);
+                setPasswordData({ actual: "", nueva: "", confirmarNueva: "" }); // Limpiar campos al cancelar
+                setPasswordModalError(null); // Limpiar mensajes de error/éxito del modal
+                setPasswordModalSuccess(null);
               }}>
                 Cancelar
               </button>
@@ -362,8 +363,15 @@ const EditableRow = ({ name, value, onChange }) => (
 
 const styles = {
   page: {
-    backgroundColor: "white",
+    backgroundImage: `url(${fondo})`,
+    // Regresamos a 'cover' para que ocupe todo el espacio
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+    backgroundAttachment: "fixed",
+    // Centramos la imagen para que lo más importante esté visible
+    backgroundPosition: "center center",
     minHeight: "100vh",
+    color: "#FFFFFF",
     display: "flex",
     justifyContent: "center",
     alignItems: "flex-start",

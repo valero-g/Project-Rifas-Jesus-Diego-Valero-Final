@@ -166,7 +166,7 @@ export const Home = () => {
             <div className="d-flex justify-content-center w-100">
                 {rifas.some((rifa) => rifa.status_sorteo === "finalizado") && (
                     <div style={{ flex: "0 0 auto", width: "100%", marginTop: "10px" }}>
-                        <RifaCerradaCard/>
+                        <RifaCerradaCard />
                     </div>
                 )}
             </div>
@@ -230,23 +230,26 @@ export const Home = () => {
                 }}
             >
                 <div className="d-flex flex-wrap justify-content-center gap-4 pb-5">
-                    {rifas.map((rifa) => (
-                        <div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
-                            <CardHome
-                                id={rifa.id}
-                                nombre={rifa.nombre_rifa}
-                                fecha={rifa.fecha_de_sorteo}
-                                url={rifa.url_premio}
-                                dispatch={dispatch}
-                                status={rifa.status_sorteo}
-                                onInfoClick={() => {
-                                    setPopupContent(`${rifa.premio_rifa}`);
-                                    setShowPopup(true);
-                                }}
-                            />
-                        </div>
-                    ))}
+                    {[...rifas]
+                        .sort((a, b) => a.status_sorteo.localeCompare(b.status_sorteo)) // Orden alfabético por status
+                        .map((rifa) => (
+                            <div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
+                                <CardHome
+                                    id={rifa.id}
+                                    nombre={rifa.nombre_rifa}
+                                    boletos={rifa.numero_max_boletos}
+                                    url={rifa.url_premio}
+                                    dispatch={dispatch}
+                                    status={rifa.status_sorteo}
+                                    onInfoClick={() => {
+                                        setPopupContent(`${rifa.premio_rifa}`);
+                                        setShowPopup(true);
+                                    }}
+                                />
+                            </div>
+                        ))}
                 </div>
+
             </div>
             {renderPopup()}
             <style>
