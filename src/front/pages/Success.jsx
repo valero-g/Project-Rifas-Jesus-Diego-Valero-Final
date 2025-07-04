@@ -66,7 +66,7 @@ export const Success = () => {
 
             const data = await response.json();
             console.log("✅ Boletos confirmado correctamente:", data);
-            //enviarEmailConfirmacion()
+            enviarEmailConfirmacion()
             dispatch({ type: 'delete_rifa_from_cart', payload: { rifa_id: rifaId } });
             confirmaDetalleCompra(pedido);
             
@@ -121,9 +121,9 @@ export const Success = () => {
             const usuarioStore = store.usuario;
             if (!usuarioStore || !usuarioStore.email) return; // o esperar con delay
             const dataEmail = {
-                    email: usuarioStore.email,  
-                    nombre: usuarioStore.nombre,
-                    user_id: usuarioStore.id,
+                    //email: usuarioStore.email,  
+                    //nombre: usuarioStore.nombre,
+                    //user_id: usuarioStore.id,
                     num_pedido: numPedido,
                     compras: carrito.map(item => {
                             const infoRifa = store.rifas.find(rifa => rifa.id === item.rifa_id);
