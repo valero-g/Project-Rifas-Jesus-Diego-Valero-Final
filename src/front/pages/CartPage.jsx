@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
 import { loadStripe } from "@stripe/stripe-js";
+import fondo from "../assets/img/fondo.png";
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -135,7 +136,7 @@ export const CartPage = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({usuario_id: store.usuario.id,  items: checkoutCart })
+                body: JSON.stringify({ usuario_id: store.usuario.id, items: checkoutCart })
             });
 
             const data = await res.json();
@@ -151,130 +152,136 @@ export const CartPage = () => {
 
     return (
         <div style={{
-            backgroundColor: 'white',
-            color: "white",
+            backgroundImage: `url(${fondo})`,
+            // Regresamos a 'cover' para que ocupe todo el espacio
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+            backgroundAttachment: "fixed",
+            // Centramos la imagen para que lo más importante esté visible
+            backgroundPosition: "center center",
+            color: "#FFFFFF",
             minHeight: "calc(100vh - 100px)",
             padding: "40px 20px",
             fontFamily: "Arial, sans-serif"
-        }}>
-            <div style={{ maxWidth: "1000px", margin: "0 auto", backgroundColor: "rgb(20,35,50)", borderRadius: "8px", padding: "30px", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
-                <h1 style={{ color: "rgb(59,255,231)", textAlign: "center", marginBottom: "30px" }}>Tu Carrito de Compras</h1>
+}}>
+    <div style={{ maxWidth: "1000px", margin: "0 auto", backgroundColor: "rgb(20,35,50)", borderRadius: "8px", padding: "30px", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
+        <h1 style={{ color: "rgb(59,255,231)", textAlign: "center", marginBottom: "30px" }}>Tu Carrito de Compras</h1>
 
-                {updatedCartItems.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "50px 0" }}>
-                        <p style={{ fontSize: "1.2rem", marginBottom: "20px" }}>Tu carrito está vacío.</p>
-                        <Link to="/" style={{ textDecoration: "none" }}>
-                            <button
-                                className="btn"
-                                style={{
-                                    backgroundColor: "rgb(59,255,231)",
-                                    color: "black",
-                                    padding: "10px 25px",
-                                    fontSize: "1rem",
-                                    border: "none",
-                                    borderRadius: "5px",
-                                    cursor: "pointer"
-                                }}
-                            >
-                                Volver al Inicio
-                            </button>
-                        </Link>
-                    </div>
-                ) : (
-                    <>
+        {updatedCartItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "50px 0" }}>
+                <p style={{ fontSize: "1.2rem", marginBottom: "20px" }}>Tu carrito está vacío.</p>
+                <Link to="/" style={{ textDecoration: "none" }}>
+                    <button
+                        className="btn"
+                        style={{
+                            backgroundColor: "rgb(59,255,231)",
+                            color: "black",
+                            padding: "10px 25px",
+                            fontSize: "1rem",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Volver al Inicio
+                    </button>
+                </Link>
+            </div>
+        ) : (
+            <>
 
-                        <div style={{
+                <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "10px 0",
+                    marginBottom: "15px",
+                    borderBottom: "2px solid rgb(59,255,231)",
+                    fontWeight: "bold",
+                    color: "rgb(59,255,231)"
+                }}>
+                    <div style={{ flex: 3 }}>Premio rifa</div>
+                    <div style={{ flex: 1.5, textAlign: "center" }}>Números jugados</div>
+                    <div style={{ flex: 1.5, textAlign: "center" }}>Cantidad de boletos</div>
+                    <div style={{ flex: 1.5, textAlign: "right" }}>Precio boletos</div>
+                    <div style={{ flex: 1, textAlign: "right" }}>Subtotal</div>
+                    <div style={{ width: "30px" }}></div>
+                </div>
+
+
+                <div style={{ marginBottom: "20px" }}>
+                    {updatedCartItems.map(item => (
+                        <div key={item.id} style={{
                             display: "flex",
                             justifyContent: "space-between",
-                            padding: "10px 0",
-                            marginBottom: "15px",
-                            borderBottom: "2px solid rgb(59,255,231)",
-                            fontWeight: "bold",
-                            color: "rgb(59,255,231)"
+                            alignItems: "center",
+                            padding: "15px 0",
+                            borderBottom: "1px solid rgba(59,255,231,0.2)",
+                            gap: "10px"
                         }}>
-                            <div style={{ flex: 3 }}>Premio rifa</div>
-                            <div style={{ flex: 1.5, textAlign: "center" }}>Números jugados</div>
-                            <div style={{ flex: 1.5, textAlign: "center" }}>Cantidad de boletos</div>
-                            <div style={{ flex: 1.5, textAlign: "right" }}>Precio boletos</div>
-                            <div style={{ flex: 1, textAlign: "right" }}>Subtotal</div>
-                            <div style={{ width: "30px" }}></div>
+                            <div style={{ flex: 3 }}>
+                                <p style={{ margin: 0, color: "white" }}>{item.name}</p>
+                            </div>
+                            <div style={{ flex: 1.5, textAlign: "center" }}>
+                                <p style={{ margin: 0 }}>{item.numbersPlayed.join(", ")}</p>
+                            </div>
+                            <div style={{ flex: 1.5, textAlign: "center" }}>
+                                <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>
+                                    {item.quantity}
+                                </p>
+                            </div>
+                            <div style={{ flex: 1.5, textAlign: "right" }}>
+                                <p style={{ margin: 0 }}>{item.price.toFixed(2)}€</p>
+                            </div>
+                            <div style={{ flex: 1, textAlign: "right" }}>
+                                <p style={{ margin: 0, fontWeight: "bold" }}>{(item.price * item.quantity).toFixed(2)}€</p>
+                            </div>
+                            <div style={{ width: "30px", textAlign: "center" }}>
+                                <button
+                                    onClick={() => handleRemoveItem(item.id)}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "red",
+                                        cursor: "pointer",
+                                        fontSize: "1.5rem",
+                                        fontWeight: "bold",
+                                        padding: 0
+                                    }}
+                                    title="Eliminar producto"
+                                >
+                                    &times;
+                                </button>
+                            </div>
                         </div>
+                    ))}
+                </div>
 
-
-                        <div style={{ marginBottom: "20px" }}>
-                            {updatedCartItems.map(item => (
-                                <div key={item.id} style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    padding: "15px 0",
-                                    borderBottom: "1px solid rgba(59,255,231,0.2)",
-                                    gap: "10px"
-                                }}>
-                                    <div style={{ flex: 3 }}>
-                                        <p style={{ margin: 0, color: "white" }}>{item.name}</p>
-                                    </div>
-                                    <div style={{ flex: 1.5, textAlign: "center" }}>
-                                        <p style={{ margin: 0 }}>{item.numbersPlayed.join(", ")}</p>
-                                    </div>
-                                    <div style={{ flex: 1.5, textAlign: "center" }}>
-                                        <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>
-                                            {item.quantity}
-                                        </p>
-                                    </div>
-                                    <div style={{ flex: 1.5, textAlign: "right" }}>
-                                        <p style={{ margin: 0 }}>{item.price.toFixed(2)}€</p>
-                                    </div>
-                                    <div style={{ flex: 1, textAlign: "right" }}>
-                                        <p style={{ margin: 0, fontWeight: "bold" }}>{(item.price * item.quantity).toFixed(2)}€</p>
-                                    </div>
-                                    <div style={{ width: "30px", textAlign: "center" }}>
-                                        <button
-                                            onClick={() => handleRemoveItem(item.id)}
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                color: "red",
-                                                cursor: "pointer",
-                                                fontSize: "1.5rem",
-                                                fontWeight: "bold",
-                                                padding: 0
-                                            }}
-                                            title="Eliminar producto"
-                                        >
-                                            &times;
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div style={{ textAlign: "right", marginTop: "30px", paddingTop: "20px", borderTop: "2px solid rgb(59,255,231)" }}>
-                            <h2 style={{ color: "rgb(59,255,231)", marginBottom: "20px" }}>Total: {calculateTotal()}€</h2>
-                            {//<Link to="/checkout" style={{ textDecoration: "none" }}>
-                            }
-                            <button
-                                className="btn"
-                                style={{
-                                    backgroundColor: "rgb(59,255,231)",
-                                    color: "black",
-                                    padding: "12px 30px",
-                                    fontSize: "1.1rem",
-                                    fontWeight: "bold",
-                                    border: "none",
-                                    borderRadius: "5px",
-                                    cursor: "pointer"
-                                }}
-                                onClick={handleCheckout}
-                            >
-                                Proceder al Pago
-                            </button>
-                            {//</Link>
-                            }
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
+                <div style={{ textAlign: "right", marginTop: "30px", paddingTop: "20px", borderTop: "2px solid rgb(59,255,231)" }}>
+                    <h2 style={{ color: "rgb(59,255,231)", marginBottom: "20px" }}>Total: {calculateTotal()}€</h2>
+                    {//<Link to="/checkout" style={{ textDecoration: "none" }}>
+                    }
+                    <button
+                        className="btn"
+                        style={{
+                            backgroundColor: "rgb(59,255,231)",
+                            color: "black",
+                            padding: "12px 30px",
+                            fontSize: "1.1rem",
+                            fontWeight: "bold",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer"
+                        }}
+                        onClick={handleCheckout}
+                    >
+                        Proceder al Pago
+                    </button>
+                    {//</Link>
+                    }
+                </div>
+            </>
+        )}
+    </div>
+        </div >
     );
 };

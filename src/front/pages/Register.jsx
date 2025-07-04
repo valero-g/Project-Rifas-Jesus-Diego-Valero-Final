@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import fondo from "../assets/img/fondo.png";
 
 export const Register = () => {
     const navigate = useNavigate();
@@ -103,7 +104,14 @@ export const Register = () => {
 
     return (
         <div style={{
-            backgroundColor: "white",
+            backgroundImage: `url(${fondo})`,
+            // Regresamos a 'cover' para que ocupe todo el espacio
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+            backgroundAttachment: "fixed",
+            // Centramos la imagen para que lo más importante esté visible
+            backgroundPosition: "center center",
+            color: "#FFFFFF",
             minHeight: "100vh",
             display: "flex",
             justifyContent: "center",

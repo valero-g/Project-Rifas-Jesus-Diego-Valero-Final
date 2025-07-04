@@ -345,8 +345,7 @@ export const Navbar = () => {
               </Link>
 
               <hr style={dividerStyle} />
-            </>
-          )}
+            
 
           <span style={groupTitleStyle}>Explorar</span>
           <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
@@ -354,6 +353,8 @@ export const Navbar = () => {
           </Link>
 
           <hr style={dividerStyle} />
+          </>
+          )}
 
           <span style={groupTitleStyle}>Información</span>
           <Link to="/sobre-nosotros" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
