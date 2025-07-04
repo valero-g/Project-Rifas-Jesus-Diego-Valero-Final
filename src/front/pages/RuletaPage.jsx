@@ -16,6 +16,8 @@ export default function RuletaPage() {
 
   const [participantes, setParticipantes] = useState([]);
 
+  const [boletoGanador, setBoletoGanador] = useState(null); // <-- Estado para pintar el boleto ganador
+
   const audioRollRef = useRef(null); // Audio del giro
   const audioWinRef = useRef(null);  // Audio ganador
 
@@ -80,6 +82,7 @@ export default function RuletaPage() {
       setWheelData([]);
       setResult(null);
       setParticipantes([]);
+      setBoletoGanador(null); // <-- Limpiar boleto ganador al cambiar rifa
       return;
     }
 
@@ -87,6 +90,7 @@ export default function RuletaPage() {
       setWheelData([]);
       setResult(null);
       setParticipantes([]);
+      setBoletoGanador(null); // <-- Limpiar boleto ganador si no está finalizada
       return;
     }
 
@@ -103,6 +107,7 @@ export default function RuletaPage() {
 
     setPrizeNumber(ganadorIndex);
     setResult(null);
+    setBoletoGanador(null); // <-- Limpiar boleto ganador antes de girar
     setMustSpin(false);
 
     // Cargar participantes con sus boletos
@@ -144,6 +149,7 @@ export default function RuletaPage() {
       } else {
         setResult(`Boleto ${selectedRifa.boleto_ganador}`);
       }
+      setBoletoGanador(selectedRifa.boleto_ganador); // <-- Aquí establecemos el boleto ganador para pintar en rojo
     }
 
     if (audioWinRef.current) {
@@ -180,6 +186,7 @@ export default function RuletaPage() {
             const rifa = rifasFinalizadas.find((r) => r.id === rifaId);
             setSelectedRifa(rifa || null);
             setResult(null);
+            setBoletoGanador(null); // <-- Limpiar boleto ganador al cambiar selección
           }}
           value={selectedRifa ? selectedRifa.id : ""}
           style={{
@@ -322,64 +329,46 @@ export default function RuletaPage() {
                             title={`Boleto ${boleto}`}
                             style={{
                               background:
-                                "linear-gradient(135deg, #00F5A0 0%, #00B8D9 100%)",
-                              color: "#0A131F",
+                                boleto === boletoGanador
+                                  ? "linear-gradient(135deg, #FF0000 0%, #8B0000 100%)" // rojo para boleto ganador
+                                  : "linear-gradient(135deg, #00F5A0 0%, #00B8D9 100%)",
+                              color: boleto === boletoGanador ? "#FFFFFF" : "#0A131F",
                               padding: "6px 12px",
                               borderRadius: 20,
                               fontWeight: "600",
                               fontSize: 14,
                               boxShadow:
-                                "0 2px 6px rgba(0, 245, 160, 0.6), 0 0 6px rgba(0, 184, 217, 0.8)",
-                              cursor: "default",
+                                boleto === boletoGanador
+                                  ? "0 2px 6px rgba(255, 0, 0, 0.8), 0 0 6px rgba(255, 0, 0, 0.7)"
+                                  : "none",
                               userSelect: "none",
-                              transition: "transform 0.2s ease",
                             }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.1)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
                           >
                             {boleto}
                           </div>
                         ))
                       ) : (
-                        <span
+                        <div
                           style={{
-                            color: "#888",
                             fontStyle: "italic",
+                            color: "#666",
+                            fontSize: 14,
                           }}
                         >
-                          No tiene boletos
-                        </span>
+                          Sin boletos asignados
+                        </div>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
             )}
+
+            <audio ref={audioRollRef} src="/sounds/roll.mp3" preload="auto" />
+            <audio ref={audioWinRef} src="/sounds/win.mp3" preload="auto" />
           </>
         )}
-
-        <audio ref={audioRollRef} src="/sounds/roll.mp3" preload="auto" />
-        <audio ref={audioWinRef} src="/sounds/win.mp3" preload="auto" />
       </div>
-
-      {/* Animación CSS para glow pulse */}
-      <style>{`
-        @keyframes glowPulse {
-          0% {
-            box-shadow: 0 0 10px #3BFFE7;
-          }
-          50% {
-            box-shadow: 0 0 20px #3BFFE7;
-          }
-          100% {
-            box-shadow: 0 0 10px #3BFFE7;
-          }
-        }
-      `}</style>
     </>
   );
 }
