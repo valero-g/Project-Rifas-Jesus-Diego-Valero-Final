@@ -58,7 +58,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                 flexWrap: 'wrap',
                 gap: '10px',
                 justifyContent: 'center',
-                marginTop: '15px'
+                marginTop: '15px',
             }}>
                 {grupos.map((group, idx) => (
                     <div
@@ -496,7 +496,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                 marginLeft: "46px",
                 marginTop: "20px",
                 marginBottom: "20px",
-                padding: "7px 0"
+                padding: "7px 0",
             }}>
                 <GrupoSelector
                     grupos={grupos}

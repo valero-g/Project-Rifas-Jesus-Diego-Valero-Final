@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Wheel } from "react-custom-roulette";
+import fondo from "../assets/img/fondo.png";
 
 const colors = ["#3BFFE7", "#0A131F"];
 
@@ -121,7 +122,7 @@ export default function RuletaPage() {
     if (mustSpin) {
       if (audioRollRef.current) {
         audioRollRef.current.currentTime = 0;
-        audioRollRef.current.play().catch(() => {});
+        audioRollRef.current.play().catch(() => { });
       }
     } else {
       if (audioRollRef.current) {
@@ -154,7 +155,7 @@ export default function RuletaPage() {
 
     if (audioWinRef.current) {
       audioWinRef.current.currentTime = 0;
-      audioWinRef.current.play().catch(() => {});
+      audioWinRef.current.play().catch(() => { });
     }
   };
 
@@ -169,6 +170,14 @@ export default function RuletaPage() {
     <>
       <div
         style={{
+          backgroundImage: `url(${fondo})`,
+          // Regresamos a 'cover' para que ocupe todo el espacio
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+          backgroundAttachment: "fixed",
+          // Centramos la imagen para que lo más importante esté visible
+          backgroundPosition: "center center",
+          color: "#FFFFFF",
           padding: 20,
           fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
           display: "flex",
@@ -176,7 +185,7 @@ export default function RuletaPage() {
           alignItems: "center",
         }}
       >
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 20, color: "#0A131F" }}>
           Seleccione una Rifa finalizada para mostrar ruleta
         </h2>
 
