@@ -110,7 +110,7 @@ def get_rifas():
                 db.session.commit()
                 usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
                 print(usuario_ganador)
-                send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
+                send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         all_rifas = db.session.execute(select(Rifas)).scalars().all()
         # Respuesta
@@ -139,7 +139,7 @@ def get_rifa(rifa_id):
             rifa.status_sorteo = "finalizado"
             db.session.commit()
             usuario_ganador = db.session.execute(select(Usuario).where(Usuario.id == boleto_premiado.usuario_id)).scalar_one_or_none()
-            send_email_winner('info4boleeks@gmail.com', usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
+            send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         # Respuesta
         print(f"Rifa {rifa_id}:", rifa.serialize())
@@ -292,7 +292,7 @@ def add_usuario():
         print(email_token)
 
         # Envio de correo para confirmación de email (PENDIENTE REVISAR SI VERIFICAMOS EMAIL)
-        # send_email_verification(sender_email = 'info4boleeks@gmail.com', recipient_email = new_user.email, token = email_token)
+        # send_email_verification(sender_email = os.getenv("MAIL_SENDER"), recipient_email = new_user.email, token = email_token)
         return {"message": "User created successfully, pending email confirmation"}, 200
     except Exception as e:
         print("Error :", e)
@@ -493,7 +493,7 @@ def reset_password():
             identity=str(user.id), expires_delta=expire_password)
         print(password_token)
         send_email_password_recovery(
-            sender_email='info4boleeks@gmail.com', recipient_email=user.email, token=password_token)
+            sender_email=os.getenv("MAIL_SENDER"), recipient_email=user.email, token=password_token)
         return {"message": "Email enviado para resetear contraseña"}, 200
 
     except Exception as e:
@@ -514,7 +514,7 @@ def generate_new_password():
         new_password = generar_clave(10)
         print("El nuevo password es: " + new_password)
         send_email_random_password(
-            sender_email='info4boleeks@gmail.com', recipient_email=user.email, password=new_password)
+            sender_email=os.getenv("MAIL_SENDER"), recipient_email=user.email, password=new_password)
 
         # actualización de database
         updated_user = db.session.get(Usuario, user.id)
@@ -974,8 +974,6 @@ def get_detalle_compra(usuario_id):
         return {"message": "Error recuperando los detalles de compra del usuario"}, 500
 
 # PUT de detalle compra
-
-
 @api.route('/detalle-compra', methods=['PUT'])
 @jwt_required()
 def modify_detalle_compra():
@@ -1008,6 +1006,110 @@ def modify_detalle_compra():
     except Exception as e:
         print("Error: ", e)
         return {"message": "Error confirmando detalle de compra"}, 500
+
+# POST de envio de confirmación de compra
+@api.route("/enviar-confirmacion", methods=["POST"])
+@jwt_required()
+def enviar_confirmacion():
+    try:
+        # Accede a la identidad del usuario actual con get_jwt_identity
+        current_id = get_jwt_identity()
+        user = db.session.execute(select(Usuario).where(Usuario.id == current_id)).scalar_one_or_none()
+        # Validacion de user
+        if (user == None):
+            return {"message": "Error en la autentificación de usuario"}, 401
+        
+
+        data = request.get_json(silent= True)
+        print(data)
+
+        # Validación de body
+        if data == None:
+            return {"message": "Petición errónea. Body incorrecto"}, 400
+        if "num_pedido" not in data.keys() or "compras" not in data.keys() or "total" not in data.keys():
+            return {"message": "Petición errónea. Body incorrecto"}, 400
+
+
+        # Recuperación de datos
+        email = user.email
+        num_pedido = data.get("num_pedido")
+        compras = data.get("compras", [])
+        total = data.get("total")
+        nombre_usuario = user.nombre
+
+        if not email or not compras:
+            return jsonify({"message": "Faltan datos"}), 400
+
+        # Generamos HTML para el listado de compras
+        compras_html = ""
+        for compra in compras:
+            compras_html += f"""
+            <tr>
+                <td style="padding: 10px 15px;">{compra['nombre_rifa']}</td>
+                <td style="padding: 10px 15px;">{', '.join(map(str, compra['numeros']))}</td>
+                <td style="padding: 10px 15px; text-align: right;">{compra['precio_unitario']} €</td>
+                <td style="padding: 10px 15px; text-align: right;">{compra['subtotal']} €</td>
+            </tr>
+            """
+
+        # Plantilla del email con estilo
+        html_body = f"""
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; background-color: #f4f6f9; border-radius: 10px; border: 1px solid #e1e4e8; padding: 30px; color: #2c3e50;">
+            <div style="text-align: center;">
+                <h1 style="color: #27ae60; font-size: 26px;">¡Gracias por tu compra, {nombre_usuario}!</h1>
+                <h2 style="font-size: 18px; color: #555;">Pedido: <strong>{num_pedido}</strong></h2>
+            </div>
+
+            <p style="font-size: 16px; margin-top: 20px;">
+                Aquí tienes el resumen de tu compra:
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px;">
+                <thead>
+                    <tr style="background-color: #eaecee;">
+                        <th style="padding: 12px 15px; text-align: left;">Rifa</th>
+                        <th style="padding: 12px 15px; text-align: left;">Números</th>
+                        <th style="padding: 12px 15px; text-align: right;">Precio</th>
+                        <th style="padding: 12px 15px; text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {compras_html}
+                </tbody>
+                <tfoot>
+                    <tr style="border-top: 2px solid #ddd;">
+                        <td colspan="3" style="padding: 12px 15px; text-align: right;"><strong>Total:</strong></td>
+                        <td style="padding: 12px 15px; text-align: right;"><strong>{total} €</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="https://4boleeks.com" style="background-color: #27ae60; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-size: 16px;">
+                    Volver a 4Boleeks
+                </a>
+            </div>
+
+            <p style="font-size: 14px; color: #555;">
+                Puedes consultar el estado de tus rifas en tu perfil. ¡Mucha suerte en el sorteo!
+            </p>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+
+            <p style="font-size: 12px; color: #95a5a6; text-align: center;">
+                4Boleeks &copy; 2025. Todos los derechos reservados.
+            </p>
+        </div>
+        """
+
+        msg = Message(subject=f"Confirmación de compra  en 4Boleerks- Pedido {num_pedido}", recipients=[email],sender= os.getenv("MAIL_SENDER"))
+        msg.html = html_body
+        mail.send(msg)
+
+        return jsonify({"message": "Email enviado correctamente"}), 200
+    except Exception as e:
+        print("Error: ", e)
+        return {"message": "Error enviando confirmación de detalle de compra"}, 500
 
 
 @api.route('/hello', methods=['POST', 'GET'])

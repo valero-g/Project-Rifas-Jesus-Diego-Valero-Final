@@ -29,9 +29,7 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  // Calcular total de números en el carrito
   const totalCartItems = store.carrito.reduce((acc, item) => {
-    // item.numeros puede ser string "1,2,3" o array
     const numerosArray = Array.isArray(item.numeros)
       ? item.numeros
       : item.numeros
@@ -40,7 +38,6 @@ export const Navbar = () => {
         .filter((n) => n !== "") || [];
     return acc + numerosArray.length;
   }, 0);
-
 
   const [showModal, setShowModal] = useState(false);
   const handleOpenModal = () => {
@@ -89,7 +86,6 @@ export const Navbar = () => {
       navigate("/");
     }
   };
-
 
   const buttonBaseStyle = {
     borderRadius: "30px",
@@ -349,24 +345,23 @@ export const Navbar = () => {
               </Link>
 
               <hr style={dividerStyle} />
-            </>
-          )}
+            
 
           <span style={groupTitleStyle}>Explorar</span>
           <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
             🎯 Últimos resultados
           </Link>
-          <Link to="/sorteos-activos" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-            🎁  Sorteos activos
-          </Link>
+
           <hr style={dividerStyle} />
+          </>
+          )}
 
           <span style={groupTitleStyle}>Información</span>
           <Link to="/sobre-nosotros" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-            👤 Sobre Nosotros
+            👤 Sobre nosotros
           </Link>
           <Link to="/bases-legales" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-            📜 Bases legales
+            📄 Bases legales
           </Link>
           <Link to="/politica-privacidad" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
             🔒 Política y privacidad

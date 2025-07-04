@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx"
 import React from 'react';
 
-const CardHome = ({ id, nombre, fecha, url, onInfoClick, status }) => {
+const CardHome = ({ id, nombre, boletos, url, onInfoClick, status }) => {
 
     const navigate = useNavigate();
     const { store } = useGlobalReducer();
@@ -90,7 +90,7 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick, status }) => {
                     <strong>Premio:</strong> {nombre}
                 </p>
                 <p style={{ margin: "5px 0 15px 0" }}>
-                    <strong>Fecha:</strong> {fecha}
+                    <strong>Nº Boletos:</strong> {boletos}
                 </p>
                 <div className="d-flex justify-content-between align-items-center">
                     <button onClick={onInfoClick}
@@ -139,7 +139,7 @@ const CardHome = ({ id, nombre, fecha, url, onInfoClick, status }) => {
                                 e.currentTarget.style.color = "#3BFFE7"
                             }}
                         >
-                            Ir al sorteo
+                            Ir a sorteos
                         </button>
                     ) : (
                         < button

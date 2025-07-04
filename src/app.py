@@ -44,17 +44,17 @@ MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
 # Email configuration
-app.config['MAIL_SENDER'] = "hola4boleeks@outlook.com"
-app.config['MAIL_SERVER'] = "smtp.gmail.com"
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = "info4boleeks@gmail.com"
-app.config['MAIL_PASSWORD'] = "lbxs pqrj wipe nftg"
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_SENDER'] = os.getenv("MAIL_SENDER") #hola4boleeks@outlook.com
+app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER") #"smtp.gmail.com"
+app.config['MAIL_PORT'] = os.getenv("MAIL_PORT") # 587
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME") #"info4boleeks@gmail.com"
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS") #True
+app.config['MAIL_USE_SSL'] = os.getenv("MAIL_USE_SSL ") #False
 mail.init_app(app)
 
 # JWT configuration
-app.config["JWT_SECRET_KEY"] = "DiegoJesusValero@123"  # ¡Cambia esta clave en producción!
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")  # ¡Cambia esta clave en producción!
 jwt = JWTManager(app)
 
 # add the admin

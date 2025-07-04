@@ -1,9 +1,18 @@
+import fondo from "../assets/img/fondo.png";
+
 export const PrivacyPolicy = () => {
     return (
         <div
             style={{
-                backgroundColor: "white",
+                backgroundImage: `url(${fondo})`,
+                // Regresamos a 'cover' para que ocupe todo el espacio
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+                backgroundAttachment: "fixed",
+                // Centramos la imagen para que lo más importante esté visible
+                backgroundPosition: "center center",
                 minHeight: "100vh",
+                color: "#FFFFFF",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
