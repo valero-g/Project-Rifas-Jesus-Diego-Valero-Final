@@ -18,8 +18,25 @@ export const Layout = () => {
         }
 
     }, []);
-    
 
+    /*
+    async function  getUser () {
+        try{
+            const token = sessionStorage.getItem("token");
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+                    method: "GET",
+                   headers: {
+                    Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+		    	const user = await response.json();
+                dispatch({type: "setUser", payload: user});
+        }catch (error) {
+			console.error("Error al obtener el usuario:", error);
+		}
+    }
+*/
 
     const getUser = async () => {
         const token = sessionStorage.getItem("token");
@@ -27,9 +44,9 @@ export const Layout = () => {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
-                },
+               },
             }).then(res => res.json())
-            .then(user =>  dispatch({type: "setUser", payload: user}) )
+            .then(user => dispatch({type: "setUser", payload: user}) )
             .catch (error => console.error("Error al obtener el usuario: ", error))
         
     }

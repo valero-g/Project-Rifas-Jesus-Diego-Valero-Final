@@ -25,6 +25,7 @@ export const CartPage = () => {
     );
 
     useEffect(() => {
+        console.log("store:", store);
         const updatedCartItems = store.carrito.map((item, i) => {
             const rifa = store.rifas.find(r => r.id === item.rifa_id);
             console.log(rifa);
@@ -192,10 +193,10 @@ export const CartPage = () => {
                             fontWeight: "bold",
                             color: "rgb(59,255,231)"
                         }}>
-                            <div style={{ flex: 3 }}>Premio rifa</div>
-                            <div style={{ flex: 1.5, textAlign: "center" }}>Números jugados</div>
+                            <div style={{ flex: 2 }}>Premio rifa</div>
+                            <div style={{ flex: 2 }}>Números jugados</div>
                             <div style={{ flex: 1.5, textAlign: "center" }}>Cantidad de boletos</div>
-                            <div style={{ flex: 1.5, textAlign: "right" }}>Precio boletos</div>
+                            <div style={{ flex: 1.5, textAlign: "center" }}>Precio boletos</div>
                             <div style={{ flex: 1, textAlign: "right" }}>Subtotal</div>
                             <div style={{ width: "30px" }}></div>
                         </div>
@@ -211,10 +212,10 @@ export const CartPage = () => {
                                     borderBottom: "1px solid rgba(59,255,231,0.2)",
                                     gap: "10px"
                                 }}>
-                                    <div style={{ flex: 3 }}>
+                                    <div style={{ flex: 2 }}>
                                         <p style={{ margin: 0, color: "white" }}>{item.name}</p>
                                     </div>
-                                    <div style={{ flex: 1.5, textAlign: "center" }}>
+                                    <div style={{ flex: 2}}>
                                         <p style={{ margin: 0 }}>{item.numbersPlayed.join(", ")}</p>
                                     </div>
                                     <div style={{ flex: 1.5, textAlign: "center" }}>
@@ -222,7 +223,7 @@ export const CartPage = () => {
                                             {item.quantity}
                                         </p>
                                     </div>
-                                    <div style={{ flex: 1.5, textAlign: "right" }}>
+                                    <div style={{ flex: 1.5, textAlign: "center" }}>
                                         <p style={{ margin: 0 }}>{item.price.toFixed(2)}€</p>
                                     </div>
                                     <div style={{ flex: 1, textAlign: "right" }}>
