@@ -26,6 +26,7 @@ export const CartPage = () => {
     );
 
     useEffect(() => {
+        console.log("store:", store);
         const updatedCartItems = store.carrito.map((item, i) => {
             const rifa = store.rifas.find(r => r.id === item.rifa_id);
             console.log(rifa);
