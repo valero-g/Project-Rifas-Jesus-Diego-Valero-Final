@@ -15,21 +15,39 @@ export const Success = () => {
     const [carritoConfirmado, setCarritoConfirmado] = useState([]);
     const delay = ms => new Promise(res => setTimeout(res, ms));
     useEffect(() => {
-        //aseguramos que el carrito esté lleno
-        console.log(store);
-        if (!store.carrito || store.carrito.length === 0) {
-            console.log("⏳ Esperando a que se llene el carrito...");
-            return;
-        }
-        //guardamos copia del carrito antes de borrarlo para mostrar el resumen de compra
-        
-        setCarritoConfirmado([...store.carrito]);
-        // confirmamos los boletos de la rifa
-        for (let rifa of store.carrito) {
-            confirmaBoletos(rifa.rifa_id, rifa.numeros, numPedido)
-        }
-    }, [store.carrito_cargado]);
+            if (store.carrito_cargado && store.carrito.length > 0 && carritoConfirmado.length === 0) {
+                console.log("✅ Carrito cargado. Copiando a carritoConfirmado...");
+                setCarritoConfirmado([...store.carrito]);
+            } else {
+                console.log("⏳ Esperando a que se llene el carrito...");
+            }
+        }, [store.carrito_cargado]);
 
+    useEffect(() => {
+            const confirmarYEnviar = async () => {
+                if (carritoConfirmado.length === 0) return; // ⛔️ No ejecutar si aún está vacío
+
+                console.log("🛒 Confirmando carrito...", carritoConfirmado);
+
+                const promesas = carritoConfirmado.map(item =>
+                    confirmaBoletos(item.rifa_id, item.numeros, numPedido)
+                );
+
+                await Promise.all(promesas);
+
+                console.log("✅ Carrito confirmado", carritoConfirmado);
+
+                try {
+                    await enviarEmailConfirmacion(carritoConfirmado);
+                } catch (error) {
+                    console.error("❌ Error al enviar email de confirmación", error);
+                }
+                // vaciado de carrito tras enviar el mail 
+                carritoConfirmado.map(item => dispatch({ type: 'delete_rifa_from_cart', payload: { rifa_id: item.rifa_id } }));
+            };
+
+    confirmarYEnviar();
+}, [carritoConfirmado]);
 
 
     const confirmaBoletos = async (rifaId, numeros, pedido) => {
@@ -40,7 +58,7 @@ export const Success = () => {
             usuarioId = decoded.sub;
             console.log(usuarioId);
         }
-        await delay(100);
+        //await delay(100);
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
                 method: "PUT",
@@ -66,8 +84,8 @@ export const Success = () => {
 
             const data = await response.json();
             console.log("✅ Boletos confirmado correctamente:", data);
-            enviarEmailConfirmacion([...store.carrito]);
-            dispatch({ type: 'delete_rifa_from_cart', payload: { rifa_id: rifaId } });
+            //enviarEmailConfirmacion([...store.carrito]);
+            
             confirmaDetalleCompra(pedido);
             
 
@@ -112,18 +130,20 @@ export const Success = () => {
     const enviarEmailConfirmacion = async (cart) => {
         try{
             //debugger
-            await delay(2000);
+            //await delay(2000);
             const token = sessionStorage.getItem("token");
-            const usuario = jwtDecode(token);
+            //const usuario = jwtDecode(token);
             //setCarritoConfirmado([...store.carrito]);
             //console.log(carritoConfirmado);
             //const carrito = [...store.carrito];
             //const carrito = [...carritoConfirmado];
             //let carrito = []
             const carrito = cart;
-            if (!carrito) return;
-            const usuarioStore = store.usuario;
-            if (!usuarioStore || !usuarioStore.email) return; // o esperar con delay
+            if (!carrito) {
+                console.log("No se puede enviar el mail. carrito vacio", carrito);
+                return;}
+            //const usuarioStore = store.usuario;
+            //if (!usuarioStore || !usuarioStore.email) return; // o esperar con delay
             const dataEmail = {
                     //email: usuarioStore.email,  
                     //nombre: usuarioStore.nombre,
