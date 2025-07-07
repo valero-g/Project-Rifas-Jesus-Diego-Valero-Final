@@ -65,7 +65,7 @@ def send_email_winner(sender_email, recipient_email, nombre_ganador, num_boleto_
                 </p>
 
                 <div style="margin: 30px 0; text-align: center;">
-                    <a href="https://4boleeks.com" style="background-color: #27ae60; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-size: 16px;">
+                    <a href="https://sample-service-name-z3mz.onrender.com/" style="background-color: #27ae60; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-size: 16px;">
                         Ir a 4Boleeks
                     </a>
                 </div>
