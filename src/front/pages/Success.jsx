@@ -66,7 +66,7 @@ export const Success = () => {
 
             const data = await response.json();
             console.log("✅ Boletos confirmado correctamente:", data);
-            enviarEmailConfirmacion()
+            enviarEmailConfirmacion([...store.carrito]);
             dispatch({ type: 'delete_rifa_from_cart', payload: { rifa_id: rifaId } });
             confirmaDetalleCompra(pedido);
             
@@ -109,14 +109,18 @@ export const Success = () => {
 
     }
 
-    const enviarEmailConfirmacion = async () => {
+    const enviarEmailConfirmacion = async (cart) => {
         try{
+            //debugger
             await delay(2000);
             const token = sessionStorage.getItem("token");
             const usuario = jwtDecode(token);
             //setCarritoConfirmado([...store.carrito]);
             //console.log(carritoConfirmado);
-            const carrito = [...store.carrito];
+            //const carrito = [...store.carrito];
+            //const carrito = [...carritoConfirmado];
+            //let carrito = []
+            const carrito = cart;
             if (!carrito) return;
             const usuarioStore = store.usuario;
             if (!usuarioStore || !usuarioStore.email) return; // o esperar con delay

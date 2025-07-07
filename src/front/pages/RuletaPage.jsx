@@ -183,6 +183,7 @@ export default function RuletaPage() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          minHeight: "100vh"
         }}
       >
         <h2 style={{ textAlign: "center", marginBottom: 20, color: "#0A131F" }}>
