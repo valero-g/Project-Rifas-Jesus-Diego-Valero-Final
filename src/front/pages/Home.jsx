@@ -3,6 +3,8 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CardHome from "../components/CardHome.jsx";
 import fondo from "../assets/img/fondo.png";
 import RifaCerradaCard from '../components/RifaCerradaCard.jsx';
+import bannerMain from "../assets/img/Baner1_1300x200.png";
+import bannerJuegoResp from "../assets/img/Juego_resp.jpg";
 
 function BannerCarousel() {
     const banners = [
@@ -11,7 +13,7 @@ function BannerCarousel() {
             title: "", //"Sorteos destacados",
             description: "", //"Jamón 5Jotas, Nintendo Switch y un Crucero de ensueño. ¡Participa ya!",
             //background: "https://images.unsplash.com/photo-1542831371-d531d36971e6?auto=format&fit=crop&w=1350&q=80",
-            background: "./src/front/assets/img/Baner1_1300x200.png"
+            background: bannerMain
         },
         {
             id: 2,
@@ -25,7 +27,7 @@ function BannerCarousel() {
             title: "Juego responsable",
             description:
                 "Recuerda siempre jugar con responsabilidad. ¡Disfruta y apuesta con cabeza!",
-            background: "./src/front/assets/img/Juego_resp.jpg" //https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1350&q=80",
+            background: bannerJuegoResp //https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1350&q=80",
         },
     ];
 
