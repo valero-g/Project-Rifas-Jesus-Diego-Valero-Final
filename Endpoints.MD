@@ -276,7 +276,3 @@ BODY:
 El endpoint modifica los parámetros de uso de una rifa. Si no existe el stripe Product ID y PRice ID, lo creará automáticamente.   
 RESPUESTA POSITIVA: rifa.serialize(),200  (el serialize incluye los IDs de Stripe).  
 RESPUESTAS NEGATIVAS:  return {"message" : f" La rifa ID {rifa_id} no pudo ser encontrado. "}, 404  /  return {"message" : f"Request erroneo. El body debe contar status_sorteo, numero_boletos_vendidos y boleto_ganador"}, 400 /   {"message": f"Error: No se puede modificar la rifa. Fallo interno"}, 500  
-<<<<<<< HEAD
-
-=======
->>>>>>> b5254629692a74aefc6c25a053c18de37e89aa19
