@@ -2,8 +2,10 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: rgb(10, 19, 31); /* fondo oscuro */
-  border: 1px solid rgb(59, 255, 231); /* borde cian */
+  background-color: rgb(10, 19, 31);
+  /* fondo oscuro */
+  border: 1px solid rgb(59, 255, 231);
+  /* borde cian */
   border-radius: 5px;
   padding: 10px;
   margin-top: 5px;
@@ -26,14 +28,16 @@
 }
 
 .menu-dropdown a {
-  color: rgb(59, 255, 231); /* texto cian */
+  color: rgb(59, 255, 231);
+  /* texto cian */
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .menu-dropdown a:hover {
-  color: white; /* al hacer hover */
+  color: white;
+  /* al hacer hover */
 }
 
 .botonComprar {
@@ -57,9 +61,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -69,9 +75,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -82,10 +90,12 @@
     transform: scale(1);
     filter: drop-shadow(0 0 3px #3bfff7);
   }
+
   50% {
     transform: scale(1.15);
     filter: drop-shadow(0 0 8px #3bfff7);
   }
+
   100% {
     transform: scale(1);
     filter: drop-shadow(0 0 3px #3bfff7);
@@ -97,13 +107,96 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .menu-dropdown a:hover {
   background-color: rgba(59, 255, 231, 0.15);
   box-shadow: 0 0 6px rgba(59, 255, 231, 0.3);
 }
 
+
+/* Animaciones */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseCart {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+  nav .container-fluid {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  nav .container-fluid>div:nth-child(2) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 10px;
+  }
+
+  nav img {
+    height: 60px !important;
+  }
+
+  .menu-dropdown {
+    position: static !important;
+    margin-top: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    min-width: auto !important;
+  }
+
+  .menu-dropdown.open {
+    display: flex !important;
+    animation: fadeSlideIn 0.4s ease;
+  }
+
+  .menu-dropdown a {
+    font-size: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .position-relative {
+    align-self: flex-end;
+  }
+
+  span[title*="Bienvenido"] {
+    max-width: 100%;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+    padding: 6px 12px;
+  }
+}

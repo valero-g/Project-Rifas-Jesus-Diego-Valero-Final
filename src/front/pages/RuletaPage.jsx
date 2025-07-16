@@ -196,17 +196,26 @@ export default function RuletaPage() {
             const rifa = rifasFinalizadas.find((r) => r.id === rifaId);
             setSelectedRifa(rifa || null);
             setResult(null);
-            setBoletoGanador(null); // <-- Limpiar boleto ganador al cambiar selección
+            setBoletoGanador(null);
           }}
           value={selectedRifa ? selectedRifa.id : ""}
           style={{
-            padding: "10px 15px",
+            padding: "12px 18px",
             fontSize: 16,
-            borderRadius: 6,
-            border: "1px solid #ccc",
+            borderRadius: 12,
+            border: "2px solid #3BFFE7",
+            backgroundColor: "#0A131F",
+            color: "#3BFFE7",
+            boxShadow:
+              "0 0 8px rgba(59,255,231,0.6), 0 0 16px rgba(10,19,31,0.7)",
             marginBottom: 40,
-            minWidth: 300,
+            minWidth: 320,
             cursor: "pointer",
+            appearance: "none", // oculta la flecha por defecto
+            WebkitAppearance: "none",
+            MozAppearance: "none",
+            position: "relative",
+            zIndex: 2,
           }}
         >
           <option value="" disabled>
