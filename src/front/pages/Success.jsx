@@ -15,16 +15,17 @@ export const Success = () => {
     const [carritoConfirmado, setCarritoConfirmado] = useState([]);
     const delay = ms => new Promise(res => setTimeout(res, ms));
     useEffect(() => {
-            if (store.carrito_cargado && store.carrito.length > 0 && carritoConfirmado.length === 0) {
+            if (store.carrito_cargado && store.carrito.length > 0 && carritoConfirmado.length === 0 && store.rifas.length > 0) {
                 console.log("✅ Carrito cargado. Copiando a carritoConfirmado...");
                 setCarritoConfirmado([...store.carrito]);
             } else {
                 console.log("⏳ Esperando a que se llene el carrito...");
             }
-        }, [store.carrito_cargado]);
+        }, [store.carrito_cargado, store.rifas]);
 
     useEffect(() => {
             const confirmarYEnviar = async () => {
+                await delay(100);
                 if (carritoConfirmado.length === 0) return; // ⛔️ No ejecutar si aún está vacío
 
                 console.log("🛒 Confirmando carrito...", carritoConfirmado);

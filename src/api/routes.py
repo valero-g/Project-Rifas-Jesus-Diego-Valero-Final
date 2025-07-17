@@ -113,8 +113,11 @@ def get_rifas():
                 send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         all_rifas = db.session.execute(select(Rifas)).scalars().all()
-        # Respuesta
+
+        #Filtrado de rifas que no estén inactivas
+        all_rifas = list(filter(lambda y: y.status_sorteo != "inactivo", all_rifas))
         all_rifas = list(map(lambda x: x.serialize(), all_rifas))
+        # Respuesta
         print("Todas las rifas:", all_rifas)
         return jsonify(all_rifas), 200
 
@@ -144,6 +147,28 @@ def get_rifa(rifa_id):
         # Respuesta
         print(f"Rifa {rifa_id}:", rifa.serialize())
         return jsonify(rifa.serialize()), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
+
+
+@api.route('/rifa/<int:rifa_id>', methods=['DELETE'])
+def delete_rifa(rifa_id):
+    try:
+        rifa = db.session.execute(select(Rifas).where(
+            Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validacion
+        if rifa == None:
+            return {"message": "No se encuentra rifa"}, 404
+        print("hola")
+        #Borrado de rifa
+        db.session.delete(rifa)
+        db.session.commit()
+        print("ale")
+
+        # Respuesta
+        return {"message": f"La Rifa con ID: {rifa_id} ha sido borrada:"}, 200
 
     except Exception as e:
         print("Error:", e)
@@ -750,7 +775,6 @@ def add_boleto():
         return {"message": "Error reservando boleto"}, 500
 
 # PUT de boleto
-
 
 @api.route('/boleto', methods=['PUT'])
 @jwt_required()
