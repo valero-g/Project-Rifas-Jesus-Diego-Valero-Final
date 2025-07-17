@@ -223,7 +223,7 @@ RESPUESTA POSITIVA: {"message": f"Rifa añadida a la tabla de rifas"}, 200
 RESPUESTAS NEGATIVAS:  {"message": "Request request_body is empty"}, 400 / {"message": "Wrong request request_body"}, 400 / {"message": "La rifa ya existe"}, 400 /  {"message": f"Error: No se puede añadir rifa a la tabla de rifas. Fallo interno"}, 500  
 
 ### /rifas    
-DESCRIPCION: Devuelve un vector con todas las rifas de la base de datos  
+DESCRIPCION: Devuelve un vector con todas las rifas de la base de datos cuyo sorteo_status sea distinto de "inactivo"    
 TIPO: GET    
 REQUIERE TOKEN: NO 
 BODY:    
@@ -239,6 +239,16 @@ BODY:
 N/A  
 RESPUESTA POSITIVA: jsonify(rifa.serialize()), 200  
 RESPUESTAS NEGATIVAS:  {"message": "No se encuentra rifa"}, 404 / {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500   
+
+
+### /rifa/<int:rifa_id>  
+DESCRIPCION: Borra la rifa solicitada, SOLO si no hay boletos comprados de esa rifa
+TIPO: DELETE      
+REQUIERE TOKEN: NO  
+BODY:    
+N/A  
+RESPUESTA POSITIVA: {"message": f"La Rifa con ID: {rifa_id} ha sido borrada:"}, 200  
+RESPUESTAS NEGATIVAS:  {"message": "No se encuentra rifa"}, 404 / {"message": f"Error: No se puede borrar la rifa. Fallo interno"}, 500  
 
 ### /rifa/<int:rifa_id>  
 DESCRIPCION: Modifica una rifa  
