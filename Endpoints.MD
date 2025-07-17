@@ -242,7 +242,7 @@ RESPUESTAS NEGATIVAS:  {"message": "No se encuentra rifa"}, 404 / {"message": f"
 
 
 ### /rifa/<int:rifa_id>  
-DESCRIPCION: Borra la rifa solicitada, SOLO si no hay boletos comprados de esa rifa
+DESCRIPCION: Borra la rifa solicitada, SOLO si no hay boletos comprados de esa rifa  
 TIPO: DELETE      
 REQUIERE TOKEN: NO  
 BODY:    
