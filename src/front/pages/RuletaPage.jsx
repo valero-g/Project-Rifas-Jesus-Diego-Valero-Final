@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Wheel } from "react-custom-roulette";
 import fondo from "../assets/img/fondo.png";
+import logo from "../assets/img/4Boleeks.png";
 
 const colors = ["#3BFFE7", "#0A131F"];
 
@@ -171,11 +172,9 @@ export default function RuletaPage() {
       <div
         style={{
           backgroundImage: `url(${fondo})`,
-          // Regresamos a 'cover' para que ocupe todo el espacio
           backgroundSize: "cover",
-          backgroundRepeat: "no-repeat", // Esto no es estrictamente necesario con cover, pero no está de más
+          backgroundRepeat: "no-repeat", 
           backgroundAttachment: "fixed",
-          // Centramos la imagen para que lo más importante esté visible
           backgroundPosition: "center center",
           color: "#FFFFFF",
           padding: 20,
@@ -186,7 +185,7 @@ export default function RuletaPage() {
           minHeight: "100vh"
         }}
       >
-        <h2 style={{ textAlign: "center", marginBottom: 20, color: "#0A131F" }}>
+        <h2 className="super-fancy-title">
           Seleccione una Rifa finalizada para mostrar ruleta
         </h2>
 
@@ -196,17 +195,29 @@ export default function RuletaPage() {
             const rifa = rifasFinalizadas.find((r) => r.id === rifaId);
             setSelectedRifa(rifa || null);
             setResult(null);
-            setBoletoGanador(null); // <-- Limpiar boleto ganador al cambiar selección
+            setBoletoGanador(null);
           }}
           value={selectedRifa ? selectedRifa.id : ""}
           style={{
-            padding: "10px 15px",
+            padding: "8px 12px",       
             fontSize: 16,
-            borderRadius: 6,
-            border: "1px solid #ccc",
-            marginBottom: 40,
-            minWidth: 300,
+            borderRadius: 12,
+            border: "2px solid #3BFFE7",
+            backgroundColor: "#0A131F",
+            color: "#3BFFE7",
+            boxShadow:
+              "0 0 8px rgba(59,255,231,0.6), 0 0 16px rgba(10,19,31,0.7)",
+            marginBottom: 60,
+            width: "auto",             
             cursor: "pointer",
+            appearance: "none",
+            WebkitAppearance: "none",
+            MozAppearance: "none",
+            position: "relative",
+            zIndex: 2,
+            textAlign: "center",
+            display: "inline-block",   
+            maxWidth: "100%",         
           }}
         >
           <option value="" disabled>
@@ -218,6 +229,26 @@ export default function RuletaPage() {
             </option>
           ))}
         </select>
+
+        <img
+          src={logo}
+          alt="Logo Boleeks"
+          style={{
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
+            maxWidth: "90%",
+            width: 400,
+            height: "auto",
+            borderRadius: 16,
+            boxShadow: "0 0 16px rgba(59,255,231,0.5)",
+          }}
+        />
+
+
+
+
+
 
         {wheelData.length > 0 && (
           <>
