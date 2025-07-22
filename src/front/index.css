@@ -200,3 +200,41 @@
     padding: 6px 12px;
   }
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+.super-fancy-title {
+  font-family: 'Anton', sans-serif;
+  text-align: center;
+  font-size: 3rem;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #0A131F, #1e2b3e, #0A131F);
+  background-size: 300% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 40px;
+
+  animation: gradient-move 4s ease-in-out infinite, pop-in 1s ease-out;
+}
+
+@keyframes gradient-move {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
