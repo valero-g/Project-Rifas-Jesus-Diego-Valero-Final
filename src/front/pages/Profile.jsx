@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const Profile = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -33,7 +34,7 @@ export const Profile = () => {
           return;
         }
 
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+        const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -99,7 +100,7 @@ export const Profile = () => {
         email: userData.email,     // Se envía para la validación del backend, aunque no sea editable
       };
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/${userData.id}`, { // Usamos el ID del usuario para el endpoint PUT
+      const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/user/${userData.id}`, { // Usamos el ID del usuario para el endpoint PUT
 
         method: "PUT",
         headers: {
@@ -149,7 +150,7 @@ export const Profile = () => {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-password`, {
+      const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/new-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

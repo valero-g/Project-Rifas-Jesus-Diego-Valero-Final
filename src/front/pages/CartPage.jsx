@@ -5,6 +5,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
 import { loadStripe } from "@stripe/stripe-js";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -84,7 +85,7 @@ export const CartPage = () => {
                 return 0;
             }
 
-            const response = await fetch(backendUrl + "/api/boleto",
+            const response = await fetchConAuth(backendUrl + "/api/boleto",
                 {
                     method: "DELETE",
                     headers: {
