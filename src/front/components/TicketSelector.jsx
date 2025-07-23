@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export default function TicketSelector({ maxNumber, precio, onSelectTickets, rifaId }) {
 
@@ -276,7 +277,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
     const getBoletosReservados = useCallback(async () => {
         try {
             const token = sessionStorage.getItem("token");
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -311,7 +312,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         console.log("🔐 Token:", token);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

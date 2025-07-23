@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 
 export const Success = () => {
@@ -61,7 +62,7 @@ export const Success = () => {
         }
         //await delay(100);
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -105,7 +106,7 @@ export const Success = () => {
                 usuarioId = decoded.sub;
                 //console.log(usuarioId);
             }
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -166,7 +167,7 @@ export const Success = () => {
                         }, 0)
                 };
             console.log(dataEmail);
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/enviar-confirmacion`, {
+        const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/enviar-confirmacion`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

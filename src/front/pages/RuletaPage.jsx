@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Wheel } from "react-custom-roulette";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 import logo from "../assets/img/4Boleeks.png";
 
 const colors = ["#3BFFE7", "#0A131F"];
@@ -42,7 +43,7 @@ export default function RuletaPage() {
   const fetchGanadorUsuario = async (rifaId, numeroBoleto) => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await fetch(
+      const res = await fetchConAuth(
         `${import.meta.env.VITE_BACKEND_URL}/api/boleto/${rifaId}/${numeroBoleto}`,
         {
           headers: {
@@ -62,7 +63,7 @@ export default function RuletaPage() {
   const fetchParticipantes = async (rifaId) => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await fetch(
+      const res = await fetchConAuth(
         `${import.meta.env.VITE_BACKEND_URL}/api/boletos-comprados/${rifaId}`,
         {
           headers: {
