@@ -69,28 +69,33 @@ export const SelectTicket = () => {
             }}>
                 {rifa.nombre_rifa}
             </h1>
-            <div className="Container vh-100 d-flex justify-content-center">
+            <div className="container-fluid  d-flex justify-content-center align-items-center p-3">
                 <div
-                    className="d-flex justify-content-between align-items-center"
+                    className="d-flex flex-column flex-md-row justify-content-between align-items-start w-100"
                     style={{
-                        width: "80%",
+                        maxWidth: "1200px",
                         height: "100%",
                         borderRadius: "20px",
                         padding: "1rem",
                     }}
                 >
+                    {/* Panel Izquierdo - Información del premio */}
                     <div
                         style={{
-                            boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
+                            boxShadow: "0 15px 40px rgba(59, 255, 231, 0.7)",
                             borderRadius: "20px",
-                            width: "30%",
-                            height: "90%",
-                            backgroundColor: "#fff", // ← También agregamos aquí si hace falta
+                            width: "100%",
+                            maxWidth: "400px",
+                            marginBottom: "2rem",
+                            marginRight:"2rem",
+                            backgroundColor: "#0A131F",
+                            //alignSelf: "flex-start"
+                            //padding: "1rem",
                         }}
                     >
                         <div
                             style={{
-                                height: "38%",
+                                height: "250px",
                                 borderRadius: "20px",
                                 marginBottom: "24px",
                                 overflow: "hidden",
@@ -106,82 +111,72 @@ export const SelectTicket = () => {
                                 }}
                             />
                         </div>
-                        <div className="d-flex justify-content-center mb-5">
+
+                        <div className="d-flex justify-content-center flex-wrap mb-4 gap-2">
+                            {/* Fecha */}
                             <div
                                 style={{
-                                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                                    boxShadow: "0 3px 8px rgba(59, 255, 231, 0.4)",
                                     borderRadius: "5px",
-                                    width: "52%",
-                                    marginRight: "7px",
-                                    padding: "4px",
+                                    backgroundColor: "#0A131F",
+                                    minWidth: "100px",
+                                    padding: "4px 8px",
                                     display: "flex",
+                                    justifyContent: "space-around",
                                     alignItems: "center",
                                 }}
                             >
                                 <i
-                                    className="fas fa-calendar-alt"
-                                    style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}
+                                    className="fas fa-ticket-alt me-2"
+                                    style={{ color: '#3BFFE7', fontSize: '20px' }}
                                 ></i>
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    <p style={{ margin: "0", fontSize: "20px" }}>
-                                        <strong>{rifa.fecha_de_sorteo}</strong>
-                                    </p>
-                                </div>
+                                <p className="mb-0 text-center" style={{ fontSize: "18px", color: "#3BFFE7" }}>
+                                    <strong>{rifa.numero_max_boletos}</strong>
+                                </p>
                             </div>
+
+                            {/* Precio */}
                             <div
                                 style={{
-                                    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                                    boxShadow: "0 3px 8px rgba(59, 255, 231, 0.4)",
                                     borderRadius: "5px",
-                                    width: "28%",
-                                    marginLeft: "7px",
-                                    padding: "4px",
+                                    backgroundColor: "#0A131F",
+                                    minWidth: "100px",
+                                    padding: "4px 8px",
                                     display: "flex",
+                                    justifyContent: "space-around",
                                     alignItems: "center",
                                 }}
                             >
                                 <i
-                                    className="fas fa-euro-sign"
-                                    style={{ color: 'rgb(10, 19, 31)', fontSize: '24px' }}
+                                    className="fas fa-euro-sign me-2"
+                                    style={{ color: '#3BFFE7', fontSize: '20px' }}
                                 ></i>
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    <p style={{ margin: "0", fontSize: "20px" }}>
-                                        <strong>{rifa.precio_boleto}</strong>
-                                    </p>
-                                </div>
+                                <p className="mb-0 text-center" style={{ fontSize: "18px", color: "#3BFFE7" }}>
+                                    <strong>{rifa.precio_boleto}</strong>
+                                </p>
                             </div>
                         </div>
-                        <div className="d-flex justify-content-start">
-                            <p style={{
-                                marginLeft: "23px",
-                                marginRight: "15px"
-                            }}>
+
+                        <div className="text-center p-1">
+                            <p style={{ color: "#3BFFE7", fontWeight: '500' }}>
                                 {rifa.premio_rifa}
                             </p>
                         </div>
                     </div>
 
-                    <TicketSelector
-                        maxNumber={rifa?.numero_max_boletos || 100}
-                        precio={rifa.precio_boleto}
-                        onSelectTickets
-                        rifaId={rifa.id}
-                    />
+                    {/* Panel Derecho - TicketSelector */}
+                    <div className="flex-grow-1 ms-md-4 w-100" >
+                        <TicketSelector
+                            maxNumber={rifa?.numero_max_boletos || 100}
+                            precio={rifa.precio_boleto}
+                            onSelectTickets
+                            rifaId={rifa.id}
+                        />
+                    </div>
                 </div>
             </div>
+
         </div>
     );
 

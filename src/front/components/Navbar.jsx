@@ -42,9 +42,9 @@ export const Navbar = () => {
   const [showModal, setShowModal] = useState(false);
   const handleOpenModal = () => {
     if (totalCartItems === 0) {
-      handleLogout(); 
+      handleLogout();
     } else {
-      setShowModal(true); 
+      setShowModal(true);
     }
   };
   const handleCancelLogout = () => setShowModal(false);
@@ -335,7 +335,6 @@ export const Navbar = () => {
           {store.isLogged && (
             <>
               <span style={groupTitleStyle}>Cuenta</span>
-
               <Link to="/profile" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
                 🏠 Perfil de usuario
               </Link>
@@ -345,15 +344,14 @@ export const Navbar = () => {
               </Link>
 
               <hr style={dividerStyle} />
-            
 
-          <span style={groupTitleStyle}>Explorar</span>
-          <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
-            🎯 Últimos resultados
-          </Link>
+              <span style={groupTitleStyle}>Explorar</span>
+              <Link to="/ultimos-resultados" onClick={() => setMenuOpen(false)} style={menuLinkStyle}>
+                🎯 Últimos resultados
+              </Link>
 
-          <hr style={dividerStyle} />
-          </>
+              <hr style={dividerStyle} />
+            </>
           )}
 
           <span style={groupTitleStyle}>Información</span>
