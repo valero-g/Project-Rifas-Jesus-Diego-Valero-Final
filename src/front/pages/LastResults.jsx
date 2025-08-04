@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const LastResults = () => {
   const [rifas, setRifas] = useState([]);
@@ -22,7 +23,7 @@ export const LastResults = () => {
               if (!rifa.boleto_ganador) return { ...rifa, usuario_ganador: "No asignado" };
               try {
                 const token = sessionStorage.getItem("token");
-                const boletosRes = await fetch(
+                const boletosRes = await fetchConAuth(
                   `${import.meta.env.VITE_BACKEND_URL}/api/boletos-comprados/${rifa.id}`,
                   {
                     headers: {

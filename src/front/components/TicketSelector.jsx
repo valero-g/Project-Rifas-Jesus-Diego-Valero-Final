@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export default function TicketSelector({ maxNumber, precio, onSelectTickets, rifaId }) {
 
@@ -65,17 +66,18 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                         key={idx}
                         onClick={() => onSelect(idx)}
                         style={{
-                            width: '57px',
-                            height: '57px',
+                            width: '49px',
+                            height: '49px',
                             borderRadius: '50%',
-                            backgroundColor: idx === selectedGroupIndex ? '#0A131F' : 'none',
-                            color: idx === selectedGroupIndex ? '#3BFFE7' : '#0A131F',
+                            backgroundColor: idx === selectedGroupIndex ? '#3BFFE7' : '#0A131F',
+                            color: idx === selectedGroupIndex ? '#0A131F' : '#3BFFE7',
                             border: idx === selectedGroupIndex ? '0' : '2px solid #3BFFE7',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
                             fontWeight: 'bold',
+                            fontSize:"13px",
                             transition: 'background-color 0.3s, color 0.3s',
                         }}
                     >
@@ -116,11 +118,11 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                 key={n}
                                 onClick={reservado ? () => console.log("Click en número ya reservado!") : () => onToggle(n)}
                                 style={{
-                                    width: '48px',
-                                    height: '48px',
+                                    width: '46px',
+                                    height: '46px',
                                     borderRadius: '50%',
-                                    backgroundColor: reservado ? 'red' : seleccionado ? '#0A131F' : 'none',
-                                    color: reservado ? '#FFA07A' : seleccionado ? '#3BFFE7' : '#0A131F',
+                                    backgroundColor: reservado ? 'red' : seleccionado ? '#3BFFE7' : 'none',
+                                    color: reservado ? '#FFA07A' : seleccionado ? '#0A131F' : '#3BFFE7',
                                     border: reservado ? '2px solid #FFA07A' : seleccionado ? '0' : '2px solid #3BFFE7',
                                     cursor: reservado ? 'not-allowed' : 'pointer',
                                     display: 'flex',
@@ -148,15 +150,16 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
         return (
             <aside style={{
-                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                boxShadow: "0 3px 8px rgba(59, 255, 231, 0.4)",
                 borderRadius: "5px",
-                width: "40%",
+                //width: "40%",
                 height: "175px",
                 padding: "10px",
-                textAlign: "center"
+                textAlign: "center",
+                backgroundColor: "#0A131F"
             }}>
                 {boletos.length === 0 ? (
-                    <p><em>No has seleccionado boletos</em></p>
+                    <p style={{ color: "#3BFFE7" }}><em>No has seleccionado boletos</em></p>
                 ) : (
                     <div style={{ display: 'flex', gap: '20px' }}>
                         <div style={{ flex: 1 }}>
@@ -166,6 +169,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                     style={{
                                         backgroundColor: '#0A131F',
                                         color: '#3BFFE7',
+                                        border: '1px solid #3BFFE7',
                                         padding: '6px 10px',
                                         borderRadius: '20px',
                                         marginBottom: '6px',
@@ -176,7 +180,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                         height: "25px"
                                     }}
                                 >
-                                    Boleto {n}
+                                    {n}
                                     <button
                                         onClick={() => onRemove(n)}
                                         style={{
@@ -195,7 +199,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                 </div>
                             ))}
                         </div>
-                        {segundaColumna.length > 0 && (
+                        {
                             <div style={{ flex: 1 }}>
                                 {segundaColumna.map((n) => (
                                     <div
@@ -203,6 +207,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                         style={{
                                             backgroundColor: '#0A131F',
                                             color: '#3BFFE7',
+                                            border: '1px solid #3BFFE7',
                                             padding: '6px 10px',
                                             borderRadius: '20px',
                                             marginBottom: '6px',
@@ -213,7 +218,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                             height: "25px"
                                         }}
                                     >
-                                        Boleto {n}
+                                        {n}
                                         <button
                                             onClick={() => onRemove(n)}
                                             style={{
@@ -232,7 +237,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        }
                     </div>
                 )}
             </aside>
@@ -276,7 +281,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
     const getBoletosReservados = useCallback(async () => {
         try {
             const token = sessionStorage.getItem("token");
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-ocupados/${rifaId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -311,7 +316,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
         console.log("🔐 Token:", token);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -356,99 +361,47 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
 
         return (
             <div
+                className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
                 style={{
-                    position: "fixed",
-                    top: 0, left: 0,
-                    width: "100%", height: "100%",
                     backgroundColor: "rgba(0, 0, 0, 0.6)",
-                    display: "flex", justifyContent: "center", alignItems: "center",
                     zIndex: 9999,
+                    padding: "10px",
+                    width: "100vw"
                 }}
             >
                 <div
+                    className="bg-dark text-white p-4 rounded-3 border"
                     style={{
-                        backgroundColor: "#0A131F",
-                        padding: "20px",
-                        borderRadius: "12px",
-                        border: "1px solid #3BFFE7",
-                        width: "350px",
-                        textAlign: "center",
-                        boxShadow: "0 5px 20px rgba(0,0,0,0.3)",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: "15px"
+                        borderColor: "#3BFFE7",
+                        maxWidth: "350px",
+                        width: "100%",
+                        boxShadow: "0 5px 20px rgba(0,0,0,0.3)"
                     }}
                 >
-                    <p style={{ color: "white", marginBottom: "0" }}>{popupContent}</p>
-                    <div style={{
-                        display: "flex",
-                        gap: "10px",
-                        justifyContent: "center",
-                        width: "100%"
-                    }}>
+                    <p className="text-center mb-4">{popupContent}</p>
+                    <div className="d-flex flex-column flex-sm-row gap-2">
                         <button
+                            className="btn w-100 fw-bold"
+                            style={{
+                                backgroundColor: "#0A131F",
+                                color: "#3BFFE7",
+                                border: "1px solid #3BFFE7"
+                            }}
                             onClick={() => {
                                 setShowPopup(false);
                                 navigate("/");
-                            }}
-                            style={{
-                                padding: "8px 16px",
-                                backgroundColor: "#0A131F", // Nuevo color de fondo
-                                color: "#3BFFE7", // Nuevo color de texto
-                                border: "1px solid #3BFFE7", // Borde para el dinamismo
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "bold",
-                                flex: 1,
-                                minWidth: "120px",
-                                transition: "background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease", // Transiciones para dinamismo
-                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                            }}
-                            // Estos estilos :hover se aplicarán a través de una hoja de estilo externa o CSS-in-JS si no puedes usar archivos .css
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#3BFFE7'; // Hover color de fondo
-                                e.currentTarget.style.color = '#0A131F'; // Hover color de texto
-                                e.currentTarget.style.transform = 'scale(1.03)'; // Pequeña escala
-                                e.currentTarget.style.boxShadow = '0 5px 12px rgba(0, 0, 0, 0.6)'; // Sombra más pronunciada
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0A131F';
-                                e.currentTarget.style.color = '#3BFFE7';
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.4)';
                             }}
                         >
                             Volver al inicio
                         </button>
                         <button
-                            onClick={() => setShowPopup(false)}
+                            className="btn w-100 fw-bold"
                             style={{
-                                padding: "8px 16px",
-                                backgroundColor: "#0A131F", // Nuevo color de fondo
-                                color: "#3BFFE7", // Nuevo color de texto
-                                border: "1px solid #3BFFE7", // Borde para el dinamismo
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "bold",
-                                flex: 1,
-                                minWidth: "120px",
-                                transition: "background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease", // Transiciones para dinamismo
-                                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
+                                backgroundColor: "#0A131F",
+                                color: "#3BFFE7",
+                                border: "1px solid #3BFFE7"
                             }}
-                            // Estos estilos :hover se aplicarán a través de una hoja de estilo externa o CSS-in-JS si no puedes usar archivos .css
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#3BFFE7'; // Hover color de fondo
-                                e.currentTarget.style.color = '#0A131F'; // Hover color de texto
-                                e.currentTarget.style.transform = 'scale(1.03)'; // Pequeña escala
-                                e.currentTarget.style.boxShadow = '0 5px 12px rgba(0, 0, 0, 0.6)'; // Sombra más pronunciada
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0A131F';
-                                e.currentTarget.style.color = '#3BFFE7';
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.4)';
-                            }}
+                            onClick={() => setShowPopup(false)}
                         >
                             Continuar comprando
                         </button>
@@ -456,148 +409,123 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                 </div>
             </div>
         );
+}
+
+const infoClick = () => {
+    setPopupContent("Boletos añadidos al carrito correctamente");
+    setShowPopup(true);
+};
+
+const CartButtonAction = async () => {
+    await AddToCart();
+    if (selectedTickets.size === 0) {
+        return;
     }
+    infoClick();
+}
 
-    const infoClick = () => {
-        setPopupContent("Boletos añadidos al carrito correctamente");
-        setShowPopup(true);
-    };
-
-    const CartButtonAction = async () => {
-        await AddToCart();
-        if (selectedTickets.size === 0) {
-            return;
-        }
-        infoClick();
+const GoCartButtonAction = async () => {
+    await AddToCart();
+    if (selectedTickets.size === 0) {
+        return;
     }
+    navigate('/checkout');
+}
 
-    const GoCartButtonAction = async () => {
-        await AddToCart();
-        if (selectedTickets.size === 0) {
-            return;
-        }
-        navigate('/checkout');
-    }
+const buttonStyles = (bg, color, border = false) => ({
+    borderRadius: '15px',
+    padding: '16px 32px',
+    backgroundColor: bg,
+    color: color,
+    border: border ? `2px solid ${color}` : 'none',
+    boxShadow: "0 3px 8px rgba(59, 255, 231, 0.4)",
+    fontSize: '17px',
+    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: '180px'
+});
 
-    return (
+
+return (
+    <div style={{
+        boxShadow: "0 15px 40px rgba(59, 255, 231, 0.4)",
+        borderRadius: "20px",
+        width: "90%",
+        maxWidth: "1000px",
+        minWidth: "300px",
+        // margin: "auto",
+        height: "auto",
+        backgroundColor: "#0A131F",
+        padding: "20px"
+    }}>
+        <h2 style={{ color: '#3BFFE7', textAlign: 'center' }}>Selección de boletos</h2>
+        <h6 style={{ color: '#3BFFE7', textAlign: 'center' }}>¡Elige tus números y prueba suerte!</h6>
+
         <div style={{
-            boxShadow: "0 15px 40px rgba(128, 128, 128, 0.7)",
-            borderRadius: "20px",
-            width: "65%",
-            height: "90%",
-            backgroundColor: "#fff"
+            boxShadow: "0 3px 8px rgba(59, 255, 231, 0.4)",
+            borderRadius: "5px",
+            width: "100%",
+            marginTop: "20px",
+            marginBottom: "20px",
+            padding: "10px",
+            backgroundColor: "#0A131F"
         }}>
-            <h2 style={{ marginTop: '10px', marginLeft: '46px' }}>Selección de boletos</h2>
-            <h6 style={{ marginTop: '10px', marginLeft: '46px' }}>¡Elige tus números y prueba suerte!</h6>
-            <div style={{
-                boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                borderRadius: "5px",
-                width: "90%",
-                marginLeft: "46px",
-                marginTop: "20px",
-                marginBottom: "20px",
-                padding: "7px 0",
-            }}>
-                <GrupoSelector
-                    grupos={grupos}
-                    onSelect={setSelectedGroupIndex}
-                    selectedGroupIndex={selectedGroupIndex}
-                />
+            <GrupoSelector
+                grupos={grupos}
+                onSelect={setSelectedGroupIndex}
+                selectedGroupIndex={selectedGroupIndex}
+            />
+            <hr style={{ borderColor: '#3BFFE7' }} />
+            <BoletosDisponibles
+                grupo={grupos[selectedGroupIndex]}
+                seleccionados={selectedTickets}
+                boletosReservados={boletosReservados}
+                onToggle={toggleTicket}
+            />
+        </div>
 
-                <BoletosDisponibles
-                    grupo={grupos[selectedGroupIndex]}
-                    seleccionados={selectedTickets}
-                    boletosReservados={boletosReservados}
-                    onToggle={toggleTicket}
-                />
-            </div>
-            <hr style={{
-                borderColor: '#d3d3d3',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                marginTop: "30px",
-                marginBottom: "30px",
-                width: '100%'
-            }} />
-            <div className="d-flex justify-content-around">
-                <BoletosSeleccionados
-                    seleccionados={selectedTickets}
-                    onRemove={removeTicket}
-                />
-                <div className="d-flex justify-content-center align-items-center w-25">
-                    <p style={{
-                        fontSize: "40px",
-                        fontWeight: 'bold'
-                    }}>
-                        {total.toFixed(2)}€
-                    </p>
-                </div>
-            </div>
-            <hr style={{
-                borderColor: '#d3d3d3',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                marginTop: "30px",
-                marginBottom: "30px",
-                width: '100%'
-            }} />
-            <div className="d-flex justify-content-between align-items-center"
-                style={{
-                    marginLeft: "46px",
-                    marginRight: "46px"
+        <hr style={{ borderColor: '#d3d3d3' }} />
+
+        <div className="d-flex flex-column flex-md-row justify-content-around align-items-center">
+            <BoletosSeleccionados
+                seleccionados={selectedTickets}
+                onRemove={removeTicket}
+            />
+            <div className="d-flex justify-content-center align-items-center mt-3 mt-md-0">
+                <p style={{
+                    fontSize: "30px",
+                    fontWeight: 'bold',
+                    color: "#3BFFE7",
+                    padding: "10px"
                 }}>
-                <button onClick={selectRandomTickets}
-                    style={{
-                        borderRadius: '15px',
-                        padding: '16px 32px',
-                        backgroundColor: '#3BFFE7',
-                        color: '#0A131F',
-                        border: 'none',
-                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                    Al azar
-                </button>
-                <button onClick={CartButtonAction}
-                    style={{
-                        borderRadius: '15px',
-                        padding: '16px 32px',
-                        backgroundColor: 'yellow',
-                        color: 'black',
-                        border: 'none',
-                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                    Añadir al carrito
-                </button>
-                <button onClick={GoCartButtonAction}
-                    style={{
-                        borderRadius: '15px',
-                        padding: '16px 32px',
-                        backgroundColor: '#0A131F',
-                        color: '#3BFFE7',
-                        border: 'none',
-                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.4)",
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                    Comprar
-                </button>
+                    {total.toFixed(2)}€
+                </p>
             </div>
-            {renderPopup()}
-            <style>
-                {`
+        </div>
+
+        <hr style={{ borderColor: '#d3d3d3' }} />
+
+        <div className="d-flex justify-content-center flex-wrap gap-3"
+            style={{ marginTop: "20px" }}>
+            <button onClick={selectRandomTickets}
+                style={buttonStyles('#3BFFE7', '#0A131F')}>
+                Al azar
+            </button>
+            <button onClick={CartButtonAction}
+                style={buttonStyles('yellow', 'black')}>
+                Añadir a carrito
+            </button>
+            <button onClick={GoCartButtonAction}
+                style={buttonStyles('#0A131F', '#3BFFE7', true)}>
+                Comprar
+            </button>
+        </div>
+        {renderPopup()}
+        <style>
+            {`
             @keyframes fadeInDown {
                 from {
                     opacity: 0;
@@ -609,7 +537,7 @@ export default function TicketSelector({ maxNumber, precio, onSelectTickets, rif
                 }
             }
         `}
-            </style>
-        </div>
-    );
+        </style>
+    </div >
+);
 }

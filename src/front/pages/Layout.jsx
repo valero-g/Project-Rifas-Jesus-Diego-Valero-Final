@@ -5,6 +5,7 @@ import { Footer } from "../components/Footer"
 import { useEffect } from "react"
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import {jwtDecode} from 'jwt-decode';
+import { fetchConAuth } from "../fetchconAuth.js";
 
 // Base component that maintains the navbar and footer throughout the page and the scroll to top functionality.
 export const Layout = () => {
@@ -40,7 +41,7 @@ export const Layout = () => {
 
     const getUser = async () => {
         const token = sessionStorage.getItem("token");
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+        fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -73,7 +74,7 @@ export const Layout = () => {
                 const decoded = jwtDecode(token);
                 usuarioId = decoded.sub;
             }
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-usuario/${usuarioId}`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boletos-usuario/${usuarioId}`, {
                 method: "GET",
                 headers: {
                         Authorization: `Bearer ${token}`,

@@ -11,7 +11,7 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 import traceback
 import bcrypt
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, decode_token
 from flask_mail import Message
 from api.extensions import mail
 import os
@@ -113,8 +113,11 @@ def get_rifas():
                 send_email_winner(os.getenv("MAIL_SENDER"), usuario_ganador.email, usuario_ganador.nombre, boleto_premiado.numero, usuario_ganador.direccion_envio, rifa.nombre_rifa, rifa.premio_rifa)
 
         all_rifas = db.session.execute(select(Rifas)).scalars().all()
-        # Respuesta
+
+        #Filtrado de rifas que no estén inactivas
+        all_rifas = list(filter(lambda y: y.status_sorteo != "inactivo", all_rifas))
         all_rifas = list(map(lambda x: x.serialize(), all_rifas))
+        # Respuesta
         print("Todas las rifas:", all_rifas)
         return jsonify(all_rifas), 200
 
@@ -148,6 +151,28 @@ def get_rifa(rifa_id):
     except Exception as e:
         print("Error:", e)
         return {"message": f"Error: No se pueden leer la rifa. Fallo interno"}, 500
+
+
+@api.route('/rifa/<int:rifa_id>', methods=['DELETE'])
+def delete_rifa(rifa_id):
+    try:
+        rifa = db.session.execute(select(Rifas).where(
+            Rifas.id == rifa_id)).scalar_one_or_none()
+        # Validacion
+        if rifa == None:
+            return {"message": "No se encuentra rifa"}, 404
+        print("hola")
+        #Borrado de rifa
+        db.session.delete(rifa)
+        db.session.commit()
+        print("ale")
+
+        # Respuesta
+        return {"message": f"La Rifa con ID: {rifa_id} ha sido borrada:"}, 200
+
+    except Exception as e:
+        print("Error:", e)
+        return {"message": f"Error: No se puede borrar la rifa. Fallo interno"}, 500
 
 
 @api.route('/rifa/<int:rifa_id>', methods=['PUT'])
@@ -451,11 +476,25 @@ def login():
         result = bcrypt.checkpw(userBytes, user_pass)
         if (result):
             access_token = create_access_token(identity=str(user.id))
-            return jsonify({"token": access_token, "user_id": user.id}), 200
+            refresh_token = create_refresh_token(identity=str(user.id)) # creamos un refresh tocker
+            return jsonify({"token": access_token, "user_id": user.id, "refresh_token": refresh_token}), 200
         else:
             return {"message": "Usuario, Email o contraseña erroneos"}, 400
     except:
         return {"message": "No se puede completar la operacion"}, 500
+
+
+
+@api.route("/refresh-token", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    try:
+        identity = get_jwt_identity()
+        new_access_token = create_access_token(identity=identity)
+        return jsonify(access_token=new_access_token)
+    except Exception as e:
+        print("Error:", e)
+        return {"message": "No se puede refrescar el token"}, 500
 
 
 # GET de usuario
@@ -750,7 +789,6 @@ def add_boleto():
         return {"message": "Error reservando boleto"}, 500
 
 # PUT de boleto
-
 
 @api.route('/boleto', methods=['PUT'])
 @jwt_required()
