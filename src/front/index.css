@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
 .menu-dropdown {
   position: absolute;
   top: 100%;
@@ -119,7 +120,6 @@
   box-shadow: 0 0 6px rgba(59, 255, 231, 0.3);
 }
 
-
 /* Animaciones */
 @keyframes fadeSlideIn {
   from {
@@ -155,7 +155,7 @@
     gap: 10px;
   }
 
-  nav .container-fluid>div:nth-child(2) {
+  nav .container-fluid > div:nth-child(2) {
     flex-wrap: wrap;
     justify-content: flex-start;
     width: 100%;
@@ -201,14 +201,12 @@
   }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
-
 .super-fancy-title {
-  font-family: 'Anton', sans-serif;
+  font-family: "Anton", sans-serif;
   text-align: center;
   font-size: 3rem;
   letter-spacing: 2px;
-  background: linear-gradient(90deg, #0A131F, #1e2b3e, #0A131F);
+  background: linear-gradient(90deg, #0a131f, #1e2b3e, #0a131f);
   background-size: 300% auto;
   color: transparent;
   background-clip: text;
@@ -222,9 +220,15 @@
 }
 
 @keyframes gradient-move {
-  0% { background-position: 0% center; }
-  50% { background-position: 100% center; }
-  100% { background-position: 0% center; }
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
 }
 
 @keyframes pop-in {
@@ -237,4 +241,3 @@
     transform: scale(1) translateY(0);
   }
 }
-
