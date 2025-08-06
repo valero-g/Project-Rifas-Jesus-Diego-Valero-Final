@@ -227,7 +227,7 @@ export const Home = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => setShowFilterModal(true)}
+                    onClick={() => setShowFilterModal(prev => !prev)}
                     className="px-4 py-2 mb-4"
                     style={{
                         background: "#0A131F",

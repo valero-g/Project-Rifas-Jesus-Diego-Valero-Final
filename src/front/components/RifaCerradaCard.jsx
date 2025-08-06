@@ -1,82 +1,72 @@
 import React from 'react';
 
 const RifaCerradaCard = () => {
-        return (
-            <div style={{
-                position: 'relative',
-                border: '4px solid red',
-                backgroundColor: '#ffcccc',
-                padding: 20,
-                borderRadius: 10,
-                margin: '20px auto',
-                width: '800px',
-                textAlign: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                color: '#0A131F'
+    return (
+        <div style={{
+            position: 'relative',
+            background: 'linear-gradient(145deg, #FFEAEA, #FFF5F5)',
+            padding: '50px 30px',
+            borderRadius: '25px',
+            margin: '60px auto',
+            maxWidth: '700px',
+            textAlign: 'center',
+            color: '#1E1E1E',
+            fontFamily: 'Segoe UI, sans-serif',
+            boxShadow: '0 0 30px 5px rgba(255, 77, 77, 0.4)',
+            animation: 'glowPulse 2s infinite ease-in-out, fadeInUp 0.8s ease-out'
+        }}>
+            {/* Título */}
+            <h1 style={{
+                fontSize: '2.8rem',
+                fontWeight: 700,
+                marginBottom: '15px',
+                color: '#222',
+                textShadow: '0 2px 5px rgba(255, 77, 77, 0.3)'
             }}>
-                {/* Luz superior izquierda */}
-                <div style={{
-                    position: 'absolute',
-                    top: '15px',
-                    left: '15px',
-                    width: '30px',
-                    height: '30px',
-                    backgroundColor: '#ff0000',
-                    borderRadius: '50%',
-                    boxShadow: '0 0 10px 5px #ff0000',
-                    animation: 'blink 1s infinite alternate'
-                }}></div>
-
-                {/* Luz superior derecha */}
-                <div style={{
-                    position: 'absolute',
-                    top: '15px',
-                    right: '15px',
-                    width: '30px',
-                    height: '30px',
-                    backgroundColor: '#ff0000',
-                    borderRadius: '50%',
-                    boxShadow: '0 0 10px 5px #ff0000',
-                    animation: 'blink 1s infinite alternate'
-                }}></div>
-
-                <h1>
-                    ¡<span style={{
-                        color: "#0A131F",
-                        textShadow: `
-                -1px -1px 0 #3BFFE7,
-                1px -1px 0 #3BFFE7,
-                -1px 1px 0 #3BFFE7,
-                1px 1px 0 #3BFFE7
-            `
-                    }}>
-                        Rifas Completadas
-                    </span>!
-                </h1>
-                <h5>
-                    Todos los boletos de algunas de nuestras rifas ya han sido vendidos.
-                </h5>
-                <h5>¡No esperes más, y que la suerte te acompañe!</h5>
-                
-
-                {/* Animación CSS */}
-                <style>
-                    {`
-            @keyframes blink {
-                0% {
-                    opacity: 1;
-                    box-shadow: 0 0 10px 5px #ff0000;
-                }
-                100% {
-                    opacity: 0.3;
-                    box-shadow: 0 0 5px 2px #ff8080;
-                }
-            }
-        `}
-                </style>
-            </div>
-
-        );
-    }
+                🎉¡Rifas Completadas!🎉
+            </h1>
+            {/* Subtítulo */}
+            <p style={{
+                fontSize: '1.2rem',
+                marginBottom: '10px',
+                color: '#444'
+            }}>
+                Todos los boletos de algunas rifas han sido vendidos.
+            </p>
+            <p style={{
+                fontSize: '1.1rem',
+                color: '#666'
+            }}>
+                ¡No esperes más, y que la suerte te acompañe!
+            </p>
+            {/* Estilos de animación */}
+            <style>
+                {`
+                    @keyframes fadeInUp {
+                        0% {
+                            opacity: 0;
+                            transform: translateY(20px);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                    @keyframes glowPulse {
+                        0% {
+                            box-shadow: 0 0 15px 5px rgba(255, 77, 77, 0.3);
+                        }
+                        50% {
+                            box-shadow: 0 0 35px 12px rgba(255, 77, 77, 0.5);
+                        }
+                        100% {
+                            box-shadow: 0 0 15px 5px rgba(255, 77, 77, 0.3);
+                        }
+                    }
+                `}
+            </style>
+        </div>
+    );
+};
 
 export default RifaCerradaCard;
