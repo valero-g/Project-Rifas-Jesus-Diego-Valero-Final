@@ -5,6 +5,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from 'react-router-dom';
 import { loadStripe } from "@stripe/stripe-js";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const CartPage = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -26,6 +27,9 @@ export const CartPage = () => {
     );
 
     useEffect(() => {
+        if (!store.carrito || !store.rifas || store.carrito.length === 0 || store.rifas.length === 0) {
+            console.log("Carrito o rifa aún no cargados");
+            return};
         console.log("store:", store);
         const updatedCartItems = store.carrito.map((item, i) => {
             const rifa = store.rifas.find(r => r.id === item.rifa_id);
@@ -41,7 +45,7 @@ export const CartPage = () => {
         setCartItems(updatedCartItems);
         console.log("updatedCartItems", updatedCartItems);
         console.log("Store de carrrito", store.carrito);
-    }, [store.carrito])
+    }, [store.carrito, store.rifas])
 
     const updatedCartItems = cartItems.map(item => ({
         ...item,
@@ -81,7 +85,7 @@ export const CartPage = () => {
                 return 0;
             }
 
-            const response = await fetch(backendUrl + "/api/boleto",
+            const response = await fetchConAuth(backendUrl + "/api/boleto",
                 {
                     method: "DELETE",
                     headers: {

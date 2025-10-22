@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 
 export const Success = () => {
@@ -15,16 +16,17 @@ export const Success = () => {
     const [carritoConfirmado, setCarritoConfirmado] = useState([]);
     const delay = ms => new Promise(res => setTimeout(res, ms));
     useEffect(() => {
-            if (store.carrito_cargado && store.carrito.length > 0 && carritoConfirmado.length === 0) {
+            if (store.carrito_cargado && store.carrito.length > 0 && carritoConfirmado.length === 0 && store.rifas.length > 0) {
                 console.log("✅ Carrito cargado. Copiando a carritoConfirmado...");
                 setCarritoConfirmado([...store.carrito]);
             } else {
                 console.log("⏳ Esperando a que se llene el carrito...");
             }
-        }, [store.carrito_cargado]);
+        }, [store.carrito_cargado, store.rifas]);
 
     useEffect(() => {
             const confirmarYEnviar = async () => {
+                await delay(100);
                 if (carritoConfirmado.length === 0) return; // ⛔️ No ejecutar si aún está vacío
 
                 console.log("🛒 Confirmando carrito...", carritoConfirmado);
@@ -60,7 +62,7 @@ export const Success = () => {
         }
         //await delay(100);
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/boleto`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -104,7 +106,7 @@ export const Success = () => {
                 usuarioId = decoded.sub;
                 //console.log(usuarioId);
             }
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
+            const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/detalle-compra`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -165,7 +167,7 @@ export const Success = () => {
                         }, 0)
                 };
             console.log(dataEmail);
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/enviar-confirmacion`, {
+        const response = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/enviar-confirmacion`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

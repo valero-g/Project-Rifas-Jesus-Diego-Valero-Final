@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -100,9 +101,10 @@ export const Login = () => {
             }
             // Guardamos token y ponemos el login = True en el context, y guardamos también en el sessionStorage
             sessionStorage.setItem("token", data.token);
+            sessionStorage.setItem("refresh_token", data.refresh_token)
             dispatch({ type: "logIn"});
             sessionStorage.setItem("isLogged", "true");
-            const userResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+            const userResponse = await fetchConAuth(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${data.token}`,

@@ -83,6 +83,9 @@ export const Home = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [popupContent, setPopupContent] = useState("");
 
+    const [showFilterModal, setShowFilterModal] = useState(false); // nueva línea
+    const [statusFilter, setStatusFilter] = useState([]); // nueva línea
+
     const renderPopup = () => {
 
         if (!showPopup) return null;
@@ -223,6 +226,92 @@ export const Home = () => {
                         Pon a prueba tu suerte y participa para ganar premios increíbles. ¡Tu próxima victoria puede estar a un clic de distancia!
                     </p>
                 </div>
+                <button
+                    onClick={() => setShowFilterModal(prev => !prev)}
+                    className="px-4 py-2 mb-4"
+                    style={{
+                        background: "#0A131F",
+                        color: "#3BFFE7",
+                        border: "3px solid #3BFFE7",
+                        borderRadius: "10px",
+                        fontWeight: "bold"
+                    }}
+                >
+                    Filtrar
+                </button>
+                {showFilterModal && (
+                    <div className="d-flex justify-content-center align-items-center">
+                        <div style={{
+                            padding: "10px",
+                            border: "2px solid #3BFFE7 ",
+                            borderRadius: "10px",
+                            background: "#0A131F"
+                        }}>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const checkboxes = Array.from(e.target.elements["status"]);
+                                    const selected = checkboxes
+                                        .filter((cb) => cb.checked)
+                                        .map((cb) => cb.value);
+                                    setStatusFilter(selected);
+                                    setShowFilterModal(false);
+                                }}
+                            >
+                                <div className="d-flex flex-column">
+                                    <div className="form-check mb-2">
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            name="status"
+                                            value="finalizado"
+                                            defaultChecked={statusFilter.includes("finalizado")}
+                                            style={{ accentColor: "#3BFFE7" }} // cambia color del check
+                                        />
+                                        <label
+                                            className="form-check-label"
+                                            style={{ color: "#3BFFE7" }} // cambia color del texto
+                                        >
+                                            Sorteo activo
+                                        </label>
+                                    </div>
+
+                                    <div className="form-check">
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            name="status"
+                                            value="venta"
+                                            defaultChecked={statusFilter.includes("venta")}
+                                            style={{ accentColor: "#3BFFE7" }}
+                                        />
+                                        <label
+                                            className="form-check-label"
+                                            style={{ color: "#3BFFE7" }}
+                                        >
+                                            En proceso
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end mt-2">
+                                    <button
+                                        type="submit"
+                                        style={{
+                                            background: "none",
+                                            color: " #3BFFE7",
+                                            border: "2px solid #3BFFE7",
+                                            borderRadius: "10px",
+                                            padding: "2px 6px"
+                                        }}
+                                    >
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div
@@ -233,7 +322,8 @@ export const Home = () => {
             >
                 <div className="d-flex flex-wrap justify-content-center gap-4 pb-5">
                     {[...rifas]
-                        .sort((a, b) => a.status_sorteo.localeCompare(b.status_sorteo)) // Orden alfabético por status
+                        .filter((rifa) => statusFilter.length === 0 || statusFilter.includes(rifa.status_sorteo)) // nueva línea
+                        .sort((a, b) => a.status_sorteo.localeCompare(b.status_sorteo))
                         .map((rifa) => (
                             <div key={rifa.id} style={{ flex: "0 0 auto", width: "300px" }}>
                                 <CardHome
@@ -250,6 +340,7 @@ export const Home = () => {
                                 />
                             </div>
                         ))}
+
                 </div>
 
             </div>

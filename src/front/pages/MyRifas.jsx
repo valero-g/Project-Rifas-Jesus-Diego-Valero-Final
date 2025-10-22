@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import fondo from "../assets/img/fondo.png";
+import { fetchConAuth } from "../fetchconAuth.js";
 
 export const MyRifas = () => {
   const { store } = useGlobalReducer();
@@ -17,7 +18,7 @@ export const MyRifas = () => {
       setError(null);
       try {
         const token = sessionStorage.getItem("token");
-        const res = await fetch(
+        const res = await fetchConAuth(
           `${import.meta.env.VITE_BACKEND_URL}/api/boletos-usuario/${usuarioId}`,
           {
             headers: {
